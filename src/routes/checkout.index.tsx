@@ -17,7 +17,7 @@ import {
 export const Route = createFileRoute("/checkout/")({
   head: () => ({
     meta: [
-      { title: "Checkout · Details — Zona Dorata" },
+      { title: "Checkout · Details — BennyRich" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -142,7 +142,7 @@ function DetailsStep() {
             onChange={(e) => setC("accepts_marketing", e.target.checked)}
             className="mt-1"
           />
-          Email me about new drops and stories from Zona Dorata.
+          Email me about new drops and stories from BennyRich.
         </label>
       </div>
 

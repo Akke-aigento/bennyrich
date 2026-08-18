@@ -6,8 +6,8 @@ import { formatEUR } from "@/lib/sellqo";
 export const Route = createFileRoute("/checkout")({
   head: () => ({
     meta: [
-      { title: "Checkout — Zona Dorata" },
-      { name: "description", content: "Complete your Zona Dorata order." },
+      { title: "Checkout — BennyRich" },
+      { name: "description", content: "Complete your BennyRich order." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -93,7 +93,7 @@ function OrderSummary() {
   return (
     <aside
       className="h-fit border p-6 lg:sticky lg:top-24"
-      style={{ borderColor: "var(--line)", background: "var(--bone)" }}
+      style={{ borderColor: "var(--line)", background: "var(--br-ink)" }}
     >
       <h2
         className="ui-label text-[0.7rem]"

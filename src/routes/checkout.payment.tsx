@@ -16,7 +16,7 @@ import { EmptyCartRedirect, PrimaryButton } from "@/components/site/CheckoutForm
 export const Route = createFileRoute("/checkout/payment")({
   head: () => ({
     meta: [
-      { title: "Checkout · Payment — Zona Dorata" },
+      { title: "Checkout · Payment — BennyRich" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -115,7 +115,7 @@ function PaymentStep() {
                   className="flex cursor-pointer items-center justify-between gap-4 p-4 transition-colors"
                   style={{
                     border: `1px solid ${active ? "var(--ink)" : "var(--line)"}`,
-                    background: active ? "var(--bone)" : "transparent",
+                    background: active ? "var(--br-ink)" : "transparent",
                   }}
                 >
                   <div className="flex items-start gap-3">
@@ -163,7 +163,7 @@ function PaymentStep() {
                   className="flex cursor-pointer items-start gap-3 p-4 transition-colors"
                   style={{
                     border: `1px solid ${active ? "var(--ink)" : "var(--line)"}`,
-                    background: active ? "var(--bone)" : "transparent",
+                    background: active ? "var(--br-ink)" : "transparent",
                   }}
                 >
                   <input type="radio" name="payment" checked={active} onChange={() => setPayId(m.id)} className="mt-1" />

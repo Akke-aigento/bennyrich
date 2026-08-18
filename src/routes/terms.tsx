@@ -1,35 +1,33 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EditorialPage, Section, P, Signature } from "@/components/site/EditorialPage";
+import { ArticlePage, Section, P, List, Signature } from "@/components/site/PageShell";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms & Conditions — Zona Dorata" },
-      { name: "description", content: "The terms governing your use of the Zona Dorata website and all purchases made through our online store." },
-      { property: "og:title", content: "Terms & Conditions — Zona Dorata" },
-      { property: "og:description", content: "Terms governing the Zona Dorata website and online store." },
+      { title: "Terms & Conditions — BennyRich" },
+      { name: "description", content: "The terms governing your use of the BennyRich website and all purchases made through our online store." },
+      { property: "og:title", content: "Terms & Conditions — BennyRich" },
+      { property: "og:description", content: "Terms governing the BennyRich website and online store." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://zona-dorata.lovable.app/terms" },
     ],
-    links: [{ rel: "canonical", href: "https://zona-dorata.lovable.app/terms" }],
   }),
   component: TermsPage,
 });
 
 function TermsPage() {
   return (
-    <EditorialPage title="Terms & Conditions" subtitle="Last Updated: July 2026">
+    <ArticlePage title="Terms & Conditions" eyebrow="Last Updated: July 2026">
       <Section>
         <P>
-          Welcome to Zona Dorata. By accessing our website or purchasing our products, you agree to the
+          Welcome to BennyRich. By accessing our website or purchasing our products, you agree to the
           following Terms & Conditions.
         </P>
       </Section>
 
       <Section heading="1. General">
         <P>
-          These Terms & Conditions govern your use of the Zona Dorata website and all purchases made
+          These Terms & Conditions govern your use of the BennyRich website and all purchases made
           through our online store. If you do not agree with these terms, please do not use our website.
         </P>
       </Section>
@@ -63,7 +61,7 @@ function TermsPage() {
       <Section heading="5. Shipping">
         <P>
           Shipping times are estimates and may vary depending on destination, customs processing, and
-          carrier delays. Zona Dorata is not responsible for delays caused by shipping carriers or
+          carrier delays. BennyRich is not responsible for delays caused by shipping carriers or
           circumstances beyond our control.
         </P>
       </Section>
@@ -72,22 +70,22 @@ function TermsPage() {
         <P>
           Returns are accepted in accordance with our Shipping & Returns Policy. Returned items must be
           unused, in their original condition, and include all original packaging. Certain products,
-          such as opened fragrances, may not be eligible for return for hygiene reasons unless
+          such as opened beverages, may not be eligible for return for hygiene reasons unless
           defective.
         </P>
       </Section>
 
       <Section heading="7. Intellectual Property">
         <P>
-          All content on the Zona Dorata website—including logos, designs, images, product names, text,
-          graphics, and branding—is the property of Zona Dorata and may not be copied, reproduced,
+          All content on the BennyRich website—including logos, designs, images, product names, text,
+          graphics, and branding—is the property of BennyRich and may not be copied, reproduced,
           distributed, or used without prior written permission.
         </P>
       </Section>
 
       <Section heading="8. Limitation of Liability">
         <P>
-          Zona Dorata shall not be liable for any indirect, incidental, or consequential damages arising
+          BennyRich shall not be liable for any indirect, incidental, or consequential damages arising
           from the use of our website or products, except where liability cannot be excluded under
           applicable law.
         </P>
@@ -114,7 +112,7 @@ function TermsPage() {
         </P>
       </Section>
 
-      <Signature>Zona Dorata</Signature>
-    </EditorialPage>
+      <Signature>BennyRich</Signature>
+    </ArticlePage>
   );
 }

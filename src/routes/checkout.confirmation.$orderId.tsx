@@ -6,7 +6,7 @@ import { formatEUR } from "@/lib/sellqo";
 export const Route = createFileRoute("/checkout/confirmation/$orderId")({
   head: () => ({
     meta: [
-      { title: "Order confirmed — Zona Dorata" },
+      { title: "Order confirmed — BennyRich" },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -23,7 +23,7 @@ function ConfirmationPage() {
   return (
     <div>
       <div className="text-center">
-        <p className="ui-label text-[0.75rem]" style={{ color: "var(--gold)" }}>
+        <p className="ui-label text-[0.75rem]" style={{ color: "var(--br-blue)" }}>
           Grazie
         </p>
         <h2
@@ -109,7 +109,7 @@ function Panel({
   return (
     <div
       className={"border p-5 space-y-1 text-[0.9rem] " + (className ?? "")}
-      style={{ borderColor: "var(--line)", background: "var(--bone)" }}
+      style={{ borderColor: "var(--line)", background: "var(--br-ink)" }}
     >
       <p className="ui-label text-[0.65rem] mb-2" style={{ color: "var(--muted-tone)" }}>
         {title}

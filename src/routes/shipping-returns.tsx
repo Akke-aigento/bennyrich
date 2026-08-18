@@ -1,25 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EditorialPage, Section, P } from "@/components/site/EditorialPage";
+import { ArticlePage, Section, P, List, Signature } from "@/components/site/PageShell";
 
 export const Route = createFileRoute("/shipping-returns")({
   head: () => ({
     meta: [
-      { title: "Shipping & Returns — Zona Dorata" },
-      { name: "description", content: "Shipping times, returns within 14 days, fragrance policy and refunds at Zona Dorata." },
-      { property: "og:title", content: "Shipping & Returns — Zona Dorata" },
+      { title: "Shipping & Returns — BennyRich" },
+      { name: "description", content: "Shipping times, returns within 14 days, beverage policy and refunds at BennyRich." },
+      { property: "og:title", content: "Shipping & Returns — BennyRich" },
       { property: "og:description", content: "How we ship your order and how returns work." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://zona-dorata.lovable.app/shipping-returns" },
     ],
-    links: [{ rel: "canonical", href: "https://zona-dorata.lovable.app/shipping-returns" }],
   }),
   component: ShippingReturnsPage,
 });
 
 function ShippingReturnsPage() {
   return (
-    <EditorialPage title="Shipping & Returns">
+    <ArticlePage title="Shipping & Returns">
       <Section heading="Shipping">
         <P>We are committed to delivering your order as quickly and securely as possible.</P>
         <P>Orders are processed within 1–3 business days.</P>
@@ -45,10 +43,11 @@ function ShippingReturnsPage() {
         <P>Products that have been worn, damaged, or altered cannot be returned.</P>
       </Section>
 
-      <Section heading="Fragrances">
+      <Section heading="Beverages">
         <P>
-          For hygiene and safety reasons, fragrances can only be returned if the product is unopened
-          and the original seal remains intact, unless the item arrives damaged or defective.
+          For safety and legal reasons, bottled products can only be returned if unopened with the
+          original seal intact, unless the item arrives damaged or defective. Alcohol is sold to
+          customers aged 18 and over only.
         </P>
       </Section>
 
@@ -65,6 +64,6 @@ function ShippingReturnsPage() {
           help. Contact us anytime, and we'll be happy to assist you.
         </P>
       </Section>
-    </EditorialPage>
+    </ArticlePage>
   );
 }

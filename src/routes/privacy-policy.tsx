@@ -1,28 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { EditorialPage, Section, P, List, Signature } from "@/components/site/EditorialPage";
+import { ArticlePage, Section, P, List, Signature } from "@/components/site/PageShell";
 
 export const Route = createFileRoute("/privacy-policy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — Zona Dorata" },
-      { name: "description", content: "How Zona Dorata collects, uses and safeguards your personal information." },
-      { property: "og:title", content: "Privacy Policy — Zona Dorata" },
+      { title: "Privacy Policy — BennyRich" },
+      { name: "description", content: "How BennyRich collects, uses and safeguards your personal information." },
+      { property: "og:title", content: "Privacy Policy — BennyRich" },
       { property: "og:description", content: "How we collect, use and safeguard your data." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { property: "og:url", content: "https://zona-dorata.lovable.app/privacy-policy" },
     ],
-    links: [{ rel: "canonical", href: "https://zona-dorata.lovable.app/privacy-policy" }],
   }),
   component: PrivacyPolicyPage,
 });
 
 function PrivacyPolicyPage() {
   return (
-    <EditorialPage title="Privacy Policy" subtitle="Last Updated: July 2026">
+    <ArticlePage title="Privacy Policy" eyebrow="Last Updated: July 2026">
       <Section>
         <P>
-          At Zona Dorata, we value your privacy and are committed to protecting your personal
+          At BennyRich, we value your privacy and are committed to protecting your personal
           information. This Privacy Policy explains how we collect, use, and safeguard your data when
           you visit our website or make a purchase.
         </P>
@@ -116,7 +114,7 @@ function PrivacyPolicyPage() {
         </P>
       </Section>
 
-      <Signature>Zona Dorata</Signature>
-    </EditorialPage>
+      <Signature>BennyRich</Signature>
+    </ArticlePage>
   );
 }

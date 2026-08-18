@@ -10,16 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ShippingReturnsRouteImport } from './routes/shipping-returns'
-import { Route as SelfcareRouteImport } from './routes/selfcare'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PerfumesRouteImport } from './routes/perfumes'
-import { Route as OurStoryRouteImport } from './routes/our-story'
-import { Route as JewelleryRouteImport } from './routes/jewellery'
-import { Route as DesignerClothesRouteImport } from './routes/designer-clothes'
-import { Route as CraftsmanshipRouteImport } from './routes/craftsmanship'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as ArtworksRouteImport } from './routes/artworks'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
@@ -32,14 +29,14 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShopRoute = ShopRouteImport.update({
+  id: '/shop',
+  path: '/shop',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShippingReturnsRoute = ShippingReturnsRouteImport.update({
   id: '/shipping-returns',
   path: '/shipping-returns',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SelfcareRoute = SelfcareRouteImport.update({
-  id: '/selfcare',
-  path: '/selfcare',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
@@ -52,34 +49,19 @@ const PerfumesRoute = PerfumesRouteImport.update({
   path: '/perfumes',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OurStoryRoute = OurStoryRouteImport.update({
-  id: '/our-story',
-  path: '/our-story',
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const JewelleryRoute = JewelleryRouteImport.update({
-  id: '/jewellery',
-  path: '/jewellery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DesignerClothesRoute = DesignerClothesRouteImport.update({
-  id: '/designer-clothes',
-  path: '/designer-clothes',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CraftsmanshipRoute = CraftsmanshipRouteImport.update({
-  id: '/craftsmanship',
-  path: '/craftsmanship',
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ArtworksRoute = ArtworksRouteImport.update({
-  id: '/artworks',
-  path: '/artworks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AboutRoute = AboutRouteImport.update({
@@ -117,16 +99,13 @@ const CheckoutConfirmationOrderIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/artworks': typeof ArtworksRoute
   '/checkout': typeof CheckoutRouteWithChildren
-  '/craftsmanship': typeof CraftsmanshipRoute
-  '/designer-clothes': typeof DesignerClothesRoute
-  '/jewellery': typeof JewelleryRoute
-  '/our-story': typeof OurStoryRoute
+  '/collections': typeof CollectionsRoute
+  '/contact': typeof ContactRoute
   '/perfumes': typeof PerfumesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
-  '/selfcare': typeof SelfcareRoute
   '/shipping-returns': typeof ShippingReturnsRoute
+  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -136,15 +115,12 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/artworks': typeof ArtworksRoute
-  '/craftsmanship': typeof CraftsmanshipRoute
-  '/designer-clothes': typeof DesignerClothesRoute
-  '/jewellery': typeof JewelleryRoute
-  '/our-story': typeof OurStoryRoute
+  '/collections': typeof CollectionsRoute
+  '/contact': typeof ContactRoute
   '/perfumes': typeof PerfumesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
-  '/selfcare': typeof SelfcareRoute
   '/shipping-returns': typeof ShippingReturnsRoute
+  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -155,16 +131,13 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/artworks': typeof ArtworksRoute
   '/checkout': typeof CheckoutRouteWithChildren
-  '/craftsmanship': typeof CraftsmanshipRoute
-  '/designer-clothes': typeof DesignerClothesRoute
-  '/jewellery': typeof JewelleryRoute
-  '/our-story': typeof OurStoryRoute
+  '/collections': typeof CollectionsRoute
+  '/contact': typeof ContactRoute
   '/perfumes': typeof PerfumesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
-  '/selfcare': typeof SelfcareRoute
   '/shipping-returns': typeof ShippingReturnsRoute
+  '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -176,16 +149,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
-    | '/artworks'
     | '/checkout'
-    | '/craftsmanship'
-    | '/designer-clothes'
-    | '/jewellery'
-    | '/our-story'
+    | '/collections'
+    | '/contact'
     | '/perfumes'
     | '/privacy-policy'
-    | '/selfcare'
     | '/shipping-returns'
+    | '/shop'
     | '/terms'
     | '/checkout/payment'
     | '/product/$slug'
@@ -195,15 +165,12 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
-    | '/artworks'
-    | '/craftsmanship'
-    | '/designer-clothes'
-    | '/jewellery'
-    | '/our-story'
+    | '/collections'
+    | '/contact'
     | '/perfumes'
     | '/privacy-policy'
-    | '/selfcare'
     | '/shipping-returns'
+    | '/shop'
     | '/terms'
     | '/checkout/payment'
     | '/product/$slug'
@@ -213,16 +180,13 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
-    | '/artworks'
     | '/checkout'
-    | '/craftsmanship'
-    | '/designer-clothes'
-    | '/jewellery'
-    | '/our-story'
+    | '/collections'
+    | '/contact'
     | '/perfumes'
     | '/privacy-policy'
-    | '/selfcare'
     | '/shipping-returns'
+    | '/shop'
     | '/terms'
     | '/checkout/payment'
     | '/product/$slug'
@@ -233,16 +197,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
-  ArtworksRoute: typeof ArtworksRoute
   CheckoutRoute: typeof CheckoutRouteWithChildren
-  CraftsmanshipRoute: typeof CraftsmanshipRoute
-  DesignerClothesRoute: typeof DesignerClothesRoute
-  JewelleryRoute: typeof JewelleryRoute
-  OurStoryRoute: typeof OurStoryRoute
+  CollectionsRoute: typeof CollectionsRoute
+  ContactRoute: typeof ContactRoute
   PerfumesRoute: typeof PerfumesRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
-  SelfcareRoute: typeof SelfcareRoute
   ShippingReturnsRoute: typeof ShippingReturnsRoute
+  ShopRoute: typeof ShopRoute
   TermsRoute: typeof TermsRoute
   ProductSlugRoute: typeof ProductSlugRoute
 }
@@ -256,18 +217,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shop': {
+      id: '/shop'
+      path: '/shop'
+      fullPath: '/shop'
+      preLoaderRoute: typeof ShopRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/shipping-returns': {
       id: '/shipping-returns'
       path: '/shipping-returns'
       fullPath: '/shipping-returns'
       preLoaderRoute: typeof ShippingReturnsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/selfcare': {
-      id: '/selfcare'
-      path: '/selfcare'
-      fullPath: '/selfcare'
-      preLoaderRoute: typeof SelfcareRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy-policy': {
@@ -284,32 +245,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfumesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/our-story': {
-      id: '/our-story'
-      path: '/our-story'
-      fullPath: '/our-story'
-      preLoaderRoute: typeof OurStoryRouteImport
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/jewellery': {
-      id: '/jewellery'
-      path: '/jewellery'
-      fullPath: '/jewellery'
-      preLoaderRoute: typeof JewelleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/designer-clothes': {
-      id: '/designer-clothes'
-      path: '/designer-clothes'
-      fullPath: '/designer-clothes'
-      preLoaderRoute: typeof DesignerClothesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/craftsmanship': {
-      id: '/craftsmanship'
-      path: '/craftsmanship'
-      fullPath: '/craftsmanship'
-      preLoaderRoute: typeof CraftsmanshipRouteImport
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -317,13 +264,6 @@ declare module '@tanstack/react-router' {
       path: '/checkout'
       fullPath: '/checkout'
       preLoaderRoute: typeof CheckoutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/artworks': {
-      id: '/artworks'
-      path: '/artworks'
-      fullPath: '/artworks'
-      preLoaderRoute: typeof ArtworksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/about': {
@@ -390,16 +330,13 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
-  ArtworksRoute: ArtworksRoute,
   CheckoutRoute: CheckoutRouteWithChildren,
-  CraftsmanshipRoute: CraftsmanshipRoute,
-  DesignerClothesRoute: DesignerClothesRoute,
-  JewelleryRoute: JewelleryRoute,
-  OurStoryRoute: OurStoryRoute,
+  CollectionsRoute: CollectionsRoute,
+  ContactRoute: ContactRoute,
   PerfumesRoute: PerfumesRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
-  SelfcareRoute: SelfcareRoute,
   ShippingReturnsRoute: ShippingReturnsRoute,
+  ShopRoute: ShopRoute,
   TermsRoute: TermsRoute,
   ProductSlugRoute: ProductSlugRoute,
 }
