@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 470" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+  <defs>
+    <path id="shh-band" d="M133 152 C168 166 252 166 287 152" />
+  </defs>
+
+  <!-- ── Bucket hat ─────────────────────────────────────────────────── -->
+  <!-- crown -->
+  <path d="M126 170 C120 112 152 74 210 74 C268 74 300 112 294 170" stroke-width="2.8" />
+  <!-- brim: outer sweep, then the seam where it meets the crown -->
+  <path d="M126 170 C86 172 56 186 58 200 C61 216 120 243 210 247 C300 243 359 216 362 200 C364 186 334 172 294 170" stroke-width="2.8" />
+  <path d="M126 170 C158 187 262 187 294 170" />
+  <!-- brim underside, echoing the outer edge -->
+  <path d="M74 205 C110 228 158 240 210 242 C262 240 310 228 346 205" stroke-width="1.6" opacity="0.75" />
+  <!-- band rules -->
+  <path d="M124 126 C160 139 260 139 296 126" stroke-width="1.6" />
+  <path d="M125 158 C160 172 260 172 295 158" stroke-width="1.6" />
+  <!-- crown stitching -->
+  <path d="M150 96 C158 110 162 118 163 130" stroke-width="1.2" opacity="0.6" />
+  <path d="M210 79 C210 96 210 106 210 118" stroke-width="1.2" opacity="0.6" />
+  <path d="M270 96 C262 110 258 118 257 130" stroke-width="1.2" opacity="0.6" />
+  <!-- brim stitching -->
+  <path d="M92 191 C130 210 170 220 210 222 C250 220 290 210 328 191" stroke-width="1.2" opacity="0.6" />
+
+  <!-- hat band lettering -->
+  <text
+    fill="currentColor"
+    stroke="none"
+    font-family="Bodoni Moda, Didot, Times New Roman, serif"
+    font-size="23"
+    font-weight="600"
+    letter-spacing="1.2"
+    text-anchor="middle"
+  ><textPath href="#shh-band" startOffset="50%">BENNYRICH</textPath></text>
+
+  <!-- ── Face, in shadow under the brim ─────────────────────────────── -->
+  <!-- jaw and chin -->
+  <path d="M158 238 C160 278 174 304 194 314 C201 318 219 318 226 314 C246 304 260 278 262 238" />
+  <!-- ears -->
+  <path d="M158 250 C148 248 146 262 154 269" stroke-width="1.8" />
+  <path d="M262 250 C272 248 274 262 266 269" stroke-width="1.8" />
+  <!-- nose: bridge dropping out of the brim shadow, then the base -->
+  <path d="M204 248 L204 272" stroke-width="1.5" opacity="0.65" />
+  <path d="M194 277 C199 283 211 283 216 277" stroke-width="1.8" />
+  <!-- mouth, its right end disappearing behind the finger -->
+  <path d="M186 296 C196 302 214 303 228 299" stroke-width="1.8" />
+
+  <!-- ── "Shh" hand, held to the right of the mouth ─────────────────── -->
+  <!-- index finger -->
+  <path d="M228 326 L228 276 C228 264 234 258 240 258 C246 258 252 264 252 276 L252 326" />
+  <path d="M230 302 C236 305 245 305 250 302" stroke-width="1.5" opacity="0.75" />
+  <!-- fist -->
+  <path d="M228 324 C214 330 208 346 213 362 C219 382 238 394 262 394 C288 394 308 379 309 356 C310 337 299 323 284 321 L252 321" />
+  <!-- knuckles -->
+  <path d="M256 330 C270 332 279 340 281 351" stroke-width="1.6" opacity="0.75" />
+  <path d="M250 356 C265 355 276 361 281 370" stroke-width="1.6" opacity="0.75" />
+  <!-- thumb folded across the front -->
+  <path d="M215 360 C224 370 238 375 252 372" stroke-width="1.8" />
+
+  <!-- ── Forearm, rising from the bottom right ──────────────────────── -->
+  <path d="M216 372 C224 402 238 432 250 470" />
+  <path d="M306 366 C316 396 326 430 332 470" />
+
+  <!-- ── Shoulder and tee sleeve on the left ────────────────────────── -->
+  <path d="M198 316 C176 328 152 344 136 366" />
+  <path d="M136 366 C112 362 90 378 80 402 C72 422 69 446 68 470" />
+  <path d="M100 440 C120 450 142 454 164 452" stroke-width="1.5" opacity="0.7" />
+
+  <!-- ── Monogram, to the lower right of the hand ───────────────────── -->
+  <g transform="translate(336 300) scale(0.62)">
+    <circle cx="50" cy="50" r="45" stroke-width="3" />
+    <g stroke-width="3.8">
+      <path d="M32 26V64" />
+      <path d="M26 26h13" />
+      <path d="M26 64h13" />
+      <path d="M33 26h7c6.5 0 9.5 3 9.5 7.8 0 4.7-3 7.8-9.5 7.8h-7" />
+      <path d="M33 41.6h9c7.5 0 10.5 3.4 10.5 11.2C52.5 60 49.5 64 42 64h-9" />
+    </g>
+    <g stroke-width="3.8">
+      <path d="M56 36v38" />
+      <path d="M50 36h13" />
+      <path d="M50 74h14" />
+      <path d="M57 36h8c7 0 10 3.5 10 8.5S72 53 65 53h-8" />
+      <path d="M64 53c3 6 6 14 10 21" />
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 300" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Drawn muzzle-right, then mirrored so the barrel points left like the mock.
+       The monogram sits outside the mirror so it reads the right way round. -->
+  <g transform="translate(660 0) scale(-1 1)">
+    <!-- ── Stock ─────────────────────────────────────────────────────── -->
+    <path d="M30 128 C26 128 24 131 24 135 L24 197 C24 201 26 204 30 204 L46 204 L46 128 Z" />
+    <path d="M46 136 L114 142 L114 184 L46 190 Z" />
+    <path d="M56 150 L104 154" stroke-width="1.4" opacity="0.7" />
+    <path d="M56 176 L104 172" stroke-width="1.4" opacity="0.7" />
+    <!-- buffer tube -->
+    <path d="M114 148 L154 148" />
+    <path d="M114 172 L154 172" />
+    <path d="M126 148 L126 172" stroke-width="1.4" opacity="0.6" />
+    <path d="M140 148 L140 172" stroke-width="1.4" opacity="0.6" />
+
+    <!-- ── Receiver ──────────────────────────────────────────────────── -->
+    <path d="M154 133 L302 133 L302 187 L154 187 Z" stroke-width="2.6" />
+    <!-- ejection port -->
+    <path d="M236 143 L280 143 L280 161 L236 161 Z" stroke-width="1.6" />
+    <!-- forward assist -->
+    <circle cx="296" cy="152" r="6" stroke-width="1.6" />
+    <!-- charging handle -->
+    <path d="M154 137 L130 137 L130 145 L154 145" stroke-width="1.8" />
+
+    <!-- ── Carry handle / rear sight ─────────────────────────────────── -->
+    <path d="M198 133 L198 114 L266 114 L266 133" />
+    <path d="M208 114 L208 104 L256 104 L256 114" stroke-width="1.8" />
+    <path d="M224 104 L224 96 L240 96 L240 104" stroke-width="1.6" />
+
+    <!-- ── Pistol grip, at the rear of the receiver ──────────────────── -->
+    <path d="M204 187 C200 208 190 232 182 246 C176 257 186 266 199 265 C211 264 219 255 222 243 C227 220 231 197 232 187" stroke-width="2.6" />
+    <path d="M199 210 C207 214 217 213 226 209" stroke-width="1.4" opacity="0.7" />
+    <path d="M193 228 C201 232 211 231 220 227" stroke-width="1.4" opacity="0.7" />
+
+    <!-- ── Trigger group ─────────────────────────────────────────────── -->
+    <path d="M232 187 C222 198 224 214 237 218 L262 218" stroke-width="2" />
+    <path d="M244 191 C240 197 240 205 244 212" stroke-width="1.8" />
+
+    <!-- ── Magazine, forward of the trigger, curving toward the muzzle ── -->
+    <path d="M252 187 C254 214 262 244 272 266 L306 253 C298 230 293 208 292 187" stroke-width="2.6" />
+    <path d="M256 214 C268 214 282 210 293 205" stroke-width="1.4" opacity="0.7" />
+    <path d="M264 240 C276 239 290 234 300 229" stroke-width="1.4" opacity="0.7" />
+
+    <!-- ── Handguard ─────────────────────────────────────────────────── -->
+    <path d="M302 140 L436 140 L436 180 L302 180 Z" stroke-width="2.6" />
+    <path d="M302 128 L452 128 L452 138 L302 138" stroke-width="1.8" />
+    <circle cx="330" cy="160" r="7" stroke-width="1.5" />
+    <circle cx="360" cy="160" r="7" stroke-width="1.5" />
+    <circle cx="390" cy="160" r="7" stroke-width="1.5" />
+    <circle cx="420" cy="160" r="7" stroke-width="1.5" />
+
+    <!-- ── Gas block and front sight ─────────────────────────────────── -->
+    <path d="M452 138 L452 176 L474 176 L474 138 Z" stroke-width="2" />
+    <path d="M456 138 L456 106 L470 106 L470 138" stroke-width="2" />
+    <path d="M450 100 L476 100 L476 108 L450 108 Z" stroke-width="1.6" />
+
+    <!-- ── Barrel and muzzle ─────────────────────────────────────────── -->
+    <path d="M474 148 L594 148 L594 168 L474 168 Z" stroke-width="2.4" />
+    <path d="M594 143 L636 143 L636 173 L594 173 Z" stroke-width="2.6" />
+    <path d="M604 143 L604 173" stroke-width="1.4" opacity="0.7" />
+    <path d="M616 143 L616 173" stroke-width="1.4" opacity="0.7" />
+    <path d="M628 143 L628 173" stroke-width="1.4" opacity="0.7" />
+  </g>
+
+  <!-- ── Monogram on the grip ──────────────────────────────────────── -->
+  <g transform="translate(434 202) scale(0.42)">
+    <circle cx="50" cy="50" r="45" stroke-width="4" />
+    <g stroke-width="5">
+      <path d="M32 26V64" />
+      <path d="M26 26h13" />
+      <path d="M26 64h13" />
+      <path d="M33 26h7c6.5 0 9.5 3 9.5 7.8 0 4.7-3 7.8-9.5 7.8h-7" />
+      <path d="M33 41.6h9c7.5 0 10.5 3.4 10.5 11.2C52.5 60 49.5 64 42 64h-9" />
+    </g>
+    <g stroke-width="5">
+      <path d="M56 36v38" />
+      <path d="M50 36h13" />
+      <path d="M50 74h14" />
+      <path d="M57 36h8c7 0 10 3.5 10 8.5S72 53 65 53h-8" />
+      <path d="M64 53c3 6 6 14 10 21" />
+    </g>
+  </g>
+</svg>

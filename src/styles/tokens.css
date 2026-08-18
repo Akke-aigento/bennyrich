@@ -1,0 +1,300 @@
+/* ---------------------------------------------------------------------------
+ * BennyRich design tokens
+ * Black canvas, neon signage. ONE accent per component — never blue→pink on
+ * the same element. Blue is the default UI accent; pink is reserved for
+ * emphasis words, sale/attention, and pink-variant products.
+ * ------------------------------------------------------------------------ */
+
+:root {
+  /* Canvas */
+  --br-black: #050505; /* page background */
+  --br-ink: #0b0b0d; /* raised surfaces: cards, image wells, inputs */
+  --br-line: #1c1c22; /* hairlines */
+
+  /* Text */
+  --br-white: #f4f4f6; /* primary text */
+  --br-mute: #8a8a94; /* secondary text — 5.97:1 on --br-black (AA pass) */
+
+  /* Neon accents */
+  --br-blue: #1e5bff;
+  --br-blue-core: #0f55c9;
+  --br-pink: #ff2d8a;
+  --br-pink-core: #c8287c;
+  --br-rose: #f06ca6; /* soft pink, home-decor accents */
+
+  /* Type */
+  --br-font-display: "Bodoni Moda", "Didot", "Times New Roman", serif;
+  --br-font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --br-tracking-wordmark: 0.18em;
+  --br-tracking-heading: 0.06em;
+  --br-tracking-nav: 0.22em;
+  --br-tracking-tagline: 0.3em;
+  --br-tracking-city: 0.4em;
+
+  /* Geometry — radius maxes out at 2px, everything is a hard edge */
+  --radius: 2px;
+
+  /* ---- Compatibility aliases -------------------------------------------
+   * CheckoutForm.tsx / checkout.ts are frozen (see CLAUDE.md) and reference
+   * these legacy variable names. They are remapped onto the BennyRich palette
+   * so the frozen files render on-brand without being edited.
+   * Do not use these in new code — use the --br-* tokens directly.
+   * -------------------------------------------------------------------- */
+  --paper: var(--br-black);
+  --ink: var(--br-white);
+  --line: var(--br-line);
+  --muted-tone: var(--br-mute);
+  --font-display: var(--br-font-display);
+  --font-body: var(--br-font-body);
+  --font-ui: var(--br-font-body);
+  --tracking-ui: var(--br-tracking-nav);
+  --destructive: #ff5470;
+}
+
+/* --- Neon text ------------------------------------------------------- */
+@utility neon-text-blue {
+  color: var(--br-blue);
+  text-shadow:
+    0 0 2px var(--br-blue-core),
+    0 0 8px var(--br-blue),
+    0 0 24px color-mix(in srgb, var(--br-blue) 40%, transparent);
+}
+
+@utility neon-text-pink {
+  color: var(--br-pink);
+  text-shadow:
+    0 0 2px var(--br-pink-core),
+    0 0 8px var(--br-pink),
+    0 0 24px color-mix(in srgb, var(--br-pink) 40%, transparent);
+}
+
+/* --- Neon outlined wordmark ------------------------------------------ */
+@utility neon-stroke-blue {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--br-blue);
+  text-shadow:
+    0 0 2px var(--br-blue-core),
+    0 0 8px var(--br-blue),
+    0 0 24px color-mix(in srgb, var(--br-blue) 40%, transparent);
+}
+
+@utility neon-stroke-pink {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--br-pink);
+  text-shadow:
+    0 0 2px var(--br-pink-core),
+    0 0 8px var(--br-pink),
+    0 0 24px color-mix(in srgb, var(--br-pink) 40%, transparent);
+}
+
+/* --- Neon frames / hairlines ----------------------------------------- */
+@utility neon-line-blue {
+  border-color: var(--br-blue);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--br-blue) 60%, transparent);
+}
+
+@utility neon-line-pink {
+  border-color: var(--br-pink);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--br-pink) 60%, transparent);
+}
+
+/* --- Neon glow on SVG line art --------------------------------------- */
+@utility neon-glow-blue {
+  color: var(--br-blue);
+  filter: drop-shadow(0 0 2px var(--br-blue-core)) drop-shadow(0 0 8px var(--br-blue))
+    drop-shadow(0 0 24px color-mix(in srgb, var(--br-blue) 40%, transparent));
+}
+
+@utility neon-glow-pink {
+  color: var(--br-pink);
+  filter: drop-shadow(0 0 2px var(--br-pink-core)) drop-shadow(0 0 8px var(--br-pink))
+    drop-shadow(0 0 24px color-mix(in srgb, var(--br-pink) 40%, transparent));
+}
+
+/* --- Ghost neon button ------------------------------------------------
+   * The mock never uses a filled button. Transparent ground, 1px neon border,
+   * uppercase Inter, hover lifts the glow and washes 10% accent behind it.
+   * -------------------------------------------------------------------- */
+@utility neon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: transparent;
+  border: 1px solid var(--br-blue);
+  border-radius: var(--radius);
+  color: var(--br-blue);
+  font-family: var(--br-font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 0.95rem 1.6rem;
+  box-shadow: 0 0 8px color-mix(in srgb, var(--br-blue) 45%, transparent);
+  transition:
+    background-color 200ms ease,
+    box-shadow 200ms ease,
+    opacity 200ms ease;
+
+  &:hover {
+    background: color-mix(in srgb, var(--br-blue) 10%, transparent);
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--br-blue) 75%, transparent),
+      0 0 28px color-mix(in srgb, var(--br-blue) 35%, transparent);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    box-shadow: none;
+  }
+}
+
+@utility neon-btn-pink {
+  border-color: var(--br-pink);
+  color: var(--br-pink);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--br-pink) 45%, transparent);
+
+  &:hover {
+    background: color-mix(in srgb, var(--br-pink) 10%, transparent);
+    box-shadow:
+      0 0 12px color-mix(in srgb, var(--br-pink) 75%, transparent),
+      0 0 28px color-mix(in srgb, var(--br-pink) 35%, transparent);
+  }
+}
+
+/* --- Type helpers ----------------------------------------------------- */
+@utility br-display {
+  font-family: var(--br-font-display);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--br-tracking-heading);
+}
+
+@utility br-nav {
+  font-family: var(--br-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: var(--br-tracking-nav);
+}
+
+@utility br-label {
+  font-family: var(--br-font-body);
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+@utility br-tagline {
+  font-family: var(--br-font-body);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: var(--br-tracking-tagline);
+}
+
+@utility br-price {
+  font-family: var(--br-font-display);
+  font-weight: 500;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* --- Page shell ------------------------------------------------------- */
+@utility br-shell {
+  margin-inline: auto;
+  width: min(100% - 2.5rem, 72rem);
+}
+
+/* Legacy utility kept for the frozen CheckoutForm */
+@utility ui-label {
+  font-family: var(--br-font-body);
+  letter-spacing: var(--br-tracking-nav);
+  text-transform: uppercase;
+}
+
+/* --- Inputs (also consumed by the frozen CheckoutForm via .zd-input) ----- */
+.zd-input,
+.br-input {
+  width: 100%;
+  background: var(--br-ink);
+  border: 1px solid var(--br-line);
+  border-radius: var(--radius);
+  padding: 0.8rem 0.9rem;
+  font-family: var(--br-font-body);
+  font-size: 0.9rem;
+  color: var(--br-white);
+  outline: none;
+  transition:
+    border-color 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.zd-input:focus,
+.br-input:focus {
+  border-color: var(--br-blue);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--br-blue) 60%, transparent);
+}
+
+.zd-input::placeholder,
+.br-input::placeholder {
+  color: var(--br-mute);
+}
+
+/* --- Long-form copy ------------------------------------------------------ */
+.br-prose p {
+  margin-block: 0.9em;
+  color: var(--br-white);
+  line-height: 1.75;
+}
+.br-prose p:first-child {
+  margin-top: 0;
+}
+.br-prose ul,
+.br-prose ol {
+  margin-block: 0.9em;
+  padding-left: 1.25rem;
+  color: var(--br-white);
+  line-height: 1.75;
+}
+.br-prose ul {
+  list-style: disc;
+}
+.br-prose ol {
+  list-style: decimal;
+}
+.br-prose li {
+  margin-block: 0.3em;
+}
+.br-prose strong,
+.br-prose b {
+  font-weight: 600;
+}
+.br-prose a {
+  color: var(--br-blue);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* --- Motion --------------------------------------------------------------
+ * Only opacity/glow transitions, 200ms. Hover lift never exceeds 2px.
+ * ---------------------------------------------------------------------- */
+.br-lift {
+  transition: transform 200ms ease;
+}
+.br-lift:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .br-lift:hover {
+    transform: none;
+  }
+}
