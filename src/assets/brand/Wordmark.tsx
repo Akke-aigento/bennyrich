@@ -1,8 +1,8 @@
 import { Monogram, type NeonTone } from "./Monogram";
 
-const strokeClass: Record<NeonTone, string> = {
-  blue: "neon-stroke-blue",
-  pink: "neon-stroke-pink",
+const logotypeClass: Record<NeonTone, string> = {
+  blue: "logotype-blue",
+  pink: "logotype-pink",
   mono: "",
 };
 
@@ -13,17 +13,21 @@ const textClass: Record<NeonTone, string> = {
 };
 
 /**
- * Stacked BennyRich lockup: monogram over the outlined "BENNY RICH" wordmark,
- * with the optional tagline and "NEW YORK" city line beneath it.
+ * Stacked BennyRich lockup: monogram over the "BENNY RICH" wordmark, with the
+ * optional tagline and "NEW YORK" city line beneath it.
  *
  * `layout="inline"` is the compact header lockup — monogram and text on one
- * line. The wordmark is set solid rather than outlined below ~20px, where a
- * 1px text-stroke closes up and stops reading.
+ * line.
+ *
+ * The wordmark is set solid in --br-blue with only a whisper of a halo. It was
+ * an outlined, fully-glowing sign in BR-2 and read as neon tubing; a maison
+ * logotype has to hold its shape at 18px in a header, so the outline and the
+ * bloom are both gone.
  */
 export function Wordmark({
   tone = "blue",
   layout = "stacked",
-  size = 34,
+  size = 32,
   showCity = false,
   showTagline = false,
   className = "",
@@ -36,10 +40,9 @@ export function Wordmark({
   showTagline?: boolean;
   className?: string;
 }) {
-  const outlined = size >= 20;
   const wordmark = (
     <span
-      className={outlined ? strokeClass[tone] : textClass[tone]}
+      className={logotypeClass[tone]}
       style={{
         fontFamily: "var(--br-font-display)",
         fontWeight: 600,
@@ -49,7 +52,7 @@ export function Wordmark({
         textTransform: "uppercase",
         // Tracking adds trailing space after the final letter; pull it back so
         // the lockup optically centres.
-        marginRight: "-0.18em",
+        marginRight: "calc(var(--br-tracking-wordmark) * -1)",
         whiteSpace: "nowrap",
       }}
     >
@@ -59,8 +62,8 @@ export function Wordmark({
 
   if (layout === "inline") {
     return (
-      <span className={`inline-flex items-center gap-2.5 ${className}`.trim()}>
-        <Monogram tone={tone} size={size * 1.15} />
+      <span className={`inline-flex items-center gap-3 ${className}`.trim()}>
+        <Monogram tone={tone} intensity="logotype" size={size * 1.2} />
         {wordmark}
       </span>
     );
@@ -68,19 +71,19 @@ export function Wordmark({
 
   return (
     <span className={`inline-flex flex-col items-center ${className}`.trim()}>
-      <Monogram tone={tone} size={size * 1.55} />
-      <span style={{ marginTop: size * 0.28 }}>{wordmark}</span>
+      <Monogram tone={tone} intensity="logotype" size={size * 1.5} />
+      <span style={{ marginTop: size * 0.34 }}>{wordmark}</span>
       {showCity && (
         <span
-          className={textClass[tone]}
+          className={logotypeClass[tone]}
           style={{
             fontFamily: "var(--br-font-body)",
-            fontSize: Math.max(9, size * 0.3),
+            fontSize: Math.max(9, size * 0.28),
             fontWeight: 400,
             letterSpacing: "var(--br-tracking-city)",
             textTransform: "uppercase",
-            marginTop: size * 0.32,
-            marginRight: "-0.4em",
+            marginTop: size * 0.38,
+            marginRight: "calc(var(--br-tracking-city) * -1)",
           }}
         >
           New York
@@ -92,8 +95,8 @@ export function Wordmark({
           style={{
             fontSize: Math.max(9, size * 0.28),
             color: "var(--br-mute)",
-            marginTop: size * 0.3,
-            marginRight: "-0.3em",
+            marginTop: size * 0.34,
+            marginRight: "calc(var(--br-tracking-tagline) * -1)",
           }}
         >
           Timeless. Bold. Luxurious.
@@ -102,3 +105,6 @@ export function Wordmark({
     </span>
   );
 }
+
+/** Kept so the emphatic treatment stays available outside the lockups. */
+export const wordmarkSignClass = textClass;

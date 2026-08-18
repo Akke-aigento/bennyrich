@@ -1,10 +1,14 @@
 export type NeonTone = "blue" | "pink" | "mono";
 
-export const glowClass: Record<NeonTone, string> = {
-  blue: "neon-glow-blue",
-  pink: "neon-glow-pink",
-  mono: "",
+/** How brightly a mark burns. Lockups use "logotype"; signage uses "sign". */
+export type MarkIntensity = "sign" | "logotype";
+
+const glowByIntensity: Record<MarkIntensity, Record<NeonTone, string>> = {
+  sign: { blue: "neon-glow-blue", pink: "neon-glow-pink", mono: "" },
+  logotype: { blue: "logotype-glow-blue", pink: "logotype-glow-pink", mono: "" },
 };
+
+export const glowClass: Record<NeonTone, string> = glowByIntensity.sign;
 
 /**
  * BennyRich monogram — a hairline circle enclosing an overlapping serif "B"
@@ -12,15 +16,19 @@ export const glowClass: Record<NeonTone, string> = {
  * bowl, which is the join the printed logo is built around.
  *
  * Drawn as strokes in `currentColor` so the neon utilities can light it up.
+ * `intensity="logotype"` keeps the halo down to a whisper, which is what the
+ * header and footer lockups use — a logo should read as print, not as signage.
  */
 export function Monogram({
   tone = "blue",
   size = 40,
+  intensity = "sign",
   className = "",
   title,
 }: {
   tone?: NeonTone;
   size?: number | string;
+  intensity?: MarkIntensity;
   className?: string;
   title?: string;
 }) {
@@ -36,7 +44,7 @@ export function Monogram({
       role={title ? "img" : "presentation"}
       aria-hidden={title ? undefined : true}
       aria-label={title}
-      className={`${glowClass[tone]} ${className}`.trim()}
+      className={`${glowByIntensity[intensity][tone]} ${className}`.trim()}
       style={tone === "mono" ? undefined : { color: `var(--br-${tone})` }}
     >
       {title ? <title>{title}</title> : null}
