@@ -15,7 +15,7 @@ first set of routes reading from SellQo through `sellqoProxy`.
 - Components: `Diamond`, `SplashScreen`, `TrustBar`, `CategoryHero`,
   `EditorialPage`, `ComingSoon`
 - Routes: `/artworks`, `/craftsmanship`, `/designer-clothes`, `/jewellery`,
-  `/our-story`, `/selfcare` (and `/perfumes` — see *Deviations*)
+  `/our-story`, `/selfcare` (and `/perfumes` — see _Deviations_)
 - All Zona Dorata colour tokens (`--gold`, `--bone`, `--gold-l`), fonts
   (Cormorant Garamond, Cinzel, Archivo), copy, titles and social images.
   `grep -ri "zona\|dorata\|cormorant\|cinzel" src/` → 0 hits.
@@ -50,7 +50,7 @@ first set of routes reading from SellQo through `sellqoProxy`.
   `docs/brand/website-mock.jpg` until the B/R overlap, circle weight and
   tracking read correctly.
 - **Local image fallback** rather than touching the backend — see CLAUDE.md.
-  The mock used for local screenshots deliberately serves the *real* (currently
+  The mock used for local screenshots deliberately serves the _real_ (currently
   dead) bucket URLs so the fallback path is what actually gets exercised.
 - **Neon utilities use Tailwind v4 `@utility`** instead of a raw
   `@layer utilities` block, because plain-CSS utilities are not variant-
@@ -120,3 +120,120 @@ first set of routes reading from SellQo through `sellqoProxy`.
   shows the option chips but tells the shopper the full picker is coming.
 - **`/collections` "Explore" links into `/shop?category=`** rather than a
   dedicated collection route; revisit if collections need their own pages.
+
+---
+
+# BR-2.1 — tone refinement
+
+Date: 2026-08-19 · Branch: `main`
+
+## Scope
+
+Tone only. No new features, no change to the SellQo plumbing. The storefront
+read as a neon playground; the job was to make it read as a house.
+
+## Step 0 did not hold — the product images were not replaced
+
+The brief states that the 26 files under `public/products/` had been overwritten
+with black-background–normalised versions. They had not been. All 26 are
+**byte-identical** to the original seed bundle (`cmp` against
+`~/Downloads/seed/images` — 26 identical, 0 changed), their mtimes are unchanged
+since BR-2, `git status` was clean, and nothing newer exists on disk.
+
+Sampling the corner pixels of each image:
+
+- **17** have black backgrounds (fine as-is)
+- **2** are mid-tone room scenes — `rug-allover-pink`, `rug-monogram-frame-pink`
+- **7** are still pure white — `bust-tee-blue`, `cushion-rifle-blue`,
+  `cushion-skyline-pink`, `cushion-vault-blue`, `f8-tee-blue`, `f8-tee-pink`,
+  `monogram-puffer-pink`
+
+Step 5's normalisation was built and is in place, but it is calibrated for
+black-background photography: `contain` + 8% padding + a 6%-opacity vignette
+dissolves a residual dark edge, and cannot hide a pure white field. Those seven
+cards will keep reading as white panels until the real files land. On the
+homepage this is visible on **Monogram Puffer**, which additionally carries a
+baked-in "Door AI gegenereerde inhoud" watermark. Repainting product photography
+is not a tone refinement and is Akke's asset task, so nothing was altered.
+
+## Glow
+
+One knob, `--glow-scale` in `tokens.css`, drives every halo; all radii and
+alphas are `calc()`ed from it. `1` is the tuned setting, `0` is flat colour.
+
+| Surface       | Before                        | After                         |
+| ------------- | ----------------------------- | ----------------------------- |
+| `neon-text-*` | 3 layers, 2/8/24px, 40% bloom | 2 layers, 1px core + 6px/55%  |
+| hero headings | same as body text             | 1px core + 10px/62%, no bloom |
+| `neon-line-*` | 8px / 60%                     | 5px / 40%                     |
+| wordmark      | outlined + full 3-layer glow  | solid `--br-blue`, 3px / 30%  |
+
+New `logotype-blue|-pink` and `logotype-glow-blue|-pink` utilities carry the
+near-solid treatment; `Monogram` gained an `intensity="logotype"` prop and the
+header and footer lockups both use it. The wordmark's `-webkit-text-stroke`
+outline is gone — at 18px in a header a 1px outline closes up and stops reading,
+which is exactly why it looked like tubing rather than a logotype.
+
+No glow is animated anywhere. The only `animate-*` classes left in the tree are
+in unused shadcn primitives that the storefront never renders.
+
+## Pink
+
+Now confined to: the emphasis word ("LUXURIOUS.", "Made to stand out."), the
+"View all" accent carried over from the mock, attention states (the 18+ gate,
+form errors, the "Remove" hover) and the bag count badge. Removed from the
+banner frame, from the Beverages collection tile (heading, hover border and
+"Explore" are all blue now) and from the arrow on every product card.
+
+## Banner artwork: rifle → panther
+
+`rifle.svg` stays in the repo but is no longer imported — the `Rifle` component
+was deleted so nothing bundles it. To bring it back on a product page, import
+`rifle.svg?raw` the way `panther.svg` is imported in `LineArt.tsx`.
+
+The banner now carries `panther.svg`: a reclining panther in profile, one
+continuous closed silhouette in restrained blue, capped at 380px against a
+~992px banner interior (38%), right-aligned with generous black around it. The
+pink neon frame is replaced by a `--br-line` hairline with a faint blue inner
+glow (`quiet-frame`).
+
+**The panther is a hand-drawn stand-in and the head is its weakest read** — it
+took six iterations to stop reading as a house cat, and the skull still sits
+closer to "big cat" than to "panther". Body, haunch and tail are sound. It
+belongs on the list for Sander's real vector artwork alongside the shh-kid.
+
+## Air
+
+- Section rhythm from one place: `br-section` / `-t` / `-b` = `clamp(80px, 12vh, 160px)`
+- Hero `min-height: 86vh`; hero type `clamp(36px, 6vw, 76px)` (was `40/7vw/88`)
+- Page headings `clamp(26px, 4.2vw, 46px)` (was `30/5vw/54`) — about −15%
+- New `br-section-label`: 11px Inter, tracking `.28em`
+- `br-nav` down to 11px, tracking `.22em → .24em`; wordmark tracking `.18em → .2em`
+- Product grid: 32px gaps, 12px between row items
+- Header stays 72px with a `--br-line` bottom, and only picks up a
+  `blur(12px)` frosted ground once the page has scrolled past 8px
+- Product card: name Inter 11px / `.2em` / `--br-white`; price Bodoni 15px
+  `--br-mute`, no glow; frame lifts to faint blue on hover, never pink
+
+## Verification
+
+- `bun run build` green; `bunx tsc --noEmit` clean
+- Screenshots: `docs/screens/BR-2.1/home-390.png`, `home-1280.png`
+- Header and footer lockups read as a logotype, not signage
+- Banner has no pink border; nothing pulses
+
+## Open items (unchanged from BR-2, plus one)
+
+- **Real vector artwork from Sander** — now covers the panther as well as the
+  shh-kid and the monogram.
+- **Product images still need the black-background pass** (see step 0 above) —
+  7 white, 2 mid-tone.
+- `--br-blue` (#1E5BFF) is 3.88:1 on black, below AA for the 11px nav and
+  button labels. The brief pins the value; a lighter blue for small text is
+  still the recommendation.
+- `br-sunglasses` has no image.
+- Vodka is stock 0 pending the accijns decision.
+- **DB image-URL reconcile to the bucket is owned by Akke** — the URLs in the
+  SellQo rows still 404 and the local fallback covers it.
+- The frozen `CheckoutForm` still shows a "Shop Perfumes" button on the
+  empty-cart screen; `/perfumes` remains a redirect shim to `/shop`.
