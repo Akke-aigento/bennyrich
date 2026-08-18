@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
-import { Rifle, ShhKid } from "@/assets/brand/LineArt";
+import { Panther, ShhKid } from "@/assets/brand/LineArt";
 import { pickFeatured, useProducts } from "@/lib/use-sellqo";
 
 export const Route = createFileRoute("/")({
@@ -20,42 +20,33 @@ export const Route = createFileRoute("/")({
 
 function Hero() {
   return (
-    <section className="br-shell grid items-center gap-12 py-16 md:grid-cols-2 md:gap-10 md:py-24">
+    <section className="br-shell grid items-center gap-14 py-20 md:min-h-[86vh] md:grid-cols-2 md:gap-12 md:py-0">
       <div>
         <h1
           className="br-display"
           style={{
-            fontSize: "clamp(40px, 7vw, 88px)",
+            fontSize: "clamp(36px, 6vw, 76px)",
             letterSpacing: "0.1em",
-            lineHeight: 1.12,
-            color: "var(--br-white)",
+            lineHeight: 1.14,
           }}
         >
-          <span
-            className="block"
-            style={{
-              textShadow:
-                "0 0 2px var(--br-blue-core), 0 0 14px color-mix(in srgb, var(--br-blue) 55%, transparent), 0 0 32px color-mix(in srgb, var(--br-blue) 30%, transparent)",
-            }}
-          >
-            Timeless.
-          </span>
-          <span className="neon-text-blue block">Bold.</span>
-          <span className="neon-text-pink block">Luxurious.</span>
+          <span className="neon-hero-white block">Timeless.</span>
+          <span className="neon-hero-blue block">Bold.</span>
+          <span className="neon-hero-pink block">Luxurious.</span>
         </h1>
         <p
-          className="mt-8 max-w-[34ch] text-[15px]"
-          style={{ color: "var(--br-white)", lineHeight: 1.75 }}
+          className="mt-10 max-w-[34ch] text-[15px]"
+          style={{ color: "var(--br-white)", lineHeight: 1.8 }}
         >
           BennyRich is more than fashion. It's a lifestyle built on ambition, confidence and legacy.
         </p>
-        <Link to="/shop" className="neon-btn mt-9">
+        <Link to="/shop" className="neon-btn mt-11">
           Shop now <span aria-hidden>→</span>
         </Link>
       </div>
 
       <div className="order-first md:order-none">
-        <ShhKid className="mx-auto w-full max-w-[380px] md:max-w-[440px]" />
+        <ShhKid className="mx-auto w-full max-w-[340px] md:max-w-[400px]" />
       </div>
     </section>
   );
@@ -66,19 +57,19 @@ function FeaturedCollection() {
   const featured = pickFeatured(products, 4);
 
   return (
-    <section className="br-shell pb-20 pt-4 md:pb-28">
+    <section className="br-shell br-section">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="br-nav neon-text-blue text-[12px] md:text-[13px]">Featured Collection</h2>
+        <h2 className="br-section-label neon-text-blue">Featured Collection</h2>
         <Link
           to="/shop"
-          className="br-nav text-[11px] transition-opacity duration-200 hover:opacity-80 md:text-[12px]"
+          className="br-section-label transition-opacity duration-200 hover:opacity-70"
           style={{ color: "var(--br-pink)" }}
         >
           View all <span aria-hidden>→</span>
         </Link>
       </div>
 
-      <div className="mt-7 grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
+      <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4 md:gap-8">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} />)
         ) : error ? (
@@ -99,28 +90,30 @@ function FeaturedCollection() {
 
 function BuiltDifferentBanner() {
   return (
-    <section className="br-shell pb-24 md:pb-32">
+    <section className="br-shell br-section-b">
+      {/* No neon frame. A hairline and a lot of black do the work the pink
+          border used to do far too loudly. */}
       <div
-        className="neon-line-pink grid items-center gap-8 border px-7 py-10 md:grid-cols-[1fr_1.1fr] md:px-14 md:py-12"
+        className="quiet-frame grid items-center gap-12 border px-8 py-16 md:grid-cols-[1fr_auto] md:px-20 md:py-24"
         style={{ borderRadius: "var(--radius)" }}
       >
         <div>
           <h2
             className="br-display"
             style={{
-              fontSize: "clamp(22px, 3.2vw, 34px)",
-              letterSpacing: "0.08em",
-              lineHeight: 1.35,
+              fontSize: "clamp(20px, 2.7vw, 29px)",
+              letterSpacing: "0.09em",
+              lineHeight: 1.45,
             }}
           >
             <span className="neon-text-blue block">Built different.</span>
             <span className="neon-text-pink block">Made to stand out.</span>
           </h2>
-          <Link to="/collections" className="neon-btn mt-8">
+          <Link to="/collections" className="neon-btn mt-10">
             Discover more <span aria-hidden>→</span>
           </Link>
         </div>
-        <Rifle className="w-full" />
+        <Panther className="w-full max-w-[300px] justify-self-center md:max-w-[380px] md:justify-self-end" />
       </div>
     </section>
   );

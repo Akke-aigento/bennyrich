@@ -49,7 +49,7 @@ function CollectionsPage() {
         lede="One lifestyle, five ways to live it."
       />
 
-      <div className="br-shell grid gap-5 pb-24 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+      <div className="br-shell br-section-b grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
         {CATEGORIES.map((category, i) => {
           const products = (results[i]?.data?.products ?? []) as SellqoProduct[];
           // Skip products with no artwork (e.g. br-sunglasses) so the tile
@@ -87,16 +87,11 @@ function CollectionTile({
   productSlug?: string;
   loading: boolean;
 }) {
-  // Beverages is the one pink-accented tile — it is also the age-gated one.
-  const pink = category.slug === "beverages";
-
   return (
     <Link
       to="/shop"
       search={{ category: category.slug }}
-      className={`group relative block overflow-hidden border border-br-line transition-[border-color,box-shadow] duration-200 ${
-        pink ? "hover:neon-line-pink" : "hover:neon-line-blue"
-      }`}
+      className="group relative block overflow-hidden border border-br-line transition-[border-color,box-shadow] duration-200 hover:neon-line-blue"
       style={{
         background: "var(--br-ink)",
         borderRadius: "var(--radius)",
@@ -108,7 +103,7 @@ function CollectionTile({
           apiUrl={apiImage}
           slug={productSlug}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-55 transition-opacity duration-200 group-hover:opacity-75"
+          className="absolute inset-0 h-full w-full object-cover opacity-45 transition-opacity duration-200 group-hover:opacity-65"
         />
       )}
       <div
@@ -120,19 +115,13 @@ function CollectionTile({
         aria-hidden
       />
       <div className="absolute inset-x-0 bottom-0 p-6">
-        <h2
-          className={`br-display text-[20px] ${pink ? "neon-text-pink" : "neon-text-blue"}`}
-          style={{ letterSpacing: "0.08em" }}
-        >
+        <h2 className="br-display neon-text-blue text-[19px]" style={{ letterSpacing: "0.08em" }}>
           {name}
         </h2>
         <p className="mt-2.5 text-[13px]" style={{ color: "var(--br-mute)" }}>
           {category.blurb}
         </p>
-        <span
-          className="br-label mt-4 inline-block"
-          style={{ color: pink ? "var(--br-pink)" : "var(--br-blue)" }}
-        >
+        <span className="br-label mt-5 inline-block" style={{ color: "var(--br-blue)" }}>
           Explore <span aria-hidden>→</span>
         </span>
       </div>

@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="52 68 590 206" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Reclining panther in strict profile, facing left. One continuous closed
+       silhouette, so nothing floats or gaps.
+       The four reads that make a big cat rather than a house cat or a weasel:
+       a short blunt muzzle with a near-vertical face, a deep jaw, a flat skull
+       with one small rounded ear at the very back, and a steep nape into a
+       heavy shoulder. -->
+
+  <!-- ── Silhouette ─────────────────────────────────────────────────── -->
+  <path
+    d="M64 118
+       C64 114 65 112 66 112
+       C76 110 88 108 96 104
+       C99 101 100 99 100 96
+       C114 94 130 94 140 94
+       C142 81 150 77 157 83
+       C161 87 160 92 158 97
+       C176 117 190 130 204 140
+       C260 134 330 132 396 136
+       C446 140 480 162 486 194
+       C492 218 476 238 448 242
+       C392 250 250 252 150 248
+       L118 246
+       C100 246 86 242 82 234
+       C88 227 104 225 122 226
+       C158 224 184 221 200 215
+       C200 201 196 187 188 175
+       C180 165 172 158 158 152
+       C138 150 116 150 100 146
+       C86 142 72 136 66 130
+       C64 127 64 122 64 118
+       Z"
+    stroke-width="2.8"
+  />
+
+  <!-- ── Tail: thick taper off the hip, low sweep, upward flick ─────── -->
+  <path
+    d="M476 184
+       C518 194 558 196 586 184
+       C612 172 622 150 612 128
+       C606 116 594 114 586 121
+       C579 127 580 138 586 146
+       C594 160 592 174 580 182
+       C556 197 518 200 474 208"
+    stroke-width="2.6"
+  />
+
+  <!-- ── Head marks ─────────────────────────────────────────────────── -->
+  <path d="M84 116 C89 111 100 111 105 116 C100 121 89 121 84 116" stroke-width="1.8" />
+  <path d="M66 116 C69 114 72 115 74 118" stroke-width="1.6" opacity="0.85" />
+  <path d="M68 128 C80 134 96 136 108 134" stroke-width="1.6" opacity="0.85" />
+
+  <!-- ── Body marks ─────────────────────────────────────────────────── -->
+  <path d="M216 148 C226 170 230 194 224 214" stroke-width="1.5" opacity="0.5" />
+  <path d="M438 164 C460 184 466 212 456 234" stroke-width="1.5" opacity="0.5" />
+  <path d="M448 242 C424 240 408 228 406 208" stroke-width="1.6" opacity="0.6" />
+  <path d="M96 228 L96 245" stroke-width="1.4" opacity="0.55" />
+  <path d="M108 226 L108 247" stroke-width="1.4" opacity="0.55" />
+
+  <!-- ── Ground ─────────────────────────────────────────────────────── -->
+  <path d="M86 258 C210 264 372 264 462 260" stroke-width="1.2" opacity="0.4" />
+</svg>
