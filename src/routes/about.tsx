@@ -43,7 +43,7 @@ function AboutPage() {
         lede="BennyRich is a lifestyle built on ambition, confidence and legacy. It started with a bucket hat and a finger to the lips — say less, build more."
       />
 
-      <div className="br-shell pb-6">
+      <div className="br-shell pb-10">
         <div className="grid gap-6 md:grid-cols-3">
           {PILLARS.map((p) => (
             <div
@@ -71,7 +71,7 @@ function AboutPage() {
         </div>
       </div>
 
-      <div className="br-shell max-w-[70ch] pb-16">
+      <div className="br-shell max-w-[70ch] py-16">
         <div className="br-prose text-[15px]">
           <p>
             We do not follow the crowd. We make premium products for people who set their own rules,
@@ -84,7 +84,7 @@ function AboutPage() {
         </div>
       </div>
 
-      <div className="br-shell flex flex-col items-center pb-24 text-center">
+      <div className="br-shell br-section-b flex flex-col items-center text-center">
         <Wordmark tone="blue" size={30} showTagline />
         <Link to="/shop" className="neon-btn mt-9">
           Shop the collection <span aria-hidden>→</span>

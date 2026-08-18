@@ -161,17 +161,12 @@ function ProductBody({ product }: { product: SellqoProduct }) {
 
   return (
     <>
-      <div className="br-shell grid gap-10 py-10 md:grid-cols-2 md:gap-14 md:py-14">
+      <div className="br-shell grid gap-12 py-14 md:grid-cols-2 md:gap-16 md:py-20">
         {/* Gallery */}
         <div className="md:sticky md:top-[92px] md:self-start">
           <div
-            className="overflow-hidden border"
-            style={{
-              background: "var(--br-ink)",
-              borderColor: "var(--br-line)",
-              borderRadius: "var(--radius)",
-              aspectRatio: "1 / 1",
-            }}
+            className="br-media border border-br-line"
+            style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
           >
             <ProductImage
               apiUrl={images[activeIdx] ?? null}
@@ -179,7 +174,7 @@ function ProductBody({ product }: { product: SellqoProduct }) {
               colour={colour}
               alt={product.name}
               loading="eager"
-              className={`h-full w-full object-contain ${soldOut ? "opacity-40" : ""}`}
+              className={soldOut ? "opacity-40" : ""}
             />
           </div>
           {images.length > 1 && (
@@ -190,21 +185,12 @@ function ProductBody({ product }: { product: SellqoProduct }) {
                   type="button"
                   onClick={() => setActiveIdx(i)}
                   aria-label={`View image ${i + 1}`}
-                  className={`h-16 w-16 overflow-hidden border transition-[border-color,box-shadow] duration-200 ${
+                  className={`br-media h-16 w-16 border transition-[border-color,box-shadow] duration-200 ${
                     i === activeIdx ? "neon-line-blue" : ""
                   }`}
-                  style={{
-                    borderColor: i === activeIdx ? undefined : "var(--br-line)",
-                    background: "var(--br-ink)",
-                  }}
+                  style={{ borderColor: i === activeIdx ? undefined : "var(--br-line)" }}
                 >
-                  <ProductImage
-                    apiUrl={src}
-                    slug={product.slug}
-                    colour={colour}
-                    alt=""
-                    className="h-full w-full object-cover"
-                  />
+                  <ProductImage apiUrl={src} slug={product.slug} colour={colour} alt="" />
                 </button>
               ))}
             </div>
@@ -300,9 +286,9 @@ function ProductBody({ product }: { product: SellqoProduct }) {
       </div>
 
       {product.related_products && product.related_products.length > 0 && (
-        <section className="br-shell pb-24">
-          <h2 className="br-nav neon-text-blue text-[12px]">You may also like</h2>
-          <div className="mt-7 grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
+        <section className="br-shell br-section-b">
+          <h2 className="br-section-label neon-text-blue">You may also like</h2>
+          <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4 md:gap-8">
             {product.related_products.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}

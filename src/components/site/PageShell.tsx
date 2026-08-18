@@ -17,18 +17,18 @@ export function PageHeading({
   const accentClass =
     accent === "blue" ? "neon-text-blue" : accent === "pink" ? "neon-text-pink" : "";
   return (
-    <header className="br-shell pb-10 pt-14 md:pb-14 md:pt-20">
+    <header className="br-shell br-section-t pb-14">
       {eyebrow && (
-        <p className="br-nav text-[11px]" style={{ color: "var(--br-mute)" }}>
+        <p className="br-section-label" style={{ color: "var(--br-mute)" }}>
           {eyebrow}
         </p>
       )}
       <h1
-        className={`br-display mt-4 ${accentClass}`}
+        className={`br-display mt-5 ${accentClass}`}
         style={{
-          fontSize: "clamp(30px, 5vw, 54px)",
+          fontSize: "clamp(26px, 4.2vw, 46px)",
           letterSpacing: "0.08em",
-          lineHeight: 1.15,
+          lineHeight: 1.18,
           color: accent === "none" ? "var(--br-white)" : undefined,
         }}
       >
@@ -36,7 +36,7 @@ export function PageHeading({
       </h1>
       {lede && (
         <p
-          className="mt-6 max-w-[58ch] text-[15px]"
+          className="mt-7 max-w-[58ch] text-[15px]"
           style={{ color: "var(--br-white)", lineHeight: 1.75 }}
         >
           {lede}
@@ -61,7 +61,7 @@ export function ArticlePage({
   return (
     <SiteLayout>
       <PageHeading eyebrow={eyebrow} title={title} lede={lede} />
-      <div className="br-shell max-w-[70ch] pb-24">
+      <div className="br-shell br-section-b max-w-[70ch]">
         <div className="br-prose text-[15px]">{children}</div>
       </div>
     </SiteLayout>

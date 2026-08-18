@@ -45,7 +45,7 @@ export function CategoryProductsPage({
     <SiteLayout>
       <PageHeading eyebrow={eyebrow} title={title} lede={lede} />
 
-      <div className="br-shell pb-24">
+      <div className="br-shell br-section-b">
         <div className="flex flex-wrap gap-2.5">
           {chips.map((c) => {
             const active = (c.slug ?? null) === (category ?? null);
@@ -77,7 +77,7 @@ export function CategoryProductsPage({
           </p>
         )}
 
-        <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+        <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-3 md:gap-8 lg:grid-cols-4">
           {isLoading ? (
             Array.from({ length: 8 }).map((_, i) => <ProductCardSkeleton key={i} />)
           ) : error ? (

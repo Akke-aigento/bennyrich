@@ -21,6 +21,7 @@ export function Header() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [term, setTerm] = useState("");
+  const [scrolled, setScrolled] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -44,6 +45,16 @@ export function Header() {
     if (searchOpen) searchRef.current?.focus();
   }, [searchOpen]);
 
+  // The header is flat black at rest; it only picks up a frosted ground once
+  // content is passing underneath it.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = term.trim();
@@ -53,8 +64,15 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-40 border-b"
-      style={{ background: "var(--br-black)", borderColor: "var(--br-line)" }}
+      className="sticky top-0 z-40 border-b transition-colors duration-200"
+      style={{
+        background: scrolled
+          ? "color-mix(in srgb, var(--br-black) 82%, transparent)"
+          : "var(--br-black)",
+        backdropFilter: scrolled ? "blur(12px)" : undefined,
+        WebkitBackdropFilter: scrolled ? "blur(12px)" : undefined,
+        borderColor: "var(--br-line)",
+      }}
     >
       <div className="br-shell grid h-[72px] grid-cols-[1fr_auto_1fr] items-center gap-4">
         {/* Left: wordmark (desktop) / hamburger (mobile) */}
@@ -73,12 +91,12 @@ export function Header() {
           aria-label="BennyRich — home"
           className="hidden justify-self-start md:inline-flex"
         >
-          <Wordmark tone="blue" layout="inline" size={20} />
+          <Wordmark tone="blue" layout="inline" size={18} />
         </Link>
 
         {/* Centre: nav (desktop) / monogram (mobile) */}
         <Link to="/" aria-label="BennyRich — home" className="justify-self-center md:hidden">
-          <Monogram tone="blue" size={34} />
+          <Monogram tone="blue" intensity="logotype" size={32} />
         </Link>
         <nav className="hidden justify-self-center md:flex md:items-center md:gap-7 lg:gap-9">
           {NAV.map((item) =>
@@ -206,7 +224,8 @@ export function Header() {
                 background: "var(--br-pink)",
                 color: "var(--br-black)",
                 borderRadius: "2px",
-                boxShadow: "0 0 8px color-mix(in srgb, var(--br-pink) 60%, transparent)",
+                boxShadow:
+                  "0 0 var(--glow-logo-halo) color-mix(in srgb, var(--br-pink) var(--glow-line-alpha), transparent)",
               }}
             >
               {count}
@@ -249,7 +268,7 @@ export function Header() {
             className="br-shell flex h-[72px] shrink-0 items-center justify-between border-b"
             style={{ borderColor: "var(--br-line)" }}
           >
-            <Monogram tone="blue" size={34} />
+            <Monogram tone="blue" intensity="logotype" size={32} />
             <button
               type="button"
               onClick={() => setMenuOpen(false)}

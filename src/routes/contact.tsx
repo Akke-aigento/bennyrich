@@ -56,7 +56,7 @@ function ContactPage() {
         lede="Questions about an order, a drop, or a collaboration? Send it over."
       />
 
-      <div className="br-shell grid gap-12 pb-24 md:grid-cols-[1.2fr_1fr]">
+      <div className="br-shell br-section-b grid gap-14 md:grid-cols-[1.2fr_1fr]">
         <div>
           {sent ? (
             <div

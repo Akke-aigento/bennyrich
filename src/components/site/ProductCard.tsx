@@ -35,12 +35,8 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
   return (
     <Link to="/product/$slug" params={{ slug: product.slug }} className="group block">
       <div
-        className="group-hover:neon-line-blue relative overflow-hidden border border-br-line transition-[border-color,box-shadow] duration-200"
-        style={{
-          background: "var(--br-ink)",
-          borderRadius: "var(--radius)",
-          aspectRatio: "1 / 1",
-        }}
+        className="br-media group-hover:neon-line-blue border border-br-line transition-[border-color,box-shadow] duration-200"
+        style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
       >
         <ProductImage
           apiUrl={productCover(product)}
@@ -48,9 +44,7 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
           colour={coverColour(product)}
           alt={product.name}
           showPlaceholder={!soldOut}
-          className={`h-full w-full object-cover transition-opacity duration-200 ${
-            soldOut ? "opacity-40" : ""
-          }`}
+          className={`transition-opacity duration-200 ${soldOut ? "opacity-40" : ""}`}
         />
         {soldOut && (
           <>
@@ -76,19 +70,19 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
         )}
       </div>
 
-      <div className="mt-4 flex items-baseline justify-between gap-3">
+      <div className="mt-5 flex items-baseline justify-between gap-3">
         <h3 className="br-label truncate" style={{ color: "var(--br-white)" }}>
           {product.name}
         </h3>
         <span
           aria-hidden
-          className="shrink-0 text-[15px] leading-none transition-opacity duration-200"
-          style={{ color: "var(--br-pink)" }}
+          className="shrink-0 text-[14px] leading-none transition-colors duration-200 group-hover:text-[var(--br-blue)]"
+          style={{ color: "var(--br-mute)" }}
         >
           →
         </span>
       </div>
-      <p className="br-price mt-1.5 text-[15px]" style={{ color: "var(--br-white)" }}>
+      <p className="br-price mt-2 text-[15px]" style={{ color: "var(--br-mute)" }}>
         {product.price_range && product.price_range.min !== product.price_range.max
           ? `From ${formatEUR(price)}`
           : formatEUR(price)}
@@ -108,8 +102,8 @@ export function ProductCardSkeleton() {
           aspectRatio: "1 / 1",
         }}
       />
-      <div className="mt-4 h-3 w-3/5" style={{ background: "var(--br-ink)" }} />
-      <div className="mt-2.5 h-3 w-1/4" style={{ background: "var(--br-ink)" }} />
+      <div className="mt-5 h-3 w-3/5" style={{ background: "var(--br-ink)" }} />
+      <div className="mt-3 h-3 w-1/4" style={{ background: "var(--br-ink)" }} />
     </div>
   );
 }
