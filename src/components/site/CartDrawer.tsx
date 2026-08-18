@@ -1,7 +1,9 @@
 import { Link } from "@tanstack/react-router";
-import { X, Minus, Plus } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { formatEUR } from "@/lib/sellqo";
+import { formatEUR } from "@/lib/format";
+import { colourFromLabel } from "@/lib/product-image";
+import { ProductImage } from "./ProductImage";
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, subtotal, updateItem, removeItem } = useCart();
@@ -11,66 +13,62 @@ export function CartDrawer() {
       {/* Overlay */}
       <button
         type="button"
-        aria-label="Close cart"
+        aria-label="Close bag"
         onClick={closeCart}
-        className="fixed inset-0 z-40 transition-opacity"
+        tabIndex={isOpen ? 0 : -1}
+        className="fixed inset-0 z-40 transition-opacity duration-200"
         style={{
-          background: "rgba(20,16,11,0.55)",
+          background: "rgba(0,0,0,0.72)",
           opacity: isOpen ? 1 : 0,
           pointerEvents: isOpen ? "auto" : "none",
         }}
       />
+
       {/* Panel */}
       <aside
         role="dialog"
         aria-modal="true"
         aria-label="Shopping bag"
-        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[440px] flex-col shadow-xl transition-transform duration-300"
+        aria-hidden={!isOpen}
+        className="fixed right-0 top-0 z-50 flex h-full w-full max-w-[440px] flex-col border-l transition-transform duration-200"
         style={{
-          background: "var(--paper)",
+          background: "var(--br-black)",
+          borderColor: "var(--br-blue)",
+          boxShadow: isOpen
+            ? "0 0 8px color-mix(in srgb, var(--br-blue) 60%, transparent)"
+            : "none",
           transform: isOpen ? "translateX(0)" : "translateX(100%)",
         }}
       >
         <header
           className="flex items-center justify-between border-b px-6 py-5"
-          style={{ borderColor: "var(--line)" }}
+          style={{ borderColor: "var(--br-line)" }}
         >
-          <h2
-            className="ui-label text-[0.75rem]"
-            style={{ color: "var(--ink)", letterSpacing: "var(--tracking-ui)" }}
-          >
-            Your Bag ({items.length})
+          <h2 className="br-nav" style={{ color: "var(--br-white)" }}>
+            Your bag ({items.length})
           </h2>
           <button
             type="button"
             onClick={closeCart}
-            aria-label="Close"
-            className="h-10 w-10 -mr-2 inline-flex items-center justify-center"
-            style={{ color: "var(--ink)" }}
+            aria-label="Close bag"
+            className="-mr-2 inline-flex h-10 w-10 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue)]"
+            style={{ color: "var(--br-white)" }}
           >
-            <X size={20} />
+            <X size={20} strokeWidth={1.5} />
           </button>
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 py-6">
           {items.length === 0 ? (
             <div className="flex h-full flex-col items-center justify-center text-center">
-              <p
-                className="text-[1.25rem]"
-                style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
-              >
+              <p className="br-display text-[1.15rem]" style={{ color: "var(--br-white)" }}>
                 Your bag is empty
               </p>
-              <p className="mt-2 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>
-                Discover the No Rules collection.
+              <p className="mt-3 text-[13px]" style={{ color: "var(--br-mute)" }}>
+                Built for people who stand out.
               </p>
-              <Link
-                to="/perfumes"
-                onClick={closeCart}
-                className="mt-6 ui-label text-[0.7rem] px-6 py-3"
-                style={{ border: "1px solid var(--ink)", color: "var(--ink)" }}
-              >
-                Shop Perfumes
+              <Link to="/shop" onClick={closeCart} className="neon-btn mt-7">
+                Shop now <span aria-hidden>→</span>
               </Link>
             </div>
           ) : (
@@ -78,65 +76,54 @@ export function CartDrawer() {
               {items.map((it) => (
                 <li key={it.id} className="flex gap-4">
                   <div
-                    className="h-24 w-20 flex-shrink-0 overflow-hidden"
-                    style={{ background: "var(--bone)" }}
+                    className="h-24 w-20 flex-shrink-0 overflow-hidden border"
+                    style={{ background: "var(--br-ink)", borderColor: "var(--br-line)" }}
                   >
-                    {it.image ? (
-                      <img
-                        src={it.image}
-                        alt={it.name}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div
-                        className="flex h-full w-full items-center justify-center text-[0.9rem]"
-                        style={{ color: "var(--muted-tone)", fontFamily: "var(--font-display)" }}
-                      >
-                        {it.name.charAt(0)}
-                      </div>
-                    )}
+                    <ProductImage
+                      apiUrl={it.image}
+                      slug={it.slug}
+                      colour={colourFromLabel(it.variant_label)}
+                      alt={it.name}
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p
-                          className="truncate text-[0.95rem]"
-                          style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
-                        >
+                        <p className="br-label truncate" style={{ color: "var(--br-white)" }}>
                           {it.name}
                         </p>
                         {it.variant_label && (
-                          <p
-                            className="mt-1 text-[0.75rem]"
-                            style={{ color: "var(--muted-tone)" }}
-                          >
+                          <p className="mt-1.5 text-[12px]" style={{ color: "var(--br-mute)" }}>
                             {it.variant_label}
                           </p>
                         )}
                       </div>
-                      <span className="text-[0.9rem]" style={{ color: "var(--ink)" }}>
+                      <span className="br-price text-[14px]" style={{ color: "var(--br-white)" }}>
                         {formatEUR(it.line_total ?? it.price * it.quantity)}
                       </span>
                     </div>
                     <div className="mt-3 flex items-center justify-between">
                       <div
-                        className="inline-flex items-center"
-                        style={{ border: "1px solid var(--line)" }}
+                        className="inline-flex items-center border"
+                        style={{ borderColor: "var(--br-line)" }}
                       >
                         <button
                           type="button"
                           aria-label="Decrease quantity"
                           onClick={() =>
-                            it.quantity <= 1 ? removeItem(it.id) : updateItem(it.id, it.quantity - 1)
+                            it.quantity <= 1
+                              ? removeItem(it.id)
+                              : updateItem(it.id, it.quantity - 1)
                           }
-                          className="h-8 w-8 inline-flex items-center justify-center"
-                          style={{ color: "var(--ink)" }}
+                          className="inline-flex h-8 w-8 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue)]"
+                          style={{ color: "var(--br-white)" }}
                         >
                           <Minus size={14} />
                         </button>
                         <span
-                          className="w-8 text-center text-[0.85rem]"
-                          style={{ color: "var(--ink)" }}
+                          className="w-8 text-center text-[13px]"
+                          style={{ color: "var(--br-white)" }}
                         >
                           {it.quantity}
                         </span>
@@ -144,8 +131,8 @@ export function CartDrawer() {
                           type="button"
                           aria-label="Increase quantity"
                           onClick={() => updateItem(it.id, it.quantity + 1)}
-                          className="h-8 w-8 inline-flex items-center justify-center"
-                          style={{ color: "var(--ink)" }}
+                          className="inline-flex h-8 w-8 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue)]"
+                          style={{ color: "var(--br-white)" }}
                         >
                           <Plus size={14} />
                         </button>
@@ -153,8 +140,8 @@ export function CartDrawer() {
                       <button
                         type="button"
                         onClick={() => removeItem(it.id)}
-                        className="ui-label text-[0.65rem] underline underline-offset-4"
-                        style={{ color: "var(--muted-tone)" }}
+                        className="br-label text-[10px] underline underline-offset-4 transition-colors duration-200 hover:text-[var(--br-pink)]"
+                        style={{ color: "var(--br-mute)" }}
                       >
                         Remove
                       </button>
@@ -167,37 +154,30 @@ export function CartDrawer() {
         </div>
 
         {items.length > 0 && (
-          <footer
-            className="border-t px-6 py-6"
-            style={{ borderColor: "var(--line)" }}
-          >
+          <footer className="border-t px-6 py-6" style={{ borderColor: "var(--br-line)" }}>
             <div className="flex items-baseline justify-between">
-              <span
-                className="ui-label text-[0.7rem]"
-                style={{ color: "var(--muted-tone)" }}
-              >
+              <span className="br-nav text-[11px]" style={{ color: "var(--br-mute)" }}>
                 Subtotal
               </span>
-              <span className="text-[1.1rem]" style={{ color: "var(--ink)", fontWeight: 500 }}>
+              <span className="br-price text-[1.15rem]" style={{ color: "var(--br-white)" }}>
                 {formatEUR(subtotal)}
               </span>
             </div>
-            <p className="mt-1 text-[0.75rem]" style={{ color: "var(--muted-tone)" }}>
+            <p className="mt-2 text-[12px]" style={{ color: "var(--br-mute)" }}>
               Shipping and taxes calculated at checkout.
             </p>
             <Link
               to="/checkout"
               onClick={closeCart}
-              className="mt-5 ui-label block w-full py-4 text-center text-[0.8rem]"
-              style={{ background: "var(--ink)", color: "var(--paper)" }}
+              className="neon-btn mt-5 w-full justify-center"
             >
-              Checkout
+              Checkout <span aria-hidden>→</span>
             </Link>
             <button
               type="button"
               onClick={closeCart}
-              className="mt-3 w-full ui-label text-[0.7rem] py-2 underline underline-offset-4"
-              style={{ color: "var(--muted-tone)" }}
+              className="br-label mt-4 w-full py-2 text-[10px] underline underline-offset-4 transition-colors duration-200 hover:text-[var(--br-white)]"
+              style={{ color: "var(--br-mute)" }}
             >
               Continue shopping
             </button>

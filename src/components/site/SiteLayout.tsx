@@ -10,7 +10,7 @@ export function SiteLayout({
   hideFooter?: boolean;
 }) {
   return (
-    <div className="flex min-h-screen flex-col" style={{ background: "var(--paper)" }}>
+    <div className="flex min-h-screen flex-col" style={{ background: "var(--br-black)" }}>
       <Header />
       <main className="flex-1">{children}</main>
       {!hideFooter && <Footer />}

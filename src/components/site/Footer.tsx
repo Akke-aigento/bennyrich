@@ -1,97 +1,89 @@
 import { Link } from "@tanstack/react-router";
-import logoBlack from "@/assets/brand/logo-black.svg";
+import { Instagram, Mail } from "lucide-react";
+import { Wordmark } from "@/assets/brand/Wordmark";
 
-const cols: Array<{ title: string; items: Array<{ label: string; to?: string }> }> = [
-  {
-    title: "Shop",
-    items: [
-      { label: "Perfumes", to: "/perfumes" },
-      { label: "Jewellery", to: "/jewellery" },
-      { label: "Artworks", to: "/artworks" },
-      { label: "Designer Clothes", to: "/designer-clothes" },
-      { label: "Selfcare", to: "/selfcare" },
-    ],
-  },
-  {
-    title: "Our World of the Brand",
-    items: [
-      { label: "About Zona Dorata", to: "/about" },
-      { label: "Our Story", to: "/our-story" },
-      { label: "Craftsmanship", to: "/craftsmanship" },
-    ],
-  },
-  {
-    title: "Help",
-    items: [
-      { label: "Contact" },
-      { label: "Shipping & Returns", to: "/shipping-returns" },
-      { label: "Privacy Policy", to: "/privacy-policy" },
-      { label: "Terms", to: "/terms" },
-    ],
-  },
+const LINKS = [
+  { to: "/shipping-returns", label: "Shipping & Returns" },
+  { to: "/terms", label: "Terms & Conditions" },
+  { to: "/privacy-policy", label: "Privacy Policy" },
+] as const;
+
+/** lucide-react has no TikTok glyph, so the note is drawn to match its weight. */
+function TikTok({ size = 19 }: { size?: number }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M15 3c.4 2.6 2 4.2 4.6 4.5v3c-1.7.1-3.3-.4-4.6-1.4v6.3A6.4 6.4 0 1 1 9.6 9v3.1a3.3 3.3 0 1 0 2.3 3.2V3H15Z" />
+    </svg>
+  );
+}
+
+const SOCIALS = [
+  { href: "https://instagram.com/bennyrich", label: "Instagram", Icon: Instagram },
+  { href: "https://tiktok.com/@bennyrich", label: "TikTok", Icon: TikTok },
+  { href: "mailto:hello@bennyrich.com", label: "Email us", Icon: Mail },
 ];
 
 export function Footer() {
   return (
-    <footer style={{ background: "#fff", borderTop: "1px solid var(--line)" }}>
-      <div className="section-shell px-6 pt-24 pb-12">
-        <div className="grid gap-12 md:grid-cols-4">
-          {cols.map((c) => (
-            <div key={c.title}>
-              <h4
-                className="brand-wordmark text-[0.7rem]"
-                style={{ color: "var(--gold)", letterSpacing: "0.2em" }}
-              >
-                {c.title}
-              </h4>
-              <ul className="mt-6 space-y-3">
-                {c.items.map((i) => (
-                  <li key={i.label} className="text-[0.85rem]" style={{ color: "var(--ink)", lineHeight: 2 }}>
-                    {i.to ? <Link to={i.to}>{i.label}</Link> : <span>{i.label}</span>}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-          <div>
-            <h4
-              className="brand-wordmark text-[0.7rem]"
-              style={{ color: "var(--gold)", letterSpacing: "0.2em" }}
-            >
-              Newsletter
-            </h4>
-            <p className="mt-6 text-[0.85rem]" style={{ color: "var(--muted-tone)" }}>
-              Be the first to know.
-            </p>
-            <form
-              onSubmit={(e) => e.preventDefault()}
-              className="mt-6 flex items-center gap-3"
-            >
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full bg-transparent py-2 text-[0.85rem] outline-none"
-                style={{
-                  color: "var(--ink)",
-                  borderBottom: "1px solid var(--line)",
-                }}
-              />
-              <button
-                type="submit"
-                className="ui-label text-[0.9rem]"
-                style={{ color: "var(--ink)" }}
-                aria-label="Subscribe"
-              >
-                →
-              </button>
-            </form>
-          </div>
-        </div>
+    <footer
+      className="border-t"
+      style={{ background: "var(--br-black)", borderColor: "var(--br-line)" }}
+    >
+      <div className="br-shell flex flex-col items-center px-6 pb-10 pt-20">
+        <Link to="/" aria-label="BennyRich — home">
+          <Wordmark tone="blue" size={34} showCity />
+        </Link>
 
-        <div className="mt-20 flex flex-col items-center gap-4">
-          <img src={logoBlack} alt="Zona Dorata" style={{ height: 32 }} />
-          <p className="text-[0.7rem]" style={{ color: "var(--muted-tone)" }}>
-            © 2026 Zona Dorata Italia. All rights reserved.
+        <div className="mt-9 flex items-center gap-7">
+          {SOCIALS.map(({ href, label, Icon }) => (
+            <a
+              key={label}
+              href={href}
+              aria-label={label}
+              target={href.startsWith("mailto:") ? undefined : "_blank"}
+              rel={href.startsWith("mailto:") ? undefined : "noreferrer noopener"}
+              className="transition-colors duration-200 hover:text-[var(--br-blue)]"
+              style={{ color: "var(--br-white)" }}
+            >
+              <Icon size={19} />
+            </a>
+          ))}
+        </div>
+      </div>
+
+      {/* Platform convention */}
+      <div className="br-shell pb-5 text-center">
+        <p className="text-[10px]" style={{ color: "var(--br-mute)", letterSpacing: "0.18em" }}>
+          POWERED BY SELLQO
+        </p>
+      </div>
+
+      <div className="border-t" style={{ borderColor: "var(--br-line)" }}>
+        <div className="br-shell flex flex-col items-center gap-4 py-5 md:flex-row md:justify-between">
+          <nav className="flex flex-wrap items-center justify-center gap-x-7 gap-y-2">
+            {LINKS.map((l) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                className="br-nav text-[11px] transition-colors duration-200 hover:text-[var(--br-blue)]"
+                style={{ color: "var(--br-white)" }}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <p className="br-nav text-[11px]" style={{ color: "var(--br-mute)" }}>
+            © 2026 BennyRich. All rights reserved.
           </p>
         </div>
       </div>

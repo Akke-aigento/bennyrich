@@ -1,94 +1,115 @@
 import { Link } from "@tanstack/react-router";
-import { formatEUR, productCover, type SellqoProduct } from "@/lib/sellqo";
+import { productCover, type SellqoProduct } from "@/lib/sellqo";
+import { formatEUR } from "@/lib/format";
+import { colourFromLabel } from "@/lib/product-image";
+import { ProductImage } from "./ProductImage";
 
-function ProductBadge({ product }: { product: SellqoProduct }) {
-  if (product.coming_soon) {
-    return (
-      <span
-        className="absolute right-3 top-3 ui-label text-[0.6rem]"
-        style={{
-          color: "var(--gold)",
-          background: "var(--black)",
-          border: "1px solid var(--gold)",
-          padding: "5px 10px",
-          letterSpacing: "0.28em",
-        }}
-      >
-        COMING SOON
-      </span>
-    );
+/**
+ * A product is sold out when the API says so outright, or when it has variants
+ * and none of them is available.
+ */
+export function isSoldOut(product: SellqoProduct): boolean {
+  if (product.in_stock === false) return true;
+  const variants = product.variants ?? [];
+  if (product.has_variants && variants.length > 0) {
+    return variants.every((v) => v.in_stock === false);
   }
-  if (product.in_stock === false) {
-    return (
-      <span
-        className="absolute right-3 top-3 ui-label text-[0.6rem]"
-        style={{
-          color: "var(--gold)",
-          background: "var(--black)",
-          border: "1px solid var(--gold)",
-          padding: "5px 10px",
-          letterSpacing: "0.28em",
-        }}
-      >
-        SOLD OUT
-      </span>
-    );
-  }
-  return null;
+  return false;
+}
+
+/** Colour of the first available variant — drives the local image fallback. */
+function coverColour(product: SellqoProduct): string | null {
+  const variants = product.variants ?? [];
+  const preferred = variants.find((v) => v.in_stock !== false) ?? variants[0];
+  if (!preferred) return null;
+  const fromValues = preferred.option_values
+    ? colourFromLabel(Object.values(preferred.option_values).join(" "))
+    : null;
+  return fromValues ?? colourFromLabel(preferred.name);
 }
 
 export function ProductCard({ product }: { product: SellqoProduct }) {
-  const cover = productCover(product);
-  const hasSale = product.compare_at_price && product.compare_at_price > product.price;
+  const soldOut = isSoldOut(product);
+  const price = product.price_range?.min ?? product.price;
+
   return (
-    <Link
-      to="/product/$slug"
-      params={{ slug: product.slug }}
-      className="group block"
-    >
+    <Link to="/product/$slug" params={{ slug: product.slug }} className="group block">
       <div
-        className="relative overflow-hidden"
-        style={{ background: "var(--bone)", aspectRatio: "3 / 4" }}
+        className="group-hover:neon-line-blue relative overflow-hidden border border-br-line transition-[border-color,box-shadow] duration-200"
+        style={{
+          background: "var(--br-ink)",
+          borderRadius: "var(--radius)",
+          aspectRatio: "1 / 1",
+        }}
       >
-        {cover ? (
-          <img
-            src={cover}
-            alt={product.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 motion-reduce:transition-none group-hover:scale-[1.03]"
-          />
-        ) : null}
-        <ProductBadge product={product} />
-      </div>
-      <h3
-        className="mt-3 truncate text-[1.05rem] transition-colors duration-300 group-hover:text-[var(--gold)]"
-        style={{ fontFamily: "var(--font-display)", color: "var(--ink)", fontWeight: 400 }}
-      >
-        {product.name}
-      </h3>
-      <div className="mt-1 flex items-baseline gap-2 text-[0.9rem]" style={{ fontFamily: "var(--font-body)" }}>
-        {hasSale && (
-          <span style={{ color: "var(--muted-tone)", textDecoration: "line-through" }}>
-            {formatEUR(product.compare_at_price as number)}
+        <ProductImage
+          apiUrl={productCover(product)}
+          slug={product.slug}
+          colour={coverColour(product)}
+          alt={product.name}
+          showPlaceholder={!soldOut}
+          className={`h-full w-full object-cover transition-opacity duration-200 ${
+            soldOut ? "opacity-40" : ""
+          }`}
+        />
+        {soldOut && (
+          <>
+            <span
+              className="br-label absolute inset-x-0 top-1/2 -translate-y-1/2 text-center"
+              style={{ color: "var(--br-mute)" }}
+            >
+              Sold out
+            </span>
+          </>
+        )}
+        {product.coming_soon && !soldOut && (
+          <span
+            className="br-label absolute left-3 top-3 border px-2 py-1 text-[10px]"
+            style={{
+              color: "var(--br-mute)",
+              borderColor: "var(--br-line)",
+              background: "var(--br-black)",
+            }}
+          >
+            Coming soon
           </span>
         )}
-        <span style={{ color: "var(--ink)", fontWeight: 500 }}>
-          {formatEUR(product.price)}
+      </div>
+
+      <div className="mt-4 flex items-baseline justify-between gap-3">
+        <h3 className="br-label truncate" style={{ color: "var(--br-white)" }}>
+          {product.name}
+        </h3>
+        <span
+          aria-hidden
+          className="shrink-0 text-[15px] leading-none transition-opacity duration-200"
+          style={{ color: "var(--br-pink)" }}
+        >
+          →
         </span>
       </div>
+      <p className="br-price mt-1.5 text-[15px]" style={{ color: "var(--br-white)" }}>
+        {product.price_range && product.price_range.min !== product.price_range.max
+          ? `From ${formatEUR(price)}`
+          : formatEUR(price)}
+      </p>
     </Link>
   );
 }
 
 export function ProductCardSkeleton() {
   return (
-    <div>
+    <div aria-hidden>
       <div
-        className="animate-pulse"
-        style={{ background: "var(--bone)", aspectRatio: "3 / 4" }}
+        className="border"
+        style={{
+          background: "var(--br-ink)",
+          borderRadius: "var(--radius)",
+          aspectRatio: "1 / 1",
+        }}
       />
-      <div className="mt-3 h-4 w-3/4 animate-pulse" style={{ background: "var(--bone)" }} />
-      <div className="mt-2 h-3 w-1/3 animate-pulse" style={{ background: "var(--bone)" }} />
+      <div className="mt-4 h-3 w-3/5" style={{ background: "var(--br-ink)" }} />
+      <div className="mt-2.5 h-3 w-1/4" style={{ background: "var(--br-ink)" }} />
     </div>
   );
 }

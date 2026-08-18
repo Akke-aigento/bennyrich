@@ -80,24 +80,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Zona Dorata — Choose Your World" },
-      { name: "description", content: "Luxury worlds in perfume, jewellery, art and designer clothing by Zona Dorata Italia." },
-      { property: "og:title", content: "Zona Dorata — Choose Your World" },
-      { property: "og:description", content: "Luxury worlds in perfume, jewellery, art and designer clothing by Zona Dorata Italia." },
+      { title: "BennyRich — Timeless. Bold. Luxurious." },
+      {
+        name: "description",
+        content:
+          "BennyRich is more than fashion. It's a lifestyle built on ambition, confidence and legacy. Apparel, accessories, home, lighting and beverages.",
+      },
+      { name: "theme-color", content: "#050505" },
+      { property: "og:site_name", content: "BennyRich" },
+      { property: "og:title", content: "BennyRich — Timeless. Bold. Luxurious." },
+      {
+        property: "og:description",
+        content: "More than fashion. A lifestyle built on ambition, confidence and legacy.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { rel: "canonical", content: "/" },
-      { name: "twitter:title", content: "Zona Dorata — Choose Your World" },
-      { name: "twitter:description", content: "Luxury worlds in perfume, jewellery, art and designer clothing by Zona Dorata Italia." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/TimPydBg63UjBhATfb8zJJR9ank2/social-images/social-1782209266306-zona-dorata-full_800px_on-black.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/TimPydBg63UjBhATfb8zJJR9ank2/social-images/social-1782209266306-zona-dorata-full_800px_on-black.webp" },
+      { name: "twitter:title", content: "BennyRich — Timeless. Bold. Luxurious." },
+      {
+        name: "twitter:description",
+        content: "More than fashion. A lifestyle built on ambition, confidence and legacy.",
+      },
     ],
     links: [
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Cinzel:wght@400;500&family=Cormorant+Garamond:wght@500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,600&family=Inter:wght@400;500&display=swap",
       },
       {
         rel: "stylesheet",
