@@ -165,7 +165,7 @@ function ProductBody({ product }: { product: SellqoProduct }) {
         {/* Gallery */}
         <div className="md:sticky md:top-[92px] md:self-start">
           <div
-            className="br-media border border-br-line"
+            className="br-media br-media-frame border"
             style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
           >
             <ProductImage

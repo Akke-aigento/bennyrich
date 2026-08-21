@@ -35,7 +35,7 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
   return (
     <Link to="/product/$slug" params={{ slug: product.slug }} className="group block">
       <div
-        className="br-media group-hover:neon-line-blue border border-br-line transition-[border-color,box-shadow] duration-200"
+        className="br-media br-media-frame group-hover:neon-line-blue border transition-[border-color,box-shadow] duration-200"
         style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
       >
         <ProductImage
@@ -70,14 +70,26 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
         )}
       </div>
 
-      <div className="mt-5 flex items-baseline justify-between gap-3">
-        <h3 className="br-label truncate" style={{ color: "var(--br-white)" }}>
+      {/* Two lines, not an ellipsis: "Benny Rich Supercar 3D LED Lamp" is a real
+          product name and truncating it tells the shopper nothing. The height is
+          reserved for both lines so prices stay on one baseline across a row,
+          and the arrow aligns to the first line rather than floating. */}
+      <div className="mt-5 flex items-start justify-between gap-3">
+        <h3
+          className="br-label line-clamp-2"
+          style={{
+            color: "var(--br-white)",
+            letterSpacing: "0.18em",
+            lineHeight: 1.35,
+            minHeight: "2.7em",
+          }}
+        >
           {product.name}
         </h3>
         <span
           aria-hidden
           className="shrink-0 text-[14px] leading-none transition-colors duration-200 group-hover:text-[var(--br-blue)]"
-          style={{ color: "var(--br-mute)" }}
+          style={{ color: "var(--br-mute)", marginTop: "0.1em" }}
         >
           →
         </span>

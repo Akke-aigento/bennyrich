@@ -163,6 +163,20 @@
     color-mix(in srgb, var(--br-pink) var(--glow-line-alpha), transparent);
 }
 
+/* The resting frame on a product media well.
+ *
+ * Product photography comes from the tenant's admin and its grounds are not
+ * consistent — some are black, some are near-white. A lit frame means the well
+ * reads against the page whatever the photo does, which fixes all of them at
+ * once and survives whatever gets uploaded next. Dimmer than neon-line-blue so
+ * hover still has somewhere to go: 55% -> 100% border, 35% -> 40% halo.
+ */
+@utility br-media-frame {
+  border-color: color-mix(in srgb, var(--br-blue) 55%, transparent);
+  box-shadow: 0 0 calc(6px * var(--glow-scale))
+    color-mix(in srgb, var(--br-blue) calc(35% * var(--glow-scale)), transparent);
+}
+
 /* A hairline frame that only breathes blue from the inside — used where a
    panel needs definition without becoming a lit box. */
 @utility quiet-frame {

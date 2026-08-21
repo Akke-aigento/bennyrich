@@ -154,7 +154,11 @@ function BuiltDifferentBanner() {
           </Link>
         </div>
         {/* The radial mask dissolves the artwork's square edge into the black
-            instead of letting it cut a visible box out of the panel. */}
+            instead of letting it cut a visible box out of the panel. BR-4 ran it
+            at 62%/92%, which ate most of the cat — the fade started before the
+            body did. Holding full opacity out to 74% keeps the animal readable
+            and still hides the edge, and a small lift stops the darker flank
+            from sinking into the panel. */}
         <img
           src="/hero/panther-blue.png"
           alt="The BennyRich panther, reclining, in neon blue"
@@ -163,8 +167,10 @@ function BuiltDifferentBanner() {
           loading="lazy"
           className="w-full max-w-[300px] justify-self-center md:max-w-none md:justify-self-end"
           style={{
-            maskImage: "radial-gradient(ellipse at center, #000 62%, transparent 92%)",
-            WebkitMaskImage: "radial-gradient(ellipse at center, #000 62%, transparent 92%)",
+            maskImage: "radial-gradient(ellipse at center, #000 74%, transparent 100%)",
+            WebkitMaskImage: "radial-gradient(ellipse at center, #000 74%, transparent 100%)",
+            filter:
+              "brightness(1.1) drop-shadow(0 0 calc(14px * var(--glow-scale)) color-mix(in srgb, var(--br-blue) calc(22% * var(--glow-scale)), transparent))",
           }}
         />
       </div>
