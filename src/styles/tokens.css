@@ -404,6 +404,145 @@
   text-underline-offset: 3px;
 }
 
+/* --- Ambient light + reveal (BR-4) ---------------------------------------
+ * Backing CSS for src/components/kit/. These are BennyRich's own components,
+ * not vendored ones, so their keyframes live here in the design system rather
+ * than in a separate throwaway stylesheet.
+ *
+ * Every alpha goes through color-mix over a brand token, so the light rides
+ * --glow-scale with the rest of the system instead of drifting out of tune the
+ * moment anyone turns the dimmer.
+ * ---------------------------------------------------------------------- */
+
+/* Spotlight: two washes pooled in the top corners of a hero. */
+.br-spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  animation: br-spotlight-in 1.4s ease both;
+}
+
+.br-spotlight > span {
+  position: absolute;
+  display: block;
+  top: -30%;
+  width: 70%;
+  height: 120%;
+  border-radius: 50%;
+  will-change: transform;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.br-spotlight-a {
+  left: -12%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--br-blue) 5%, transparent) 0%,
+    color-mix(in srgb, var(--br-blue) 1.5%, transparent) 45%,
+    transparent 72%
+  );
+  animation-name: br-spotlight-drift-a;
+  animation-duration: 14s;
+}
+
+.br-spotlight-b {
+  right: -12%;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--br-blue) 3.5%, transparent) 0%,
+    color-mix(in srgb, var(--br-blue) 1.2%, transparent) 50%,
+    transparent 78%
+  );
+  animation-name: br-spotlight-drift-b;
+  /* Deliberately not 14s: two coprime-ish periods keep the pair from landing
+     on a visible beat every cycle. */
+  animation-duration: 18s;
+}
+
+@keyframes br-spotlight-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 60px of total travel, mirrored, so the two washes always open and close
+   against each other. */
+@keyframes br-spotlight-drift-a {
+  from {
+    transform: translate3d(-30px, -10px, 0);
+  }
+  to {
+    transform: translate3d(30px, 10px, 0);
+  }
+}
+
+@keyframes br-spotlight-drift-b {
+  from {
+    transform: translate3d(30px, 10px, 0);
+  }
+  to {
+    transform: translate3d(-30px, -10px, 0);
+  }
+}
+
+/* SpotlightCard: a blue breath that follows the pointer. The custom properties
+   are written by the component; the 50% fallbacks keep the gradient centred
+   before the first pointer event and during SSR. */
+.br-spotlight-card {
+  --br-mx: 50%;
+  --br-my: 50%;
+  position: relative;
+  border-radius: var(--radius);
+}
+
+.br-spotlight-card-glow {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  display: block;
+  pointer-events: none;
+  border-radius: var(--radius);
+  opacity: 0;
+  transition: opacity 200ms ease;
+  background: radial-gradient(
+    320px circle at var(--br-mx) var(--br-my),
+    color-mix(in srgb, var(--br-blue) 14%, transparent),
+    transparent 80%
+  );
+}
+
+.br-spotlight-card:hover .br-spotlight-card-glow {
+  opacity: 1;
+}
+
+/* TextReveal: one settle per child, staggered. Note there is no `display` here
+   on purpose — the class is merged onto the caller's own element, which may
+   already be `block`, and setting display would silently win. */
+.br-reveal-part {
+  animation: br-reveal-settle var(--br-reveal-duration, 0.6s) ease both;
+  animation-delay: calc(var(--br-reveal-i, 0) * var(--br-reveal-stagger, 0.12s));
+}
+
+@keyframes br-reveal-settle {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(0.35em);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: none;
+  }
+}
+
 /* --- Motion --------------------------------------------------------------
  * Only opacity/glow transitions, 200ms. Hover lift never exceeds 2px. There
  * are no glow pulses anywhere — the neon is steady, never animated.
@@ -426,5 +565,21 @@
   }
   .br-lift:hover {
     transform: none;
+  }
+}
+
+/* The global block above crushes animation-duration to 0.001ms, which makes an
+   un-guarded animation snap to its end frame rather than not play. For the
+   BR-4 components that is wrong in both directions: the spotlight would freeze
+   at one extreme of its drift, and the reveal would flash. Switch the
+   animations off by name instead and let both render their rest state. */
+@media (prefers-reduced-motion: reduce) {
+  .br-spotlight,
+  .br-spotlight > span {
+    animation: none;
+    transform: none;
+  }
+  .br-reveal-part {
+    animation: none;
   }
 }

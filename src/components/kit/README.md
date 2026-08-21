@@ -1,62 +1,73 @@
-# `src/components/kit/` — vendored design kit (under evaluation)
+# `src/components/kit/` — BennyRich's own effect components
 
-These are **third-party components from [Aceternity UI](https://ui.aceternity.com),
-copied into this repo and adapted in place**. They are on trial for BR-4 and are
-shown only on `/kit`. Nothing in `src/components/site/` depends on them.
+Three small components that add **light and pacing** to the storefront:
+`Spotlight`, `SpotlightCard`, `TextReveal`. They are used on the homepage
+(`src/routes/index.tsx`).
 
-They are **not part of the BennyRich design system.** The design system is
-`src/styles/tokens.css` and the rules in `CLAUDE.md`. If the two disagree, the
-design system wins.
+**These are our own implementations.** No third-party source, no vendored files,
+no licence to carry. Written from scratch in BR-4 against a written spec, not
+adapted from anyone's component.
 
-## Why vendored by hand and not `npx shadcn add`
+## Dependencies: none
 
-`npx shadcn add @aceternity/...` is not viable on this stack:
+All three are **plain CSS plus a few lines of React**. No animation library, no
+canvas, no WebGL, nothing at runtime beyond React itself.
 
-1. `components.json` has `"registries": {}` — the `@aceternity` namespace is not
-   registered, so the command does not resolve as written.
-2. The payload is Next.js-shaped: `"use client"` directives and `next/*` imports.
-3. The CLI's Tailwind step expects a `tailwind.config.js` to extend. This project
-   is Tailwind v4, CSS-first, and has no config file.
-4. `card-spotlight` carries a registry dependency on `canvas-reveal-effect`,
-   which pulls in `three` and `@react-three/fiber`.
+`SpotlightCard` is the only one with any JavaScript at all: a pointer handler
+that writes two custom properties, coalesced to one write per frame with
+`requestAnimationFrame`. Everything else — the drift, the fades, the reveal
+stagger — is `@keyframes` and `transition`.
 
-The sources were taken from the shadcn registry JSON, which does serve the real
-files — e.g. `https://ui.aceternity.com/registry/spotlight-new.json`.
+The backing CSS lives in **`src/styles/tokens.css`**, under
+`--- Ambient light + reveal (BR-4) ---`. It is in the design system rather than
+a separate stylesheet precisely because these components are ours: there is no
+longer a third-party trial to keep quarantined behind one deletable `@import`.
 
-## The port recipe
+## Why the BR-3 versions were replaced
 
-Applied to every file here. Follow it if you add another.
+BR-3 vendored four components from [Aceternity UI](https://ui.aceternity.com)
+into this folder to evaluate the look. The evaluation succeeded — the spotlight,
+the card glow and the tagline reveal were all approved — but the **source could
+not ship**.
 
-1. Strip `"use client"`; replace `next/image` with `<img>` and `next/link` with
-   `Link` from `@tanstack/react-router`.
-2. Leave `import { cn } from "@/lib/utils"` alone — Aceternity's alias happens to
-   match ours exactly.
-3. **Recolour to tokens.** No hardcoded hex survives. Colours become
-   `var(--br-blue)` / `var(--br-pink)` / `var(--br-black)`; alphas become
-   `color-mix(in srgb, var(--br-…) N%, transparent)` so the component tracks
-   `--glow-scale` like everything else.
-4. **Restraint pass, roughly −40%.** Cut glow alphas, shorten travel distances,
-   lengthen durations. Luxury is restraint; these components ship tuned for a
-   much louder aesthetic than this brand's.
-5. **Honour reduced motion in JS**, via `useReducedMotion()`, and render the
-   finished state. The global `prefers-reduced-motion` block in `tokens.css`
-   crushes durations to `0.001ms`, which makes an un-guarded animation _snap_
-   rather than not play.
-6. **Animation classes come from CSS, not a config extend** — `@keyframes` plus
-   `@utility` in `src/styles/kit.css`. That is the v3→v4 translation.
-7. **Check for SSR hazards**: `Math.random()` or `Date.now()` in a render body,
-   and post-mount DOM mutation. Both were present upstream and both are fixed
-   here.
+Aceternity's free components are **not MIT-licensed**, contrary to what most of
+the ecosystem repeats. Their licence covers every item "available for purchase
+or download" and forbids redistributing an item's source files "regardless of
+modifications". Using the components in a delivered site is their intended use;
+**shipping their source inside a repo that syncs to Lovable and may be handed to
+a client is not.** The full research is in `docs/design-kit.md` §2.
 
-## What is in here
+So BR-4 kept the approved *look* and rewrote the *code*. Nothing
+Aceternity-derived remains in this repository — `grep -ri aceternity src/`
+returns nothing.
 
-| File                        | Port           | Note                                                                                                           |
-| --------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
-| `spotlight-new.tsx`         | complete       | Ambient blue hero light.                                                                                       |
-| `card-spotlight.tsx`        | **partial**    | Canvas dot-matrix layer deliberately dropped — see the file header before restoring it.                        |
-| `text-generate-effect.tsx`  | complete       | Typographically neutral; inherits from the caller.                                                             |
-| `infinite-moving-cards.tsx` | mechanism only | Card markup rewritten; **this component moves**, which the design system currently forbids outside the header. |
-| `background-beams.tsx`      | complete       | **Parked and unused**, kept ready for a BR-4 trial.                                                            |
+Dropping the vendored code also let `motion` go. BR-3 flagged it as ~35–50 KB
+gzipped on every route; all three effects turned out to be expressible in CSS,
+so the dependency was removed outright rather than paid for.
 
-See `docs/design-kit.md` for the licence position — it is **not** MIT, and that
-matters if this pattern is reused for client work.
+## House rules these follow
+
+1. **No hardcoded colour.** Every alpha is
+   `color-mix(in srgb, var(--br-…) N%, transparent)`, so the components ride
+   `--glow-scale` with the rest of the system.
+2. **One accent per component.** All three are blue. Pink stays on emphasis
+   words, sale states and pink-variant products.
+3. **Nothing pulses.** `TextReveal` runs once on mount and holds. The card glow
+   is a hover transition. The only continuous motion is the spotlight drift,
+   which is ambient *light*, not an animated glow — 60px over 14–18s.
+4. **Reduced motion is handled by name, not by duration.** `tokens.css` has a
+   global block that crushes `animation-duration` to `0.001ms`. That is a good
+   backstop but on its own it makes an animation *snap*. Each component also has
+   an explicit `animation: none` rule so it renders its rest state.
+5. **Radius never exceeds 2px** (`var(--radius)`).
+6. **SSR-safe.** No `Math.random()` or `Date.now()` in a render body, no
+   post-mount DOM mutation, and the pointer custom properties have `50%`
+   fallbacks so first paint is correct before any pointer event.
+
+## Adding another
+
+Write it here, in CSS first. If you find yourself reaching for an animation
+library, check whether `@keyframes` plus a custom property does the job — for
+all three of these, it did. Put the keyframes in `tokens.css` alongside the
+others, header-comment the file with what it does and why, and keep to the six
+rules above.
