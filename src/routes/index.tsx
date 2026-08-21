@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQueries } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
 import { Spotlight } from "@/components/kit/Spotlight";
 import { SpotlightCard } from "@/components/kit/SpotlightCard";
 import { TextReveal } from "@/components/kit/TextReveal";
-import { pickFeatured, useProducts } from "@/lib/use-sellqo";
+import { CATEGORIES } from "@/lib/categories";
+import { pickSpread, type CategoryGroup } from "@/lib/featured";
+import { sellqoFetch, type SellqoProduct } from "@/lib/sellqo";
+import type { ProductsResponse } from "@/lib/use-sellqo";
 
 /**
  * The hero figure is the LCP element. It carries `fetchPriority="high"`, from
@@ -81,8 +85,34 @@ function Hero() {
 }
 
 function FeaturedCollection() {
-  const { products, isLoading, error } = useProducts();
-  const featured = pickFeatured(products, 4);
+  /**
+   * One query per category rather than one for everything.
+   *
+   * `SellqoProduct` carries no category field, so a single /products call
+   * cannot tell us what anything belongs to — and without that, "featured"
+   * degrades to "whatever sorted first", which is how three LED lamps ended up
+   * filling the grid. Asking per category makes membership true by
+   * construction. Same pattern /collections already uses; React Query caches
+   * these for 60s and the two pages share them.
+   */
+  const results = useQueries({
+    queries: CATEGORIES.map((c) => ({
+      queryKey: ["sellqo", "products", { categorySlug: c.slug, per_page: 20 }],
+      queryFn: () =>
+        sellqoFetch<ProductsResponse>("/products", {
+          query: { category_slug: c.slug, per_page: 20 },
+        }),
+      staleTime: 60_000,
+    })),
+  });
+
+  const isLoading = results.some((r) => r.isLoading);
+  const error = results.find((r) => r.error)?.error ?? null;
+  const groups: CategoryGroup[] = CATEGORIES.map((c, i) => ({
+    slug: c.slug,
+    products: (results[i]?.data?.products ?? []) as SellqoProduct[],
+  }));
+  const featured = pickSpread(groups, 4);
 
   return (
     <section className="br-shell br-section">
