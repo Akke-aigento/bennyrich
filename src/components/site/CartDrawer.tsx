@@ -6,7 +6,7 @@ import { colourFromLabel } from "@/lib/product-image";
 import { ProductImage } from "./ProductImage";
 
 export function CartDrawer() {
-  const { isOpen, closeCart, items, subtotal, updateItem, removeItem } = useCart();
+  const { isOpen, closeCart, items, count, subtotal, updateItem, removeItem } = useCart();
 
   return (
     <>
@@ -45,7 +45,7 @@ export function CartDrawer() {
           style={{ borderColor: "var(--br-line)" }}
         >
           <h2 className="br-nav" style={{ color: "var(--br-white)" }}>
-            Your bag ({items.length})
+            Your bag ({count})
           </h2>
           <button
             type="button"
@@ -100,7 +100,11 @@ export function CartDrawer() {
                         )}
                       </div>
                       <span className="br-price text-[14px]" style={{ color: "var(--br-white)" }}>
-                        {formatEUR(it.line_total ?? it.price * it.quantity)}
+                        {/* The API's line total, never arithmetic of ours.
+                            normalizeCart always populates this; the type says
+                            optional, so if it ever really is missing we show a
+                            dash rather than invent a price. */}
+                        {it.line_total != null ? formatEUR(it.line_total) : "—"}
                       </span>
                     </div>
                     <div className="mt-3 flex items-center justify-between">

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { productCover, type SellqoProduct } from "@/lib/sellqo";
 import { formatEUR } from "@/lib/format";
 import { colourFromLabel } from "@/lib/product-image";
+import { isPurchasable } from "@/lib/categories";
 import { ProductImage } from "./ProductImage";
 
 /**
@@ -56,7 +57,7 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
             </span>
           </>
         )}
-        {product.coming_soon && !soldOut && (
+        {(product.coming_soon || !isPurchasable(product.slug)) && !soldOut && (
           <span
             className="br-label absolute left-3 top-3 border px-2 py-1 text-[10px]"
             style={{

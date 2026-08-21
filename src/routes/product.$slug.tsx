@@ -10,6 +10,15 @@ import { AgeGate, useAgeRestricted, useAgeVerification } from "@/components/site
 import { imageUrl, type SellqoProduct } from "@/lib/sellqo";
 import { formatEUR } from "@/lib/format";
 import { colourFromLabel } from "@/lib/product-image";
+import { isPurchasable, NOT_PURCHASABLE_NOTE } from "@/lib/categories";
+import {
+  autoSelection,
+  deriveOptions,
+  hasSelectableVariants,
+  isValueAvailable,
+  optionValuesOf,
+  variantFor,
+} from "@/lib/variants";
 import { sellqoFetch } from "@/lib/sellqo";
 import { useCart } from "@/lib/cart-context";
 
@@ -107,7 +116,9 @@ function ProductSkeleton() {
 function ProductBody({ product }: { product: SellqoProduct }) {
   const { addItem, openCart } = useCart();
   const [activeIdx, setActiveIdx] = useState(0);
-  const [selected, setSelected] = useState<Record<string, string>>({});
+  // Options with only one value are chosen up front: a single-variant product
+  // should never sit behind "Select options".
+  const [selected, setSelected] = useState<Record<string, string>>(() => autoSelection(product));
   const [busy, setBusy] = useState(false);
   const [added, setAdded] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -121,26 +132,28 @@ function ProductBody({ product }: { product: SellqoProduct }) {
     return list;
   }, [product]);
 
-  const variant = useMemo(() => {
-    if (!product.has_variants || !product.variants?.length) return null;
-    return (
-      product.variants.find((v) =>
-        v.option_values
-          ? Object.entries(v.option_values).every(([k, val]) => selected[k] === val)
-          : false,
-      ) ?? null
-    );
-  }, [product, selected]);
+  // Chips come from the variants themselves when the API does not send an
+  // `options` array. Without this the picker renders nothing, no variant can be
+  // selected, and the add button stays disabled forever — see lib/variants.ts.
+  const options = useMemo(() => deriveOptions(product), [product]);
+  const variant = useMemo(() => variantFor(product, selected), [product, selected]);
 
   const soldOut = isSoldOut(product);
-  const needsVariant = Boolean(product.has_variants) && !variant;
+  // Only gate the add when there is actually a choice to make. A product whose
+  // variants carry no usable option data is treated as buyable rather than
+  // being locked out of the shop.
+  const needsVariant = hasSelectableVariants(product) && !variant;
+  const purchasable = isPurchasable(product.slug);
   // Never recompute: render exactly the price the API gave us.
   const price = variant?.price ?? product.price;
   const colour =
-    colourFromLabel(Object.values(selected).join(" ")) ?? colourFromLabel(variant?.name) ?? null;
+    colourFromLabel(Object.values(selected).join(" ")) ??
+    colourFromLabel(variant?.name) ??
+    colourFromLabel(Object.values(optionValuesOf(variant)).join(" ")) ??
+    null;
 
   async function handleAdd() {
-    if (busy || needsVariant || soldOut) return;
+    if (busy || needsVariant || soldOut || !purchasable) return;
     setBusy(true);
     setErr(null);
     try {
@@ -217,9 +230,9 @@ function ProductBody({ product }: { product: SellqoProduct }) {
 
           {product.description && <ProductDescription html={product.description} />}
 
-          {product.has_variants && product.options?.length ? (
+          {options.length > 0 ? (
             <div className="mt-9 space-y-6">
-              {product.options.map((opt) => (
+              {options.map((opt) => (
                 <div key={opt.name}>
                   <p className="br-label" style={{ color: "var(--br-mute)" }}>
                     {opt.name}
@@ -227,19 +240,28 @@ function ProductBody({ product }: { product: SellqoProduct }) {
                   <div className="mt-3 flex flex-wrap gap-2">
                     {opt.values.map((val) => {
                       const active = selected[opt.name] === val;
+                      // Availability is judged against the OTHER chosen options,
+                      // so picking Blue greys out the sizes that are out of
+                      // stock in blue, without greying out Blue itself.
+                      const available = isValueAvailable(product, opt.name, val, selected);
                       return (
                         <button
                           key={val}
                           type="button"
-                          onClick={() => setSelected((s) => ({ ...s, [opt.name]: val }))}
+                          disabled={!available}
+                          onClick={() =>
+                            available && setSelected((s) => ({ ...s, [opt.name]: val }))
+                          }
                           aria-pressed={active}
+                          title={available ? undefined : `${val} — out of stock`}
                           className={`br-label border px-4 py-2.5 transition-[color,border-color,box-shadow] duration-200 ${
                             active ? "neon-line-blue" : ""
-                          }`}
+                          } ${available ? "" : "cursor-not-allowed line-through"}`}
                           style={{
                             borderRadius: "var(--radius)",
                             borderColor: active ? undefined : "var(--br-line)",
                             color: active ? "var(--br-blue)" : "var(--br-mute)",
+                            opacity: available ? 1 : 0.35,
                           }}
                         >
                           {val}
@@ -249,28 +271,32 @@ function ProductBody({ product }: { product: SellqoProduct }) {
                   </div>
                 </div>
               ))}
-              <p className="text-[12px]" style={{ color: "var(--br-mute)" }}>
-                Full variant picker arrives in the next drop.
-              </p>
             </div>
           ) : null}
 
           <button
             type="button"
             onClick={handleAdd}
-            disabled={busy || needsVariant || soldOut}
+            disabled={busy || needsVariant || soldOut || !purchasable}
             className="neon-btn mt-9 w-full justify-center"
           >
-            {soldOut
-              ? "Sold out"
-              : needsVariant
-                ? "Select options"
-                : added
-                  ? "✓ Added"
-                  : busy
-                    ? "Adding…"
-                    : "Add to bag"}
+            {!purchasable
+              ? "Coming soon"
+              : soldOut
+                ? "Sold out"
+                : needsVariant
+                  ? "Select options"
+                  : added
+                    ? "✓ Added"
+                    : busy
+                      ? "Adding…"
+                      : "Add to bag"}
           </button>
+          {!purchasable && (
+            <p className="mt-3 text-[13px]" style={{ color: "var(--br-mute)" }}>
+              {NOT_PURCHASABLE_NOTE}
+            </p>
+          )}
           {err && (
             <p className="mt-3 text-[13px]" style={{ color: "var(--br-pink)" }}>
               {err}
