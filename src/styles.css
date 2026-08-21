@@ -2,8 +2,6 @@
 @source "../src";
 @import "tw-animate-css";
 @import "./styles/tokens.css";
-/* BR-3 design-kit scaffolding — remove with src/components/kit/ if BR-4 says no. */
-@import "./styles/kit.css";
 
 @custom-variant dark (&:is(.dark *));
 

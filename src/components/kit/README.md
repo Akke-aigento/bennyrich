@@ -25,21 +25,20 @@ longer a third-party trial to keep quarantined behind one deletable `@import`.
 
 ## Why the BR-3 versions were replaced
 
-BR-3 vendored four components from [Aceternity UI](https://ui.aceternity.com)
-into this folder to evaluate the look. The evaluation succeeded — the spotlight,
-the card glow and the tagline reveal were all approved — but the **source could
-not ship**.
+BR-3 vendored four third-party components into this folder to evaluate the look.
+The evaluation succeeded — the spotlight, the card glow and the tagline reveal
+were all approved — but the **source could not ship.**
 
-Aceternity's free components are **not MIT-licensed**, contrary to what most of
-the ecosystem repeats. Their licence covers every item "available for purchase
-or download" and forbids redistributing an item's source files "regardless of
-modifications". Using the components in a delivered site is their intended use;
-**shipping their source inside a repo that syncs to Lovable and may be handed to
-a client is not.** The full research is in `docs/design-kit.md` §2.
+That vendor's free components are not MIT-licensed, contrary to what most of the
+ecosystem repeats: their licence forbids redistributing an item's source files
+"regardless of modifications". Using the components in a delivered site is their
+intended use; shipping their source inside a repo that syncs to Lovable and may
+be handed to a client is not.
 
-So BR-4 kept the approved *look* and rewrote the *code*. Nothing
-Aceternity-derived remains in this repository — `grep -ri aceternity src/`
-returns nothing.
+So BR-4 kept the approved *look* and rewrote the *code*. **The full licence
+research, and the name of the library, are in `docs/design-kit.md` §2** — kept
+out of `src/` deliberately, so that `grep -ri <vendor> src/` stays clean and can
+be used as a standing check that no vendored source has crept back in.
 
 Dropping the vendored code also let `motion` go. BR-3 flagged it as ~35–50 KB
 gzipped on every route; all three effects turned out to be expressible in CSS,
