@@ -237,3 +237,199 @@ belongs on the list for Sander's real vector artwork alongside the shh-kid.
   SellQo rows still 404 and the local fallback covers it.
 - The frozen `CheckoutForm` still shows a "Shop Perfumes" button on the
   empty-cart screen; `/perfumes` remains a redirect shim to `/shop`.
+
+---
+
+# Role audit — BR-3 (design-kit recon)
+
+Date: 2026-08-21 · Branch: `main`
+
+## Scope
+
+Evaluate whether Aceternity/Magic UI components can lift BennyRich to maison
+quality **on our stack** — TanStack Start + Vite + Tailwind, not the Next.js
+they assume. Vendor a small curated set, recolour to BR tokens, show them on one
+throwaway route `/kit`.
+
+No site rewrite. No SellQo plumbing touched — `sellqo.functions.ts`, `sellqo.ts`,
+`cart-context.tsx`, `checkout.ts`, `CheckoutForm.tsx` and `integrations/**` were
+read only, and `/kit` imports none of them. The homepage and `Header.tsx` are
+unchanged.
+
+The reusable write-up is **`docs/design-kit.md`** — that is the artifact meant
+to travel to the next tenant. This section records the decisions.
+
+## Stack findings
+
+- **Tailwind is v4.2.1**, CSS-first, no `tailwind.config.js`. This is the good
+  case: Aceternity targets v4, so **no utility classes needed rewriting**.
+- The inverse bites once: anything Aceternity declares _in_ `tailwind.config.js`
+  has nowhere to land. `InfiniteMovingCards` gets its `animate-scroll` class
+  from a config `keyframes`/`animation` extend; the v4 equivalent is
+  `@keyframes` + `@utility`, now in **`src/styles/kit.css`**.
+- React 19.2, TanStack Start 1.167, Vite 8, bun. Alias `@/*` → `./src/*`.
+- One new dependency: **`motion@13.1.0`** (`motion/react` is a straight
+  `export *` from `framer-motion`). **~35–50 KB gzipped, shipped to every route
+  once anything imports it.** If BR-4 rejects the kit, remove `motion` too.
+
+## CLI vs manual: manual, and it was not close
+
+`npx shadcn add @aceternity/...` is not viable here:
+
+1. `components.json` has `"registries": {}` — no `@aceternity` namespace, so the
+   command does not resolve as written.
+2. The payload is Next.js-shaped: `"use client"`, `next/image`, `next/link`.
+3. The CLI's Tailwind step expects a `tailwind.config.js` to extend.
+4. `card-spotlight` carries a **registry dependency on `canvas-reveal-effect`**,
+   which imports `three` and `@react-three/fiber`. The CLI would have installed
+   both silently.
+
+The useful discovery: the component pages render their code client-side, so
+fetching the HTML yields nothing, but **the shadcn registry JSON serves the real
+files** — `https://ui.aceternity.com/registry/<name>.json`. Its
+`registryDependencies` field is what exposed the `three` dependency before any
+install happened.
+
+One thing would have been free either way: Aceternity imports `cn` from
+`@/lib/utils`, which is already our alias.
+
+## Components chosen, and why subtle beat flashy
+
+Aceternity's catalogue is mostly built for loud landing pages — 3D tilt cards,
+meteor showers, glare, animated gradient borders. Those were skipped on sight.
+What was taken adds **light and pacing**, not spectacle, because that is what
+"signage seen from across a quiet room" needs.
+
+| Component             | Port                 | Role                                    |
+| --------------------- | -------------------- | --------------------------------------- |
+| `Spotlight`           | complete             | Ambient blue light behind the hero      |
+| `CardSpotlight`       | **partial**          | Cursor-following glow on a product card |
+| `TextGenerateEffect`  | complete             | Tagline reveal                          |
+| `InfiniteMovingCards` | mechanism only       | Slow marquee                            |
+| `BackgroundBeams`     | complete, **unused** | Parked for a BR-4 trial                 |
+
+Every one got a **restraint pass of ~40%** (alphas cut, travel shortened,
+durations lengthened) and recolouring through `color-mix()` over the `--br-*`
+tokens rather than hardcoded `rgba()`, so they ride the single `--glow-scale`
+knob like the rest of the system.
+
+## What did not port cleanly
+
+1. **`CardSpotlight` is a partial port.** Its `CanvasRevealEffect` layer —
+   an animated WebGL dot-matrix — was dropped: ~600KB of `three` +
+   `@react-three/fiber` for a hover decoration, and a continuously animating dot
+   field contradicts "nothing pulses". The mouse-following radial, which is what
+   the brief actually asked for, is kept. The file header says so, so nobody
+   "completes" it later without reading the reasoning.
+2. **`InfiniteMovingCards` was SSR-hostile.** Upstream duplicates the track by
+   `cloneNode`-ing children into the DOM in a `useEffect` and gates the
+   animation behind a state flag, so SSR renders a half-width static track and
+   hydration jumps. Replaced with a doubled array at render time.
+3. **`BackgroundBeams` called `Math.random()` in the render body** for all 50
+   beams — a guaranteed SSR/client hydration mismatch. Replaced with an
+   index-seeded deterministic hash.
+4. **Reduced motion needed rebuilding in all four.** The global CSS block in
+   `tokens.css` crushes durations to `0.001ms`, which makes an unguarded
+   animation _snap_ rather than not play. Each component now calls
+   `useReducedMotion()` and renders its finished state.
+
+## Licence — this is not what the brief assumed
+
+The brief said "Aceternity free components = MIT-style, confirm". **Confirmed
+false.** Checked at source on 2026-08-21:
+
+- `ui.aceternity.com/licence` presents one proprietary "Aceternity License"
+  covering "each item available for purchase or download", drawing **no**
+  free/Pro distinction. It forbids redistributing an item's "source files,
+  regardless of modifications".
+- The registry JSON has an `author` field and **no licence field**.
+- The public repo `manuarora700/ui.aceternity` has **no LICENSE file**.
+- The widespread "MIT" claim traces only to third-party blogs and directories,
+  none citing an Aceternity source.
+
+Using the components in a delivered storefront is their intended use and is not
+prohibited. Redistributing the source is — and `src/components/kit/` is source,
+in a repo that syncs to Lovable.
+
+**Decision needed from Akke before this pattern is reused on a paying tenant**
+where the client takes repo ownership. BennyRich itself is fine (private repo,
+components used not resold). If a firm answer is needed, ask Aceternity, or
+prefer **Magic UI, which is genuinely MIT**, for client work.
+
+## Deviations from the brief
+
+1. **`/hero/shh-kid-ticket.png` does not exist.** `public/` holds only
+   `favicon.svg`, `apple-touch-icon.png` and `products/`. The hero uses the
+   existing `<ShhKid>` line art — what the live homepage uses — so `/kit`
+   compares like-for-like with production. Agreed with Akke before building.
+2. **Static product data, not `useProducts`.** Agreed with Akke. `SELLQO_API_KEY`
+   is a Cloud secret, so a live hook would put a mock-server dependency on every
+   screenshot for no extra signal, and `/kit` is proving components, not the
+   data path. Names and prices are real (`seed/spec.json`).
+3. **`BackgroundBeams` is vendored but not rendered on `/kit`**, only imported
+   in a comment. The spotlight already answers "ambient light behind the hero";
+   two light treatments on one page would muddy the judgement.
+
+## The design-system tension to rule on
+
+Two components **move continuously**: the spotlight drift and the marquee.
+`CLAUDE.md` currently says _"Nothing pulses… The header is the one exception to
+'no movement'."_
+
+The spotlight is defensible — ambient light, not an animated glow, 60px over
+14s. **The marquee is not defensible under the current wording**: it never
+stops. Adopting it beyond `/kit` needs an explicit amendment, not a quiet
+exception. This is the main thing `/kit` exists to settle.
+
+## New finding: exactly which seed images are still white
+
+BR-2.1 recorded "seven of the 26 seed images are still white" without naming
+them. Measured directly this batch (mean luma of the four corners, 6% inset):
+
+- **White ground (239–255):** `monogram-puffer-pink`, `f8-tee-blue`,
+  `bust-tee-blue`, `cushion-vault-blue`.
+- **Black ground (0–16):** `panther-tee-blue`, `countach-hoodie-blue`,
+  `shh-tee-blue`, `cherub-tee-blue`, `vodka-blue`, `led-lamp-rolls-blue`,
+  `golden-ticket-print`, `br-cap-blue`.
+
+The `/kit` grid deliberately avoids the white ones — a white tile on a black
+canvas distracts from judging the component. The full 26 have not all been
+measured; the method is a four-corner luma sample and takes seconds to repeat.
+
+## Verification
+
+- `bun run build` — green.
+- `bunx tsc --noEmit` — clean.
+- `/kit` returns 200 and **server-renders** the full page: four cards, the
+  marquee track, prices as `€79,99` (nl-BE via `formatEUR`).
+- Screenshots: `docs/screens/BR-3-kit/kit-390.png`, `kit-1280.png`.
+  Captured over CDP at real device viewports (390×844, 1280×900, DSF 2) by
+  tiling and stitching. Two other capture paths were rejected and are documented
+  in the capture script's header: `captureBeyondViewport` ghosts the footer
+  icons at the page origin, and resizing the viewport to the page height
+  inflates the layout, because `br-section` padding is `clamp(80px, 12vh,
+160px)` — a 3217px viewport grows the page to 3529px.
+- Nothing in the frozen set was modified: `git diff --stat` touches only
+  `src/components/kit/**`, `src/routes/kit.tsx`, `src/routeTree.gen.ts`,
+  `src/styles/kit.css`, `src/styles.css`, `package.json`, `bun.lock` and `docs/`.
+
+## Open decision
+
+**Roll the kit out to the homepage in BR-4 — pending Akke + Sander sign-off on
+`/kit`.** Three things to rule on:
+
+1. Does the movement earn its place at all?
+2. Is the marquee worth amending "nothing moves except the header" for?
+3. Is `motion` worth ~35–50 KB gzipped on every route?
+
+If the answer is no, removal is one commit: delete `src/components/kit/`,
+`src/routes/kit.tsx`, `src/styles/kit.css`, the `@import` in `styles.css`, and
+`bun remove motion`.
+
+## Open items carried forward from BR-2.1
+
+Unchanged: real vector artwork from Sander; the DB image-URL reconcile owned by
+Akke; `--br-blue` at 3.88:1 on black being below AA for 11px text;
+`br-sunglasses` has no image; vodka stock 0 pending the accijns decision; the
+frozen `CheckoutForm` still shows a "Shop Perfumes" button on the empty-cart
+screen.

@@ -210,9 +210,36 @@ product page renders, once per browser session (`sessionStorage`, key
 `br_age_verified`). See `src/components/site/AgeGate.tsx` and
 `AGE_RESTRICTED_CATEGORIES` in `src/lib/categories.ts`.
 
+## Vendored design kit (BR-3, under evaluation)
+
+`src/components/kit/` holds four components copied from **Aceternity UI** and
+adapted in place, plus one (`background-beams.tsx`) vendored but unused. They
+are on trial and are shown **only** on `/kit`, a throwaway preview route that is
+deliberately kept out of `NAV` and marked `noindex`. Nothing in
+`src/components/site/` imports them.
+
+**They are not part of the design system.** The design system is
+`src/styles/tokens.css` and the rules above. Where the two disagree, the design
+system wins — and two of these components currently disagree with it, because
+they move (see below).
+
+- Port recipe, and why the shadcn CLI cannot be used here:
+  `src/components/kit/README.md`.
+- Component-by-component sources, licence position and the reusable
+  tenant workflow: `docs/design-kit.md`.
+- `src/styles/kit.css` holds the kit's `@keyframes` + `@utility`, kept out of
+  `tokens.css` so the whole trial is one file and one `@import` to delete.
+
+Two open questions for BR-4: the marquee **never stops moving**, which "nothing
+pulses / the header is the one exception to no movement" forbids; and
+`motion@13.1.0` costs ~35–50 KB gzipped on every route. Aceternity's free
+components are also **not MIT-licensed**, contrary to the common claim — see
+`docs/design-kit.md` before reusing this pattern on a client repo.
+
 ## Batch log
 
 | Batch  | Date       | What                                                                                                                                                                                                                                                               |
 | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                          |
 | BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm. |
+| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                   |

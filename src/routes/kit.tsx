@@ -44,14 +44,17 @@ export const Route = createFileRoute("/kit")({
 const KIT_PRODUCTS = [
   { name: "Panther Tee", price: 79.99, image: "/products/panther-tee-blue.jpg" },
   { name: "Countach Hoodie", price: 129.99, image: "/products/countach-hoodie-blue.jpg" },
-  { name: "Monogram Puffer", price: 199.99, image: "/products/monogram-puffer-pink.jpg" },
+  // Deliberately NOT Monogram Puffer / F8 Tee / Bust Tee / Vault Cushion: those
+  // four seed images still have white backgrounds (corner luma 239-255) and blow
+  // a hole in the black canvas. See docs/role-audit.md.
+  { name: "BR Cap", price: 49.99, image: "/products/br-cap-blue.jpg" },
   { name: "Shh Tee", price: 69.99, image: "/products/shh-tee-blue.jpg" },
 ];
 
 const MARQUEE_ITEMS = [
   { label: "Panther Tee" },
   { label: "Countach Hoodie" },
-  { label: "Monogram Puffer" },
+  { label: "BR Cap" },
   { label: "Champagne Bottle Runner" },
   { label: "LED Acrylic Lamp — Coupé" },
   { label: "Golden Ticket Print" },
@@ -87,7 +90,7 @@ function KitPage() {
   return (
     <SiteLayout>
       {/* Preamble ------------------------------------------------------- */}
-      <div className="br-shell br-section-t">
+      <div className="br-shell br-section-t br-section-b">
         <p className="br-section-label" style={{ color: "var(--br-mute)" }}>
           BR-3 · Internal preview
         </p>
