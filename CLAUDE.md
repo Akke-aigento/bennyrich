@@ -191,17 +191,35 @@ docs/role-audit.md).
 The raw seed bundle (`seed/`) is gitignored; only `public/products/` and
 `docs/brand/` are tracked.
 
-## Line art
+## Brand artwork
+
+`public/hero/` holds the real artwork, transparent PNGs that carry their own
+glow — so they take **no** `neon-glow-*` filter on top. Two are wired up:
+
+- `shh-kid-figure.png` (787×872) — the homepage hero. It is the LCP element, so
+  it carries `fetchPriority="high"`; React 19 hoists its own
+  `<link rel="preload" as="image">` from that, and adding one by hand only
+  duplicates it at a lower priority.
+- `panther-blue.png` (875×673) — the "Built different" banner, under a
+  `radial-gradient` mask so its square edge dissolves into the black.
+
+`shh-kid-full.png` and `shh-kid-ticket.png` are committed but unused.
+
+Because the glow is baked into the raster, **these two elements no longer track
+`--glow-scale`.** That is the accepted cost of real art over line art.
+
+### The line art, parked
 
 `shh-kid.svg` and `panther.svg` are plain SVG files inlined via `?raw` in
 `LineArt.tsx`, so a single file stays the source of truth while `currentColor`
-and the neon glow filter still apply to the strokes.
+and the neon glow filter still apply to the strokes. They were the homepage
+stand-ins until BR-4 and are **kept but no longer rendered anywhere**.
 
-`rifle.svg` is kept in the repo but deliberately **not** wired up — it read as
-a club flyer on the homepage banner and is not ad-safe. To bring it back on a
-product page, import it the way the panther is imported.
+`rifle.svg` is likewise in the repo and deliberately **not** wired up — it read
+as a club flyer on the homepage banner and is not ad-safe.
 
-All three are hand-authored stand-ins pending real vector artwork.
+To bring any of the three back on a product page, import it the way the panther
+used to be imported in `src/routes/index.tsx`.
 
 ## Age gate
 
@@ -210,31 +228,35 @@ product page renders, once per browser session (`sessionStorage`, key
 `br_age_verified`). See `src/components/site/AgeGate.tsx` and
 `AGE_RESTRICTED_CATEGORIES` in `src/lib/categories.ts`.
 
-## Vendored design kit (BR-3, under evaluation)
+## Effect components (`src/components/kit/`)
 
-`src/components/kit/` holds four components copied from **Aceternity UI** and
-adapted in place, plus one (`background-beams.tsx`) vendored but unused. They
-are on trial and are shown **only** on `/kit`, a throwaway preview route that is
-deliberately kept out of `NAV` and marked `noindex`. Nothing in
-`src/components/site/` imports them.
+`src/components/kit/` holds three small effect components used on the homepage:
+`Spotlight` (ambient light behind the hero), `SpotlightCard` (cursor-following
+glow on a product card) and `TextReveal` (word-by-word settle on the tagline).
 
-**They are not part of the design system.** The design system is
-`src/styles/tokens.css` and the rules above. Where the two disagree, the design
-system wins — and two of these components currently disagree with it, because
-they move (see below).
+**They are our own code, with no runtime dependencies** — plain CSS plus a few
+lines of React. Their keyframes live in `tokens.css` under
+`--- Ambient light + reveal (BR-4) ---`, and `src/components/kit/README.md`
+documents each one.
 
-- Port recipe, and why the shadcn CLI cannot be used here:
-  `src/components/kit/README.md`.
-- Component-by-component sources, licence position and the reusable
-  tenant workflow: `docs/design-kit.md`.
-- `src/styles/kit.css` holds the kit's `@keyframes` + `@utility`, kept out of
-  `tokens.css` so the whole trial is one file and one `@import` to delete.
+They obey the design system like everything else: every alpha is a `color-mix`
+over a brand token so they ride `--glow-scale`, all three are blue, and radius
+never exceeds 2px.
 
-Two open questions for BR-4: the marquee **never stops moving**, which "nothing
-pulses / the header is the one exception to no movement" forbids; and
-`motion@13.1.0` costs ~35–50 KB gzipped on every route. Aceternity's free
-components are also **not MIT-licensed**, contrary to the common claim — see
-`docs/design-kit.md` before reusing this pattern on a client repo.
+**Motion.** The spotlight drift is the one continuous movement on the site
+besides the header, and it is permitted as *ambient light*, not an animated
+glow — two washes travelling 60px over 14s and 18s. Nothing pulses,
+`TextReveal` runs once on mount and holds, and the card glow is a 200ms hover
+transition. Each component switches its animation off **by name** under
+`prefers-reduced-motion` and renders its rest state; the global duration crush
+in `tokens.css` is only a backstop, and on its own it makes animations snap.
+
+BR-3 trialled five vendored third-party components here instead. They were
+removed in BR-4 — the look was approved but their licence forbids redistributing
+source, which a client-owned repo would do. `docs/design-kit.md` has the full
+licence position and the reuse pattern for future tenants; `grep -ri aceternity
+src/` returning 0 hits is a standing check that no vendored source has crept
+back in.
 
 ## Batch log
 
@@ -243,3 +265,4 @@ components are also **not MIT-licensed**, contrary to the common claim — see
 | BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                          |
 | BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm. |
 | BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                   |
+| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                          |

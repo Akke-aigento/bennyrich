@@ -433,3 +433,113 @@ Akke; `--br-blue` at 3.88:1 on black being below AA for 11px text;
 `br-sunglasses` has no image; vodka stock 0 pending the accijns decision; the
 frozen `CheckoutForm` still shows a "Shop Perfumes" button on the empty-cart
 screen.
+
+---
+
+# BR-4 — homepage rollout (2026-08-21)
+
+The `/kit` evaluation was answered: **spotlight, card glow and tagline reveal
+in; marquee out.** BR-4 acts on that, with one change of plan.
+
+## Own components replacing vendored ones
+
+The client requires zero paid dependencies **and** zero licence grey area.
+BR-3's own research (`docs/design-kit.md` §2) found the vendored components are
+not MIT-licensed and their licence forbids redistributing source "regardless of
+modifications" — and this repo syncs to Lovable and may be handed to the client.
+Using them was fine; shipping their source was not.
+
+So the three approved effects were **rewritten from a written spec** as
+`Spotlight`, `SpotlightCard` and `TextReveal`. `grep -ri aceternity src/`
+returns **0 hits**; the vendor's name is kept out of `src/` deliberately so that
+grep stays useful as a standing check.
+
+**`motion` is gone.** All three turned out to be expressible in plain CSS, which
+answers BR-3's open question #3 by removal rather than by argument:
+`framer-motion+[…].mjs`, 370 KB raw / 96.6 KB gzipped, is no longer in the
+bundle, and the components ship no runtime dependency at all. Total client JS is
+now 836 KB raw / 227 KB gzipped.
+
+## Real brand artwork
+
+`public/hero/` holds four transparent PNGs from Sander. Two are wired up:
+`shh-kid-figure.png` (787×872) as the hero, `panther-blue.png` (875×673) on the
+banner under a radial mask. `shh-kid-full.png` and `shh-kid-ticket.png` are
+committed but unused.
+
+The hand-drawn `ShhKid` and `Panther` line art is **parked, not deleted** —
+`src/assets/brand/LineArt.tsx` and both SVGs stay in the repo alongside
+`rifle.svg`, as documented stand-ins.
+
+## `/kit` retired
+
+`src/routes/kit.tsx`, all five vendored components and `src/styles/kit.css` are
+deleted; `routeTree.gen.ts` regenerated with 0 `kit` references.
+`docs/screens/BR-3-kit/` is kept as the historical record.
+
+## Verification
+
+- `bun run build` — green. `bunx tsc --noEmit` — clean.
+- The homepage **server-renders** correctly: hero `<img>` with intrinsic
+  787×872 and `fetchPriority="high"`, `.br-spotlight-a` / `-b`, three
+  `.br-reveal-part` spans, the panther with its mask. Prices render `€79,99`
+  (nl-BE via `formatEUR`).
+- **Reduced motion checked with computed styles**, not by eye. Under emulated
+  `prefers-reduced-motion: reduce`: `animation-name` is `none` on both the
+  spotlight and the reveal, and the reveal renders `opacity: 1; filter: none;
+  transform: none` — the final state, not a snapped one. With motion on, the
+  spotlight drifts (`br-spotlight-drift-a`, 14s) and the reveal has settled to
+  the same final state. The card glow sits at opacity 0 with a 200ms transition.
+- Screenshots: `docs/screens/BR-4/home-390.png`, `home-1280.png`, captured over
+  CDP at 390×844 and 1280×900, DSF 2, by tiling and stitching.
+- Nothing in the frozen set was touched. `ProductCard.tsx` was not modified
+  either — `SpotlightCard` is borderless by default so it contributes only the
+  glow layer.
+
+## New findings this batch
+
+**React 19 preloads high-priority images by itself.** An explicit
+`<link rel="preload" as="image">` in the route's `head()` produced a *duplicate*
+preload at a **lower** priority than the one React already hoists from
+`<img fetchPriority="high">`. The hand-written one was removed; verified in the
+SSR output that exactly one preload remains, carrying `fetchPriority="high"`.
+
+**A fourth screenshot capture path that does not work.** BR-3 recorded three.
+Add: *priming the scroll range* — scrolling to the bottom and back to warm the
+compositor — leaves a **stale footer tile ghosted over the hero**. It was
+introduced while trying to fix the ghosting and turned out to cause it. Tile 0
+must be taken on a page that has never been scrolled. Also, a `position: sticky`
+header must be hidden with `visibility` on every tile after the first, or it is
+stitched into the page once per tile.
+
+**`bun run lint` is red, and was already.** 278 problems (266 errors), almost
+all `prettier/prettier` formatting on pages untouched by this batch — an
+identical count on BR-3's commit `10207c7`, so this batch introduces none. The
+four BR-4 files pass `eslint` cleanly on their own. Fixing the rest is a
+formatting-only sweep worth its own commit; it was left out rather than
+ballooning this diff.
+
+## Design-system note: the glow dimmer no longer reaches the artwork
+
+Every halo in the system derives from `--glow-scale`. The two hero PNGs bake
+their own glow into the raster, so **they no longer track that dimmer** — turning
+`--glow-scale` now moves the type and the frames but not the artwork. This is
+the accepted cost of real art over line art, recorded here so nobody spends an
+afternoon wondering why the hero will not dim.
+
+## Open items carried forward
+
+Unchanged from BR-2.1 / BR-3:
+
+- **Akke:** the DB image-URL reconcile to the Supabase bucket. When those URLs go
+  live, `<ProductImage>` uses them first and the local fallback never fires.
+- **Akke:** vodka stock is 0 pending the accijns decision.
+- `br-sunglasses` has no image.
+- `--br-blue` is 3.88:1 on black — below AA for 11px text. Still used for
+  `br-section-label` eyebrows.
+- Seven of the 26 seed images still have white grounds; `.br-media` is calibrated
+  for black-background photography and cannot hide them. The four measured white
+  ones are `monogram-puffer-pink`, `f8-tee-blue`, `bust-tee-blue`,
+  `cushion-vault-blue`.
+- The frozen `CheckoutForm` still shows a "Shop Perfumes" button on the
+  empty-cart screen.

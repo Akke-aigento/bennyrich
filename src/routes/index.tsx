@@ -6,7 +6,12 @@ import { SpotlightCard } from "@/components/kit/SpotlightCard";
 import { TextReveal } from "@/components/kit/TextReveal";
 import { pickFeatured, useProducts } from "@/lib/use-sellqo";
 
-/** The hero figure is the LCP element, so it is preloaded from the document head. */
+/**
+ * The hero figure is the LCP element. It carries `fetchPriority="high"`, from
+ * which React 19 hoists its own <link rel="preload" as="image" fetchpriority="high">
+ * into the head — verified in the SSR output. An explicit preload in head()
+ * here only duplicated it at a *lower* priority, so it was removed.
+ */
 const HERO_FIGURE = "/hero/shh-kid-figure.png";
 
 export const Route = createFileRoute("/")({
@@ -19,7 +24,6 @@ export const Route = createFileRoute("/")({
           "BennyRich is more than fashion. It's a lifestyle built on ambition, confidence and legacy.",
       },
     ],
-    links: [{ rel: "preload", as: "image", href: HERO_FIGURE }],
   }),
   component: Index,
 });
