@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useCart } from "@/lib/cart-context";
-import { formatEUR } from "@/lib/sellqo";
+import { formatEUR } from "@/lib/format";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({

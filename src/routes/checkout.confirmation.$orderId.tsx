@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { checkoutGetConfirmation } from "@/lib/checkout";
-import { formatEUR } from "@/lib/sellqo";
+import { formatEUR } from "@/lib/format";
 
 export const Route = createFileRoute("/checkout/confirmation/$orderId")({
   head: () => ({
@@ -24,7 +24,7 @@ function ConfirmationPage() {
     <div>
       <div className="text-center">
         <p className="ui-label text-[0.75rem]" style={{ color: "var(--br-blue)" }}>
-          Grazie
+          Thank you
         </p>
         <h2
           className="mt-2 text-[2rem]"

@@ -543,3 +543,126 @@ Unchanged from BR-2.1 / BR-3:
   `cushion-vault-blue`.
 - The frozen `CheckoutForm` still shows a "Shop Perfumes" button on the
   empty-cart screen.
+
+---
+
+# BR-5 — shop + polish (2026-08-21)
+
+Live tenant data had drifted: 24 active products, **none flagged `is_featured`**,
+four new LED lamps with no variants, apparel with Colour/Size variants. The
+homepage was showing three lamps in a row, product photos with light grounds
+were dissolving into the page, long names truncated, and the banner panther had
+almost vanished under its mask.
+
+## The neon frame, and why not per-image normalisation
+
+Product photography comes from the tenant's own admin. Seven of the 26 seed
+images have white or near-white grounds, and whatever Sander uploads next is
+outside our control. Normalising images one at a time fixes a snapshot and
+starts rotting immediately.
+
+Framing the **well** instead fixes all of them at once and keeps working: a
+`br-media-frame` utility — 55% blue border plus a 6px/35% halo, both riding
+`--glow-scale` — means the card reads against the page whatever the photo does.
+Hover keeps `neon-line-blue`, so brightening still has somewhere to go
+(55→100% border, 35→40% halo).
+
+**No double border.** Both states set `border-color` from a class, never an
+inline style, and Tailwind compiles the hover to
+`.group:hover .group-hover\:neon-line-blue` — specificity (0,2,0), which beats
+`.br-media-frame` (0,1,0) whatever the source order. Applied through
+`ProductCard`, so home, shop, collections and related products all pick it up,
+plus the product-detail gallery.
+
+## Smart featured selection
+
+`SellqoProduct` **has no category field**, so a single `/products` call cannot
+say what anything belongs to — which is exactly why "featured" had degraded to
+"whatever sorted first". The homepage now issues **one query per category**
+(the pattern `/collections` already used), making membership true by
+construction, and `src/lib/featured.ts` picks a spread: flagged pieces first if
+they ever exist, then round-robin one per category, then a top-up so the grid is
+never short. Products with no artwork are skipped in the first two passes —
+`br-sunglasses` has none, and an empty well is worse than a different product.
+
+Verified against four scenarios, including a catalogue where only one category
+has stock. Live-like data now yields apparel / accessories / home / lighting.
+
+## The variant bug this batch actually fixed
+
+The picker rendered from `product.options` and gated the add button behind
+`needsVariant`. **If SellQo returns variants but no `options` array, no chips
+render, no variant can be selected, and the product cannot be bought at all.**
+The tenant's apparel appears to use exactly that shape.
+
+`src/lib/variants.ts` now derives the options from the variants themselves,
+probing both `option_values` and `attribute_values`, preserving first-seen order
+so the picker reads Colour-then-Size. A product whose variants carry no usable
+option data is treated as **buyable** rather than locked out — absent data
+should degrade to a default add, not a dead page.
+
+Also: out-of-stock combinations render struck through and disabled, judged
+against the *other* selected options (picking Blue greys the sizes out of stock
+in blue, not Blue itself); single-value options are auto-selected; and the
+"Full variant picker arrives in the next drop" placeholder is gone.
+
+## Age gate and the vodka
+
+The 18+ interstitial was already wired and is unchanged. The vodka is held back
+by `NOT_PURCHASABLE` in `categories.ts`: it stays visible and browsable, the add
+button reads "Coming soon" with a short note, and the card carries the badge.
+Keyed by slug and independent of any admin flag, so it holds whatever the tenant
+data says. **Enabling purchase later is deleting one line.**
+
+## Verification
+
+- `bun run build` green, `bunx tsc --noEmit` clean, no frozen file touched.
+- Mock modelled on the described live data: 24 products, none featured, lamps
+  with 0 variants, apparel with `attribute_values` and **no** `options` key, and
+  deliberately out-of-stock combinations. If the derivation ever regresses, the
+  mock catches it.
+- Variant gating driven through a real browser: chips derive from
+  `attribute_values`; picking Blue disables S (out of stock in blue) while
+  M/L/XL stay live; Blue+M enables "Add to bag"; the lamp shows a plain add with
+  no picker; the vodka shows "Coming soon", disabled.
+- **Totals proved to come from the API, not from us.** The mock was temporarily
+  patched to overstate the subtotal by €100. With one €89,99 lamp in the bag the
+  drawer rendered **€189,99** — the API's inflated number, not a recomputed one.
+  That is the house rule demonstrated rather than asserted.
+- Checkout walked end to end against the mock: details → payment → confirmation
+  with an order reference, no console exceptions.
+- Screenshots: `docs/screens/BR-5/`, 7 at 1280 and 3 at 390.
+
+## New findings this batch
+
+**The checkout was rendering Italian currency format.** `checkout.tsx`,
+`checkout.payment.tsx` and `checkout.confirmation.$orderId.tsx` all imported
+`formatEUR` from the frozen `sellqo.ts`, which formats it-IT — `89,99 €` —
+directly against the house rule. None of those three routes is frozen, so all
+three now import from `lib/format.ts` and render `€89,99`. The frozen duplicate
+is untouched.
+
+**"Grazie" was still on the order confirmation** — a Zona Dorata leftover, and
+the rules say English only. Now "Thank you".
+
+**Shipping cost is not reflected in the summary until the order is submitted.**
+`checkout.payment.tsx` defers `checkoutSetShipping` to the submit handler, so
+choosing Express leaves the summary reading "Free" until completion. It is
+existing checkout logic and this batch was explicitly told not to reimplement
+any, so it is **flagged, not fixed** — worth a decision next batch.
+
+**A fifth screenshot capture trap**, on top of BR-4's four: `position: fixed`
+overlays (the cart drawer, the age gate) repaint in *every* tile exactly like a
+sticky header, so stitching stamps the drawer down the page three times. They
+are viewport-sized by design and must be captured as a single frame.
+
+## Open items
+
+- **Vodka accijns — blocks purchase.** `NOT_PURCHASABLE` holds it; delete the
+  slug to release it.
+- **Akke:** the DB image-URL reconcile to the Supabase bucket.
+- `br-sunglasses` still has no image; the featured spread routes around it.
+- `--br-blue` is 3.88:1 on black — below AA for 11px text.
+- `bun run lint` remains red at a pre-existing 278 problems, almost all
+  `prettier/prettier` formatting on files this batch never touched. Unchanged
+  count since BR-3; worth its own formatting-only sweep.

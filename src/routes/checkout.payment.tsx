@@ -10,7 +10,7 @@ import {
   type PaymentMethod,
   type ShippingMethod,
 } from "@/lib/checkout";
-import { formatEUR } from "@/lib/sellqo";
+import { formatEUR } from "@/lib/format";
 import { EmptyCartRedirect, PrimaryButton } from "@/components/site/CheckoutForm";
 
 export const Route = createFileRoute("/checkout/payment")({

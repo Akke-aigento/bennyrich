@@ -27,6 +27,7 @@ require changing one, stop and report instead of editing:
 - `src/lib/sellqo.ts`
 - `src/lib/cart-context.tsx`
 - `src/lib/checkout.ts`
+- `src/lib/use-sellqo.ts`
 - `src/components/site/CheckoutForm.tsx`
 - `src/integrations/**`
 
@@ -39,7 +40,9 @@ Also:
 - **English only. EUR. nl-BE formatting** — comma decimals, symbol tight:
   `€69,99`. Use `formatEUR` from `src/lib/format.ts`.
   (`src/lib/sellqo.ts` also exports a `formatEUR`, but it is frozen and formats
-  it-IT — `69,99 €`. Do not use it.)
+  it-IT — `69,99 €`. Do not use it. BR-5 found all three checkout routes
+  importing the frozen one and rendering `89,99 €` on the money-facing steps;
+  if you add a page that shows a price, check the import.)
 - Work on `main`, commit per step.
 
 ## How sellqoProxy is used
@@ -113,6 +116,17 @@ The header and footer lockups use `logotype-blue` and
 logo has to read as print at 18px, so the wordmark is **not** outlined and does
 **not** carry the full glow. `quiet-frame` is the hairline-plus-inner-breath
 frame used where a panel needs definition without becoming a lit box.
+
+### Product media
+
+Every product media well carries `br-media-frame`: a 55% blue border and a
+6px/35% halo, both riding `--glow-scale`. Product photography comes from the
+tenant's admin and its grounds are inconsistent — a lit frame means the well
+reads against the black page whatever the photo does, which normalising images
+one at a time would not survive. Hover swaps in `neon-line-blue`.
+
+Set the resting border with the class, never an inline style: the `group-hover:`
+variant wins on specificity, but an inline colour would beat both.
 
 ### One accent per component
 
@@ -266,3 +280,4 @@ back in.
 | BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm. |
 | BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                   |
 | BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                          |
+| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter. |
