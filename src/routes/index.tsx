@@ -183,24 +183,25 @@ function BuiltDifferentBanner() {
             Discover more <span aria-hidden>→</span>
           </Link>
         </div>
-        {/* The radial mask dissolves the artwork's edge into the black instead
-            of letting it cut a visible box out of the panel, and a small lift
-            keeps the line art off the ground. Held at 74% rather than BR-4's
-            62% because the fade used to start before the subject did.
+        {/* No radial mask. Every previous banner image was cut from a photo and
+            carried a hard rectangular edge the mask had to dissolve; this one is
+            a genuinely transparent PNG — 51% of it is fully clear and all four
+            corners are alpha 0 — so there is no edge to hide, and masking it
+            would only eat the barrel and stock.
 
-            The column is 54% rather than 46%: the rifle is a 3.58 ratio against
-            the panther's 1.13, so at the old width it read as a thin strip.
-            Right-aligned via justify-self-end, as before. */}
+            The blue drop-shadow stays: it is the house glow, and it now falls on
+            the artwork's own silhouette rather than on a rectangle.
+
+            Vertical centring comes from the grid's `items-center`; the column
+            stays at 54% so the 480px cap is what actually decides the width. */}
         <img
           src="/hero/rifle-blue.png"
           alt="The BennyRich rifle in neon blue line art"
-          width={1577}
-          height={441}
+          width={1400}
+          height={798}
           loading="lazy"
-          className="w-full max-w-[300px] justify-self-center md:max-w-none md:justify-self-end"
+          className="h-auto w-full max-h-[280px] max-w-[480px] self-center object-contain justify-self-center md:justify-self-end"
           style={{
-            maskImage: "radial-gradient(ellipse at center, #000 74%, transparent 100%)",
-            WebkitMaskImage: "radial-gradient(ellipse at center, #000 74%, transparent 100%)",
             filter:
               "brightness(1.1) drop-shadow(0 0 calc(14px * var(--glow-scale)) color-mix(in srgb, var(--br-blue) calc(22% * var(--glow-scale)), transparent))",
           }}
