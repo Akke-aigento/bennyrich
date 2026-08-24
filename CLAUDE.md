@@ -28,8 +28,12 @@ require changing one, stop and report instead of editing:
 - `src/lib/cart-context.tsx`
 - `src/lib/checkout.ts`
 - `src/lib/use-sellqo.ts`
-- `src/components/site/CheckoutForm.tsx`
 - `src/integrations/**`
+
+(`src/components/site/CheckoutForm.tsx` was on this list until BR-6. It is
+presentation only — `FormField`, `FieldError`, `PrimaryButton`,
+`EmptyCartRedirect` and a read-only `useCart` — with no SellQo logic in it, so
+it is editable. The checkout *routes* were never frozen either.)
 
 Also:
 
@@ -44,6 +48,21 @@ Also:
   importing the frozen one and rendering `89,99 €` on the money-facing steps;
   if you add a page that shows a price, check the import.)
 - Work on `main`, commit per step.
+
+## Cart variant labels
+
+`normalizeCart` in the frozen `sellqo.ts` derives a cart line's variant label
+from `variant_label ?? variant.name ?? variant.option_values`. This tenant sends
+none of those — its variants carry **`attribute_values`** — so the label comes
+back `null` and both the bag and the checkout summary show a product with no
+indication of which variant was ordered.
+
+`src/lib/cart-labels.ts` (`useCartVariantLabels`) resolves it in presentation by
+matching the line's `variant_id` against the product and building the label with
+`optionValuesOf` from `src/lib/variants.ts`. Any line that already has a label is
+passed through untouched, so **the moment `normalizeCart` learns to probe
+`attribute_values`, this file can be deleted.** Both surfaces read the one
+resolver so they cannot drift apart.
 
 ## How sellqoProxy is used
 
@@ -281,3 +300,4 @@ back in.
 | BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                   |
 | BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                          |
 | BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter. |
+| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen. |

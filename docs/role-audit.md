@@ -666,3 +666,140 @@ are viewport-sized by design and must be captured as a single frame.
 - `bun run lint` remains red at a pre-existing 278 problems, almost all
   `prettier/prettier` formatting on files this batch never touched. Unchanged
   count since BR-3; worth its own formatting-only sweep.
+
+---
+
+# BR-6 — checkout polish (2026-08-24)
+
+Three issues from the live-preview walk. One of them turned out not to be the
+issue it looked like.
+
+## Variant labels: the render was never missing
+
+**The checkout summary already rendered `it.variant_label`** — the same field,
+from the same `useCart()` context, as the cart drawer, and it had since the
+initial remix commit. The legacy tokens around it are properly aliased
+(`--ink → --br-white`, `--muted-tone → --br-mute`), so nothing was invisible
+either. There is exactly one summary that lists line items; the payment and
+confirmation steps show totals only.
+
+Two surfaces reading one field cannot disagree about data, so the symptom had to
+be **the field being empty**.
+
+**Root cause, in the frozen `sellqo.ts`.** `normalizeCart` derives the label
+from `variant_label ?? variant.name ?? variant.option_values`. This tenant sends
+none of those — its variants carry **`attribute_values`**, which is exactly why
+BR-5's `deriveOptions` had to probe both keys on the product page. The label
+comes back `null`, and because `normalizeCart` maps to a fixed shape the raw
+variant is discarded: by the time a component sees the cart there is nothing
+left to recover from.
+
+**Reproduced before fixing.** The mock previously synthesised `variant_label` on
+every cart line, which would have hidden the defect entirely. It now models the
+live payload — no `variant_label`, a nested `variant` carrying
+`attribute_values`. Against it:
+
+```
+before   DRAWER  "Panther Tee €79,99 1 Remove"
+         SUMMARY "1 Panther Tee €79,99"
+after    DRAWER  "Panther Tee Pink · L €79,99 1 Remove"
+         SUMMARY "1 Panther Tee Pink · L €79,99"
+```
+
+So the bug was **wider than reported**: the drawer lost the label too. The
+belief that the drawer was fine most likely came from the `cart_add_item`
+response carrying variant data while a later `cart_get` did not.
+
+**The fix, `src/lib/cart-labels.ts`.** For a line with a variant but no label,
+look the product up and match the variant by id, building the label with BR-5's
+`optionValuesOf` so `attribute_values` is understood. Joined with `" · "`, the
+separator `normalizeCart` itself uses, so a resolved label is indistinguishable
+from an API-supplied one. A line that already has a label is passed straight
+through — **this goes inert the moment SellQo starts sending one.** The query
+key is byte-identical to `product.$slug.tsx`, so the drawer and the summary
+share one cache entry and a shopper arriving from a product page pays nothing.
+
+> **Upstream fix, for whoever can change the frozen file:** teach
+> `normalizeCart` to probe `attribute_values` alongside `option_values`. Then
+> `cart-labels.ts` becomes dead weight and can be deleted.
+
+## One image treatment everywhere
+
+The three surfaces disagreed: the grid used `.br-media` (object-contain, 8%
+padding, 1:1) while **both** thumbnails used `object-cover`, which cropped.
+Chosen: **contain everywhere, square well.** Nothing is cropped, so the rug
+room-scene and the full-bleed tees keep their content, and every product sits
+identically framed regardless of its source ratio.
+
+Wide images still band top and bottom. That is inherent to not cropping and was
+accepted deliberately over the alternative.
+
+Before/after: `docs/screens/BR-6/thumbnails-before-after.png`. Note that both
+halves show a variant label — BR-5's mock supplied one, so that capture is a
+valid before for the **image treatment only**, not for the label.
+
+The checkout thumbnail also picked up the hairline the drawer's already had, and
+`ProductImage`'s local fallback walk that its raw `<img>` never had.
+
+**Fixed in passing:** the checkout quantity badge sat at `-top-1/-right-1`
+*inside* an `overflow: hidden` well and was being clipped. It is now a sibling of
+the well, and its colours moved off the legacy `--ink`/`--paper` aliases.
+
+## Zona Dorata leftovers
+
+`EmptyCartRedirect` sent an emptied bag to `/perfumes` with a "Shop Perfumes"
+button. Both now point at `/shop`, labelled "Shop the collection"; verified in a
+browser that emptying the bag lands on `/shop`. `src/routes/perfumes.tsx` — a
+redirect shim that existed only because `CheckoutForm` was frozen — is deleted,
+and `grep -rn perfume src/` returns nothing.
+
+**`PrimaryButton` was a solid white slab.** It rendered `background: var(--ink)`,
+which aliases to `--br-white`, against "buttons are ghost only, transparent
+ground with a 1px neon border" — on the button that closes the sale. Now
+`neon-btn`; confirmed by computed style: transparent background, `--br-blue`
+text and border.
+
+Full sweep for `perfume` / `Grazie` / `Zona` / `Dorata` / `it-IT` / `Mancini`.
+Remaining hits are all legitimate: the frozen it-IT `formatEUR` (unused by the UI
+since BR-5), an accurate protocol-lineage comment in `sellqo.functions.ts`, and
+correct history in `CLAUDE.md` and this file. `.zd-input` keeps its Zona-shaped
+class name — ten call sites of churn for no visible gain — but its stale comment
+claiming the frozen `CheckoutForm` uses it is corrected.
+
+**`CheckoutForm.tsx` is no longer frozen.** Recon confirmed it is presentation
+only — `FormField`, `FieldError`, `PrimaryButton`, `EmptyCartRedirect`, and a
+read-only `useCart`. No SellQo logic. `CLAUDE.md`'s list is updated to match.
+
+## Verification
+
+- `bun run build` green, `bunx tsc --noEmit` clean, **no frozen file touched**.
+- Label before/after proved against the live-shaped mock, both surfaces.
+- The no-variant lamp renders with no variant line, cleanly, on both surfaces.
+- **Totals still come from the API.** BR-5's lie test re-run against the checkout
+  summary: the mock was patched to overstate the subtotal by €100, and with one
+  €89,99 lamp the summary rendered **€189,99** — the API's number, not a
+  recomputed one.
+- Screenshots in `docs/screens/BR-6/`.
+
+## A sixth screenshot-capture trap
+
+BR-4 recorded four and BR-5 a fifth. Add: the checkout's **`lg:sticky` order
+summary** repaints in every tile and gets stitched in once per tile, exactly like
+the sticky header and the fixed overlays before it. The capture script now hides
+elements by **computed position** (`sticky` or `fixed`) after tile 0 rather than
+by tag name, which covers the next one without a seventh discovery.
+
+## Open items
+
+- **Vodka accijns — still blocks purchase.** `NOT_PURCHASABLE` holds it; delete
+  the slug to release.
+- **Akke:** DB image-URL reconcile to the Supabase bucket.
+- `br-sunglasses` still has no image.
+- `--br-blue` is 3.88:1 on black — below AA for 11px text.
+- **Carried from BR-5, still deferred:** choosing a shipping method does not
+  update the summary until the order is submitted, because
+  `checkout.payment.tsx` defers `checkoutSetShipping` to the submit handler.
+  Untouched again this batch — it is checkout logic, and reimplementing any
+  remains out of scope. Worth an explicit decision.
+- `bun run lint` remains red at a pre-existing ~278 prettier-formatting problems
+  on files these batches never touched.
