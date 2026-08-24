@@ -4,6 +4,7 @@ import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Monogram } from "@/assets/brand/Monogram";
 import { Wordmark } from "@/assets/brand/Wordmark";
 import { useCart } from "@/lib/cart-context";
+import { customerName, useAuth } from "@/lib/auth";
 import { CATEGORIES } from "@/lib/categories";
 
 const NAV = [
@@ -16,6 +17,7 @@ const NAV = [
 
 export function Header() {
   const { count, openCart } = useCart();
+  const { customer, status, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [shopOpen, setShopOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
@@ -178,35 +180,63 @@ export function Header() {
           </button>
 
           <div className="relative hidden sm:block">
-            <button
-              type="button"
-              onClick={() => setAccountOpen((v) => !v)}
-              aria-label="Account"
-              aria-expanded={accountOpen}
-              className="inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue-text)]"
-              style={{ color: "var(--br-white)" }}
-            >
-              <User size={19} strokeWidth={1.5} />
-            </button>
-            {accountOpen && (
-              <div
-                className="absolute right-0 top-full w-[230px] border p-4"
-                style={{ background: "var(--br-ink)", borderColor: "var(--br-line)" }}
-              >
-                <p className="br-label" style={{ color: "var(--br-white)" }}>
-                  Accounts coming soon
-                </p>
-                <p className="mt-2 text-[12px]" style={{ color: "var(--br-mute)" }}>
-                  You can check out as a guest today.
-                </p>
-                <Link
-                  to="/contact"
-                  className="br-label mt-3 inline-block transition-colors duration-200 hover:text-[var(--br-blue-text)]"
-                  style={{ color: "var(--br-blue)" }}
+            {/* Signed out, the icon is just a link to sign in — no menu to open
+                for a single destination. Signed in, it takes --br-blue-text as
+                a quiet "you are known here" and opens the short menu. */}
+            {status === "authed" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setAccountOpen((v) => !v)}
+                  aria-label={`Account — signed in as ${customer?.email ?? ""}`}
+                  aria-expanded={accountOpen}
+                  className="inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-white)]"
+                  style={{ color: "var(--br-blue-text)" }}
                 >
-                  Need help? →
-                </Link>
-              </div>
+                  <User size={19} strokeWidth={1.5} />
+                </button>
+                {accountOpen && (
+                  <div
+                    className="absolute right-0 top-full w-[230px] border p-4"
+                    style={{ background: "var(--br-ink)", borderColor: "var(--br-line)" }}
+                  >
+                    <p className="br-label truncate" style={{ color: "var(--br-white)" }}>
+                      {customerName(customer)}
+                    </p>
+                    <p className="mt-1.5 truncate text-[12px]" style={{ color: "var(--br-mute)" }}>
+                      {customer?.email}
+                    </p>
+                    <Link
+                      to="/account"
+                      onClick={() => setAccountOpen(false)}
+                      className="br-label mt-4 inline-block transition-colors duration-200 hover:text-[var(--br-white)]"
+                      style={{ color: "var(--br-blue-text)" }}
+                    >
+                      Your account →
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAccountOpen(false);
+                        void logout();
+                      }}
+                      className="br-label mt-3 block transition-colors duration-200 hover:text-[var(--br-white)]"
+                      style={{ color: "var(--br-mute)" }}
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Link
+                to="/account/login"
+                aria-label="Sign in"
+                className="inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue-text)]"
+                style={{ color: "var(--br-white)" }}
+              >
+                <User size={19} strokeWidth={1.5} />
+              </Link>
             )}
           </div>
 
@@ -304,6 +334,38 @@ export function Header() {
                   {c.name}
                 </Link>
               ))}
+            </div>
+
+            {/* The account icon is `hidden sm:block`, so without this there is
+                no way into an account from a phone. */}
+            <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--br-line)" }}>
+              {status === "authed" ? (
+                <>
+                  <Link
+                    to="/account"
+                    className="br-nav block py-3 text-[15px]"
+                    style={{ color: "var(--br-blue-text)" }}
+                  >
+                    Your account
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => void logout()}
+                    className="br-label block py-3"
+                    style={{ color: "var(--br-mute)" }}
+                  >
+                    Sign out
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/account/login"
+                  className="br-nav block py-3 text-[15px]"
+                  style={{ color: "var(--br-blue-text)" }}
+                >
+                  Sign in
+                </Link>
+              )}
             </div>
           </nav>
         </div>

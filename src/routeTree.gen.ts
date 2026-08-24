@@ -16,11 +16,17 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as CheckoutRouteImport } from './routes/checkout'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
+import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as CheckoutPaymentRouteImport } from './routes/checkout.payment'
+import { Route as AccountResetRouteImport } from './routes/account.reset'
+import { Route as AccountRegisterRouteImport } from './routes/account.register'
+import { Route as AccountLoginRouteImport } from './routes/account.login'
+import { Route as AccountForgotRouteImport } from './routes/account.forgot'
 import { Route as CheckoutConfirmationOrderIdRouteImport } from './routes/checkout.confirmation.$orderId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -58,6 +64,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -73,6 +84,11 @@ const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   path: '/',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const AccountIndexRoute = AccountIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AccountRoute,
+} as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
@@ -82,6 +98,26 @@ const CheckoutPaymentRoute = CheckoutPaymentRouteImport.update({
   id: '/payment',
   path: '/payment',
   getParentRoute: () => CheckoutRoute,
+} as any)
+const AccountResetRoute = AccountResetRouteImport.update({
+  id: '/reset',
+  path: '/reset',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountRegisterRoute = AccountRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountLoginRoute = AccountLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => AccountRoute,
+} as any)
+const AccountForgotRoute = AccountForgotRouteImport.update({
+  id: '/forgot',
+  path: '/forgot',
+  getParentRoute: () => AccountRoute,
 } as any)
 const CheckoutConfirmationOrderIdRoute =
   CheckoutConfirmationOrderIdRouteImport.update({
@@ -93,6 +129,7 @@ const CheckoutConfirmationOrderIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRouteWithChildren
   '/checkout': typeof CheckoutRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
@@ -100,8 +137,13 @@ export interface FileRoutesByFullPath {
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/account/forgot': typeof AccountForgotRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/register': typeof AccountRegisterRoute
+  '/account/reset': typeof AccountResetRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/account/': typeof AccountIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/checkout/confirmation/$orderId': typeof CheckoutConfirmationOrderIdRoute
 }
@@ -114,8 +156,13 @@ export interface FileRoutesByTo {
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/account/forgot': typeof AccountForgotRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/register': typeof AccountRegisterRoute
+  '/account/reset': typeof AccountResetRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/account': typeof AccountIndexRoute
   '/checkout': typeof CheckoutIndexRoute
   '/checkout/confirmation/$orderId': typeof CheckoutConfirmationOrderIdRoute
 }
@@ -123,6 +170,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/account': typeof AccountRouteWithChildren
   '/checkout': typeof CheckoutRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
@@ -130,8 +178,13 @@ export interface FileRoutesById {
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/account/forgot': typeof AccountForgotRoute
+  '/account/login': typeof AccountLoginRoute
+  '/account/register': typeof AccountRegisterRoute
+  '/account/reset': typeof AccountResetRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/account/': typeof AccountIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/checkout/confirmation/$orderId': typeof CheckoutConfirmationOrderIdRoute
 }
@@ -140,6 +193,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/account'
     | '/checkout'
     | '/collections'
     | '/contact'
@@ -147,8 +201,13 @@ export interface FileRouteTypes {
     | '/shipping-returns'
     | '/shop'
     | '/terms'
+    | '/account/forgot'
+    | '/account/login'
+    | '/account/register'
+    | '/account/reset'
     | '/checkout/payment'
     | '/product/$slug'
+    | '/account/'
     | '/checkout/'
     | '/checkout/confirmation/$orderId'
   fileRoutesByTo: FileRoutesByTo
@@ -161,14 +220,20 @@ export interface FileRouteTypes {
     | '/shipping-returns'
     | '/shop'
     | '/terms'
+    | '/account/forgot'
+    | '/account/login'
+    | '/account/register'
+    | '/account/reset'
     | '/checkout/payment'
     | '/product/$slug'
+    | '/account'
     | '/checkout'
     | '/checkout/confirmation/$orderId'
   id:
     | '__root__'
     | '/'
     | '/about'
+    | '/account'
     | '/checkout'
     | '/collections'
     | '/contact'
@@ -176,8 +241,13 @@ export interface FileRouteTypes {
     | '/shipping-returns'
     | '/shop'
     | '/terms'
+    | '/account/forgot'
+    | '/account/login'
+    | '/account/register'
+    | '/account/reset'
     | '/checkout/payment'
     | '/product/$slug'
+    | '/account/'
     | '/checkout/'
     | '/checkout/confirmation/$orderId'
   fileRoutesById: FileRoutesById
@@ -185,6 +255,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  AccountRoute: typeof AccountRouteWithChildren
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CollectionsRoute: typeof CollectionsRoute
   ContactRoute: typeof ContactRoute
@@ -246,6 +317,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -267,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutIndexRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/account/': {
+      id: '/account/'
+      path: '/'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AccountIndexRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/product/$slug': {
       id: '/product/$slug'
       path: '/product/$slug'
@@ -281,6 +366,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPaymentRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/account/reset': {
+      id: '/account/reset'
+      path: '/reset'
+      fullPath: '/account/reset'
+      preLoaderRoute: typeof AccountResetRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/register': {
+      id: '/account/register'
+      path: '/register'
+      fullPath: '/account/register'
+      preLoaderRoute: typeof AccountRegisterRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/login': {
+      id: '/account/login'
+      path: '/login'
+      fullPath: '/account/login'
+      preLoaderRoute: typeof AccountLoginRouteImport
+      parentRoute: typeof AccountRoute
+    }
+    '/account/forgot': {
+      id: '/account/forgot'
+      path: '/forgot'
+      fullPath: '/account/forgot'
+      preLoaderRoute: typeof AccountForgotRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/checkout/confirmation/$orderId': {
       id: '/checkout/confirmation/$orderId'
       path: '/confirmation/$orderId'
@@ -290,6 +403,25 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AccountRouteChildren {
+  AccountForgotRoute: typeof AccountForgotRoute
+  AccountLoginRoute: typeof AccountLoginRoute
+  AccountRegisterRoute: typeof AccountRegisterRoute
+  AccountResetRoute: typeof AccountResetRoute
+  AccountIndexRoute: typeof AccountIndexRoute
+}
+
+const AccountRouteChildren: AccountRouteChildren = {
+  AccountForgotRoute: AccountForgotRoute,
+  AccountLoginRoute: AccountLoginRoute,
+  AccountRegisterRoute: AccountRegisterRoute,
+  AccountResetRoute: AccountResetRoute,
+  AccountIndexRoute: AccountIndexRoute,
+}
+
+const AccountRouteWithChildren =
+  AccountRoute._addFileChildren(AccountRouteChildren)
 
 interface CheckoutRouteChildren {
   CheckoutPaymentRoute: typeof CheckoutPaymentRoute
@@ -310,6 +442,7 @@ const CheckoutRouteWithChildren = CheckoutRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  AccountRoute: AccountRouteWithChildren,
   CheckoutRoute: CheckoutRouteWithChildren,
   CollectionsRoute: CollectionsRoute,
   ContactRoute: ContactRoute,

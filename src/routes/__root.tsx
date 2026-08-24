@@ -23,6 +23,7 @@ import { Wordmark } from "../assets/brand/Wordmark";
 import { CartDrawer } from "../components/site/CartDrawer";
 import { CookieBanner } from "../components/site/CookieBanner";
 import { ConsentProvider } from "../lib/consent";
+import { AuthProvider } from "../lib/auth";
 import { SOCIALS } from "../components/site/Footer";
 import { Toaster } from "sonner";
 
@@ -214,13 +215,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ConsentProvider>
-        <CartProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-          <CartDrawer />
-          <CookieBanner />
-          <Toaster position="bottom-right" />
-        </CartProvider>
+        <AuthProvider>
+          <CartProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+            <CartDrawer />
+            <CookieBanner />
+            <Toaster position="bottom-right" />
+          </CartProvider>
+        </AuthProvider>
       </ConsentProvider>
     </QueryClientProvider>
   );
