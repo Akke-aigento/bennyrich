@@ -86,12 +86,20 @@ function resolveAction(
     }
     if (segments[2] === "items") {
       if (segments.length === 3 && method === "POST") {
-        return { action: "cart_add_item", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+        return {
+          action: "cart_add_item",
+          tenant_id: tenantId,
+          params: { ...params, ...(body ?? {}) },
+        };
       }
       if (segments.length === 4) {
         params.item_id = segments[3];
         if (method === "PUT" || method === "PATCH") {
-          return { action: "cart_update_item", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+          return {
+            action: "cart_update_item",
+            tenant_id: tenantId,
+            params: { ...params, ...(body ?? {}) },
+          };
         }
         if (method === "DELETE") {
           return { action: "cart_remove_item", tenant_id: tenantId, params };
@@ -100,38 +108,78 @@ function resolveAction(
     }
     if (segments[2] === "discount") {
       if (method === "POST") {
-        return { action: "cart_apply_discount", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+        return {
+          action: "cart_apply_discount",
+          tenant_id: tenantId,
+          params: { ...params, ...(body ?? {}) },
+        };
       }
       if (method === "DELETE") {
-        return { action: "cart_remove_discount", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+        return {
+          action: "cart_remove_discount",
+          tenant_id: tenantId,
+          params: { ...params, ...(body ?? {}) },
+        };
       }
     }
   }
 
   if (segments[0] === "checkout") {
     if (segments.length === 1 && method === "POST") {
-      return { action: "checkout_start", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_start",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "customer" && method === "POST") {
-      return { action: "checkout_customer", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_customer",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "address" && method === "POST") {
-      return { action: "checkout_address", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_address",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "shipping" && method === "POST") {
-      return { action: "checkout_shipping", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_shipping",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "select-payment-method" && method === "POST") {
-      return { action: "checkout_select_payment_method", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_select_payment_method",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "complete" && method === "POST") {
-      return { action: "checkout_complete", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_complete",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "discount" && method === "POST") {
-      return { action: "checkout_apply_discount", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_apply_discount",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "discount" && method === "DELETE") {
-      return { action: "checkout_remove_discount", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+      return {
+        action: "checkout_remove_discount",
+        tenant_id: tenantId,
+        params: { ...params, ...(body ?? {}) },
+      };
     }
     if (segments[1] === "order" && method === "GET") {
       Object.assign(params, q);
@@ -144,11 +192,19 @@ function resolveAction(
   }
 
   if (segments[0] === "newsletter" && method === "POST") {
-    return { action: "newsletter_subscribe", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+    return {
+      action: "newsletter_subscribe",
+      tenant_id: tenantId,
+      params: { ...params, ...(body ?? {}) },
+    };
   }
 
   if (segments[0] === "contact" && method === "POST") {
-    return { action: "submit_contact", tenant_id: tenantId, params: { ...params, ...(body ?? {}) } };
+    return {
+      action: "submit_contact",
+      tenant_id: tenantId,
+      params: { ...params, ...(body ?? {}) },
+    };
   }
 
   return {
@@ -156,6 +212,165 @@ function resolveAction(
     tenant_id: tenantId,
     params: { ...params, ...q, ...(body ?? {}) },
   };
+}
+
+// ---------------------------------------------------------------------------
+// Customer API (BR-9a)
+//
+// SellQo core runs a SECOND edge function, `storefront-customer-api`, for
+// customer auth: register/login, profile, orders, addresses, wishlist. It speaks
+// the same { action, tenant_id, params } protocol and the same X-API-Key, plus
+// an `x-storefront-token` bearer for authed actions.
+//
+// This is bolted on ADDITIVELY. `resolveAction` and the storefront-api request
+// path below are untouched; customer paths branch out before any of it runs.
+//
+// NAMING, so nobody trips: the proxy paths below (`/account/me`, `/wishlist`)
+// are an internal REST-ish vocabulary for this function. They are NOT the app's
+// /account/* routes, which merely happen to share a prefix.
+//
+// THE TOKEN NEVER REACHES THE BROWSER. login/register responses are intercepted
+// here: the token goes into an httpOnly cookie and is stripped from the payload
+// returned to the client. That is the whole reason this lives in the proxy —
+// a cookie written by client JS is no safer than localStorage, because script
+// injected into the page can read both.
+// ---------------------------------------------------------------------------
+
+const CUSTOMER_PATH_RE = /^\/(auth|account|wishlist)(\/|$)/;
+
+const TOKEN_COOKIE = "br_customer_token";
+const TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // the customer-api issues a 7-day JWT
+
+/** Actions the edge function requires a bearer token for. */
+const PUBLIC_CUSTOMER_ACTIONS = new Set([
+  "register",
+  "login",
+  "request_password_reset",
+  "reset_password",
+]);
+
+export function isCustomerPath(path: string): boolean {
+  return CUSTOMER_PATH_RE.test(path);
+}
+
+/**
+ * Map the REST-ish customer paths onto customer-api actions. Separate from
+ * `resolveAction` on purpose — the two APIs share a protocol, not a vocabulary.
+ *
+ * The full map lands in one go, including the orders/addresses/wishlist routes
+ * BR-9b will use, so this file is opened once rather than twice.
+ */
+function resolveCustomerAction(
+  method: string,
+  path: string,
+  query: Record<string, string | number | undefined>,
+  body: Record<string, unknown> | null,
+): { action: string; params: Record<string, unknown> } | null {
+  const segments = path.replace(/^\//, "").split("/").filter(Boolean);
+  const q: Record<string, string> = {};
+  for (const [k, v] of Object.entries(query)) {
+    if (v !== undefined && v !== null && v !== "") q[k] = String(v);
+  }
+  const withBody = { ...q, ...(body ?? {}) };
+
+  if (segments[0] === "auth") {
+    if (method === "POST") {
+      if (segments[1] === "register") return { action: "register", params: withBody };
+      if (segments[1] === "login") return { action: "login", params: withBody };
+      if (segments[1] === "forgot") return { action: "request_password_reset", params: withBody };
+      if (segments[1] === "reset") return { action: "reset_password", params: withBody };
+    }
+    return null;
+  }
+
+  if (segments[0] === "account") {
+    if (segments[1] === "me") {
+      if (method === "GET") return { action: "get_profile", params: {} };
+      if (method === "PATCH" || method === "PUT")
+        return { action: "update_profile", params: withBody };
+    }
+    if (segments[1] === "password" && method === "POST")
+      return { action: "change_password", params: withBody };
+
+    if (segments[1] === "orders") {
+      if (segments.length === 2 && method === "GET") return { action: "get_orders", params: q };
+      if (segments.length === 3 && method === "GET")
+        return { action: "get_order", params: { ...q, order_id: segments[2] } };
+    }
+
+    if (segments[1] === "addresses") {
+      if (segments.length === 2 && method === "GET") return { action: "get_addresses", params: {} };
+      if (segments.length === 2 && method === "POST")
+        return { action: "add_address", params: withBody };
+      if (segments.length === 3 && (method === "PATCH" || method === "PUT"))
+        return { action: "update_address", params: { ...withBody, address_id: segments[2] } };
+      if (segments.length === 3 && method === "DELETE")
+        return { action: "delete_address", params: { address_id: segments[2] } };
+    }
+    return null;
+  }
+
+  if (segments[0] === "wishlist") {
+    if (segments.length === 1 && method === "GET") return { action: "wishlist_get", params: {} };
+    if (segments.length === 1 && method === "POST")
+      return { action: "wishlist_add", params: withBody };
+    if (segments.length === 2 && method === "DELETE")
+      return { action: "wishlist_remove", params: { product_id: segments[1] } };
+  }
+
+  return null;
+}
+
+/**
+ * Cookie helpers, loaded lazily.
+ *
+ * `@tanstack/react-start/server` is server-only and this module is imported by
+ * client code, so importing it at the top level risks pulling server code into
+ * the browser bundle. Inside the handler the server-fn boundary strips it.
+ */
+async function cookieApi() {
+  return await import("@tanstack/react-start/server");
+}
+
+async function readCustomerToken(): Promise<string | undefined> {
+  try {
+    const { getCookie } = await cookieApi();
+    return getCookie(TOKEN_COOKIE) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+async function writeCustomerToken(token: string): Promise<void> {
+  try {
+    const { setCookie } = await cookieApi();
+    setCookie(TOKEN_COOKIE, token, {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: TOKEN_MAX_AGE,
+      // Secure would stop the cookie being set over plain http, which is what
+      // local development runs on.
+      secure: process.env.NODE_ENV === "production",
+    });
+  } catch (error) {
+    console.warn("[customer-api] could not set the session cookie:", error);
+  }
+}
+
+async function clearCustomerToken(): Promise<void> {
+  try {
+    const { setCookie } = await cookieApi();
+    setCookie(TOKEN_COOKIE, "", {
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 0,
+      secure: process.env.NODE_ENV === "production",
+    });
+  } catch {
+    /* nothing to clear */
+  }
 }
 
 export const sellqoProxy = createServerFn({ method: "POST" })
@@ -186,9 +401,94 @@ export const sellqoProxy = createServerFn({ method: "POST" })
 
     const method = (data.method ?? "GET").toUpperCase();
     const bodyObj =
-      data.body && typeof data.body === "object"
-        ? (data.body as Record<string, unknown>)
-        : null;
+      data.body && typeof data.body === "object" ? (data.body as Record<string, unknown>) : null;
+
+    // --- Customer API branch ------------------------------------------------
+    // Taken before anything below runs, so the storefront-api path is unchanged.
+    if (isCustomerPath(data.path)) {
+      // Logout never leaves this function: there is nothing to invalidate
+      // upstream, the session IS the cookie.
+      if (method === "POST" && /^\/auth\/logout\/?$/.test(data.path)) {
+        await clearCustomerToken();
+        return { ok: true } as any;
+      }
+
+      const resolved = resolveCustomerAction(method, data.path, data.query ?? {}, bodyObj);
+      if (!resolved) {
+        throw new Error(`sellqoProxy: unsupported customer route ${method} ${data.path}`);
+      }
+
+      // Derive the customer endpoint from the URL already validated above, so
+      // the existing guard keeps doing its job and there is no second secret.
+      const customerUrl = url.replace(
+        "/functions/v1/storefront-api",
+        "/functions/v1/storefront-customer-api",
+      );
+
+      const needsAuth = !PUBLIC_CUSTOMER_ACTIONS.has(resolved.action);
+      const token = needsAuth ? await readCustomerToken() : undefined;
+      if (needsAuth && !token) {
+        throw new Error("NOT_AUTHENTICATED");
+      }
+
+      const customerRes = await fetch(customerUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey,
+          accept: "application/json",
+          ...(token ? { "x-storefront-token": token } : {}),
+        },
+        body: JSON.stringify({
+          action: resolved.action,
+          tenant_id: tenantId,
+          params: resolved.params,
+        }),
+      });
+
+      const customerText = await customerRes.text();
+      let customerJson: any = null;
+      try {
+        customerJson = customerText ? JSON.parse(customerText) : null;
+      } catch {
+        customerJson = { raw: customerText };
+      }
+
+      // A rejected token is dead weight — drop it so the client cannot loop on
+      // a session the server has already stopped honouring.
+      if (customerRes.status === 401 || customerRes.status === 403) {
+        await clearCustomerToken();
+        throw new Error("NOT_AUTHENTICATED");
+      }
+
+      if (!customerRes.ok) {
+        const message =
+          customerJson?.error ??
+          customerJson?.message ??
+          `SellQo customer API ${customerRes.status} ${customerRes.statusText}`;
+        throw new Error(typeof message === "string" ? message : JSON.stringify(message));
+      }
+
+      const payloadData =
+        customerJson && typeof customerJson === "object" && "data" in customerJson
+          ? customerJson.data
+          : customerJson;
+
+      // Capture the session and keep it out of the browser entirely.
+      if (
+        (resolved.action === "login" || resolved.action === "register") &&
+        payloadData &&
+        typeof payloadData === "object" &&
+        typeof payloadData.token === "string"
+      ) {
+        await writeCustomerToken(payloadData.token);
+        const { token: _token, ...withoutToken } = payloadData;
+        return withoutToken as any;
+      }
+
+      return payloadData as any;
+    }
+    // --- end Customer API branch --------------------------------------------
 
     const payload = resolveAction(method, data.path, data.query ?? {}, bodyObj, tenantId);
 
