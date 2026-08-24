@@ -34,11 +34,8 @@ function ResetPage() {
   const [serverErr, setServerErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // NOTE (open item): the reset email sent by the core edge function links to
-  // sellqo.lovable.app/shop/{slug}/reset-password, not here, so today nobody
-  // arrives on this page from an email. It works for anyone who does arrive
-  // with the right params. Making that URL tenant-aware is a core change —
-  // see docs/role-audit.md.
+  // BR-10: the core reset email now links here. The proxy sends url_base with
+  // request_password_reset, and core builds {url_base}/account/reset from it.
   const usable = Boolean(token && email);
 
   async function onSubmit(e: React.FormEvent) {

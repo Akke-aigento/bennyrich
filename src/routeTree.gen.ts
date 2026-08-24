@@ -24,6 +24,7 @@ import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as CheckoutPaymentRouteImport } from './routes/checkout.payment'
 import { Route as AccountWishlistRouteImport } from './routes/account.wishlist'
+import { Route as AccountVerifyRouteImport } from './routes/account.verify'
 import { Route as AccountResetRouteImport } from './routes/account.reset'
 import { Route as AccountRegisterRouteImport } from './routes/account.register'
 import { Route as AccountLoginRouteImport } from './routes/account.login'
@@ -106,6 +107,11 @@ const AccountWishlistRoute = AccountWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => AccountRoute,
 } as any)
+const AccountVerifyRoute = AccountVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AccountRoute,
+} as any)
 const AccountResetRoute = AccountResetRouteImport.update({
   id: '/reset',
   path: '/reset',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/account/login': typeof AccountLoginRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
+  '/account/verify': typeof AccountVerifyRoute
   '/account/wishlist': typeof AccountWishlistRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -175,6 +182,7 @@ export interface FileRoutesByTo {
   '/account/login': typeof AccountLoginRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
+  '/account/verify': typeof AccountVerifyRoute
   '/account/wishlist': typeof AccountWishlistRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -199,6 +207,7 @@ export interface FileRoutesById {
   '/account/login': typeof AccountLoginRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
+  '/account/verify': typeof AccountVerifyRoute
   '/account/wishlist': typeof AccountWishlistRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -224,6 +233,7 @@ export interface FileRouteTypes {
     | '/account/login'
     | '/account/register'
     | '/account/reset'
+    | '/account/verify'
     | '/account/wishlist'
     | '/checkout/payment'
     | '/product/$slug'
@@ -245,6 +255,7 @@ export interface FileRouteTypes {
     | '/account/login'
     | '/account/register'
     | '/account/reset'
+    | '/account/verify'
     | '/account/wishlist'
     | '/checkout/payment'
     | '/product/$slug'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/account/login'
     | '/account/register'
     | '/account/reset'
+    | '/account/verify'
     | '/account/wishlist'
     | '/checkout/payment'
     | '/product/$slug'
@@ -397,6 +409,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountWishlistRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/account/verify': {
+      id: '/account/verify'
+      path: '/verify'
+      fullPath: '/account/verify'
+      preLoaderRoute: typeof AccountVerifyRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/account/reset': {
       id: '/account/reset'
       path: '/reset'
@@ -448,6 +467,7 @@ interface AccountRouteChildren {
   AccountLoginRoute: typeof AccountLoginRoute
   AccountRegisterRoute: typeof AccountRegisterRoute
   AccountResetRoute: typeof AccountResetRoute
+  AccountVerifyRoute: typeof AccountVerifyRoute
   AccountWishlistRoute: typeof AccountWishlistRoute
   AccountIndexRoute: typeof AccountIndexRoute
 }
@@ -458,6 +478,7 @@ const AccountRouteChildren: AccountRouteChildren = {
   AccountLoginRoute: AccountLoginRoute,
   AccountRegisterRoute: AccountRegisterRoute,
   AccountResetRoute: AccountResetRoute,
+  AccountVerifyRoute: AccountVerifyRoute,
   AccountWishlistRoute: AccountWishlistRoute,
   AccountIndexRoute: AccountIndexRoute,
 }
