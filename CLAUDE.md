@@ -214,12 +214,26 @@ The SellQo product rows point at Supabase bucket URLs that are **not live yet**
 - When the bucket URLs go live nothing needs changing — the API URL simply
   succeeds first and the fallback never fires.
 
-Every cover sits in a `.br-media` well: pure `--br-black` ground, `object-fit:
-contain`, 8% padding and a 6%-opacity radial vignette, so covers stay
-consistent and a residual dark edge dissolves instead of forming a seam. This
-is calibrated for **black-background photography** — it cannot hide a pure
-white field, and as of BR-2.1 seven of the 26 seed images are still white (see
-docs/role-audit.md).
+Every cover sits in a `.br-media` well: pure `--br-black` ground,
+**`object-fit: cover`, centred, no padding**, plus a 6%-opacity radial vignette.
+Source aspect ratios differ, so BR-7 moved off `contain` — under it each product
+floated at a different size inside an identical frame and a row read as products
+floating in black. Cover gives every tile the same framing, at the cost of
+cropping the edges.
+
+**The one exception is `.br-media-contain`**, used only on the large
+product-detail image, where the whole garment has to be visible. Its rule must
+stay *after* the base rule in `tokens.css` — equal specificity, so source order
+decides.
+
+Two consequences to know:
+
+- **10 of the 26 seed images lose ≥19% of their content** to the centre crop —
+  the countach hoodie (a front+back shot) loses 32% of its width. These need
+  reshooting, not CSS exceptions; there are deliberately no per-product
+  `object-position` overrides. The measured list is in `docs/role-audit.md`.
+- Cover makes the **white-ground images louder**, not quieter: six of them now
+  fill their neon frame with solid white instead of sitting inset in black.
 
 The raw seed bundle (`seed/`) is gitignored; only `public/products/` and
 `docs/brand/` are tracked.
@@ -301,3 +315,4 @@ back in.
 | BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                          |
 | BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter. |
 | BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen. |
+| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot. |

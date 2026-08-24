@@ -803,3 +803,97 @@ by tag name, which covers the next one without a seventh discovery.
   remains out of scope. Worth an explicit decision.
 - `bun run lint` remains red at a pre-existing ~278 prettier-formatting problems
   on files these batches never touched.
+
+---
+
+# BR-7 — image fit: contain → cover (2026-08-24)
+
+BR-6 put every product image on `object-fit: contain` so nothing was cropped.
+The side effect: source aspect ratios still differ, so each product floated at a
+different size inside an identical frame and a row read as **products floating
+in black** rather than as a grid.
+
+**Decision: centre-cover.** A uniform row beats preserving full bleed. Every
+image now fills its square well edge to edge, so framing is identical regardless
+of source ratio, and the edges crop. Before/after:
+`docs/screens/BR-7/grid-before-after.png`.
+
+## The one exception
+
+The **large product-detail image keeps `contain`**, via a new
+`.br-media-contain` modifier. It is the single place a shopper is deciding
+whether to buy, and it must show the whole garment — measured, a centre crop
+costs the countach hoodie 32% of its width, and that image is a front+back shot,
+so cover cuts one garment off entirely. The gallery's thumbnail strip is a row
+and follows the row rule.
+
+Rule order in `tokens.css` is load-bearing: the gallery element carries both
+classes and the selectors have equal specificity, so `.br-media-contain > img`
+must stay *after* `.br-media > img`. Commented in place.
+
+## What cover costs, measured
+
+All 26 committed seed images analysed by **content bounding box** — background
+sampled from the corners, then the fraction of content falling outside a centre
+square. Ratio alone is misleading: `br-cap` is 1.50 wide but loses nothing,
+because the cap sits centred in black.
+
+**10 of 26 lose ≥19% of their content — these are Sander's to reshoot or
+recrop:**
+
+| Product | Ratio | Lost | Why it matters |
+| --- | --- | --- | --- |
+| `led-lamp-rifle` | 1.87 | 39% H | Not wired up anywhere (ad-safety) — cosmetic only |
+| `countach-hoodie` blue + pink | 1.50 | 32% H | **Front+back shot; one garment is cut off** |
+| `vodka` blue + pink | 0.71 | 26% V | Tall bottle; cap and/or base clipped |
+| `led-lamp-rolls-pink` | 1.50 | 26% H | Wide lamp shot |
+| `runner-champagne-pink` | 0.80 | 20% V | Tall runner |
+| `led-lamp-rolls-blue` | 1.82 | 20% H | Wide lamp shot |
+| `f8-tee` blue + pink | 1.25 | 19% H | Two-model shot; one model clipped |
+
+Borderline (7–18%): `shh-tee`, `bust-tee`, `cherub-tee`,
+`rug-monogram-frame`, `distressed-tee` ×2.
+Untouched: both `panther-tee`, both `br-cap`, all three cushions,
+`golden-ticket-print`, `monogram-puffer`, `rug-allover`.
+
+**No per-product `object-position` hacks** — centre-cover is the rule. The fix
+is better source images, not CSS exceptions.
+
+## The second-order effect: white grounds got louder
+
+Cover makes the white-background problem **more prominent, not less.** Six seed
+images have near-white grounds (`f8-tee` ×2, `bust-tee`, all three cushions at
+254–255, `monogram-puffer` at 240). Under contain they were inset by 8% padding
+with black around them. Under cover they are **solid white squares filling the
+neon frame**, edge to edge, on a black page — clearly visible in
+`docs/screens/BR-7/shop-grid-1280.png`.
+
+So the row is now uniform in *shape* but not in *ground*: black tiles beside
+white ones. Same reshoot list, and it is the most likely thing to look worse
+than expected.
+
+## Verification
+
+- `bun run build` green, `bunx tsc --noEmit` clean, **no frozen file touched**.
+- **Asserted by computed style, not by eye:** the shop grid reports
+  `object-fit: cover` with `object-position: 50% 50%` and `0px` padding across
+  23 images; the product gallery reports `contain` with 8% padding; the gallery
+  thumbnails report `cover`.
+- Screenshots in `docs/screens/BR-7/` — homepage and `/shop` at 1280 + 390, the
+  product gallery, cart drawer and checkout summary thumbnails, and the grid
+  before/after.
+
+## Open items
+
+Unchanged, and now joined by the reshoot list above:
+
+- **Vodka accijns — still blocks purchase.** `NOT_PURCHASABLE` holds it.
+- **Akke:** DB image-URL reconcile to the Supabase bucket.
+- `br-sunglasses` still has no image (renders the "No image" placeholder).
+- `--br-blue` is 3.88:1 on black — below AA for 11px text.
+- **Carried from BR-5, deferred twice:** choosing a shipping method does not
+  update the summary until the order is submitted, because
+  `checkout.payment.tsx` defers `checkoutSetShipping` to the submit handler.
+  Untouched again — it wants an explicit decision rather than another deferral.
+- `bun run lint` remains red at a pre-existing ~278 prettier-formatting problems
+  on files these batches never touched.
