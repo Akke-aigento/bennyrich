@@ -26,6 +26,39 @@ export type CustomerAddress = {
   default?: boolean;
 };
 
+/**
+ * An order as the list endpoint returns it. Core selects a fixed, narrow set of
+ * columns for get_orders; get_order returns the whole row plus its items, so the
+ * detail type is deliberately looser.
+ */
+export type CustomerOrder = {
+  id?: string;
+  order_number?: string;
+  status?: string;
+  payment_status?: string;
+  total?: number | string;
+  currency?: string;
+  created_at?: string;
+  [key: string]: unknown;
+};
+
+export type CustomerOrderItem = {
+  product_name?: string;
+  quantity?: number;
+  unit_price?: number | string;
+  total?: number | string;
+  product_image?: string;
+};
+
+export type CustomerOrderDetail = CustomerOrder & {
+  order_items?: CustomerOrderItem[];
+  subtotal?: number | string;
+  shipping_cost?: number | string;
+  tax_amount?: number | string;
+  shipping_address?: unknown;
+  billing_address?: unknown;
+};
+
 export type WishlistEntry = {
   id?: string;
   product_id?: string;
@@ -50,6 +83,84 @@ export function unwrapAddresses(raw: unknown): CustomerAddress[] {
 
 export function unwrapWishlist(raw: unknown): WishlistEntry[] {
   return unwrapList<WishlistEntry>(raw, ["items", "wishlist", "products", "favorites", "data"]);
+}
+
+export function unwrapOrders(raw: unknown): CustomerOrder[] {
+  return unwrapList<CustomerOrder>(raw, ["orders", "items", "data", "results"]);
+}
+
+/** The single order behind get_order, whatever envelope it arrives in. */
+export function unwrapOrder(raw: unknown): CustomerOrderDetail | null {
+  if (!raw || typeof raw !== "object") return null;
+  const obj = raw as Record<string, unknown>;
+  for (const key of ["order", "data"]) {
+    const nested = obj[key];
+    if (nested && typeof nested === "object" && !Array.isArray(nested)) {
+      return nested as CustomerOrderDetail;
+    }
+  }
+  return obj as CustomerOrderDetail;
+}
+
+/**
+ * A money field, whatever type it arrives as. Totals are ALWAYS taken from the
+ * API — nothing here adds anything up.
+ */
+export function orderAmount(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+/**
+ * Core's status vocabulary is snake_case and aimed at the admin. Anything we do
+ * not have a phrase for falls back to the raw value with the underscores taken
+ * out, so a new status shows up readable instead of blank.
+ */
+const ORDER_STATUS_EN: Record<string, string> = {
+  pending: "Pending",
+  processing: "Being prepared",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  returned: "Returned",
+  partially_returned: "Partly returned",
+};
+
+const PAYMENT_STATUS_EN: Record<string, string> = {
+  unpaid: "Awaiting payment",
+  paid: "Paid",
+  refunded: "Refunded",
+  partially_refunded: "Partly refunded",
+  failed: "Payment failed",
+};
+
+function humanise(value: string | undefined, map: Record<string, string>): string | null {
+  if (!value) return null;
+  return map[value] ?? value.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+}
+
+export function orderStatusLabel(order: CustomerOrder): string | null {
+  return humanise(order.status, ORDER_STATUS_EN);
+}
+
+export function paymentStatusLabel(order: CustomerOrder): string | null {
+  return humanise(order.payment_status, PAYMENT_STATUS_EN);
+}
+
+/** Order date in the site's English voice: "12 March 2026". */
+export function formatOrderDate(value: string | undefined): string | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
 }
 
 /** The identifier the update/delete actions expect. */

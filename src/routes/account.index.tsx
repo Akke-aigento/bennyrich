@@ -12,20 +12,17 @@ export const Route = createFileRoute("/account/")({
 });
 
 /**
- * Orders and Profile are deliberately NOT links.
+ * BR-10: Orders and Profile are live.
  *
- * Order history cannot be shipped safely yet: get_orders matches by
- * customer_email and get_profile does not return email_verified, so there is
- * nothing to gate on and an unguarded page would expose other people's guest
- * orders. Profile editing simply has not been built. Both stay visible with an
- * honest note rather than pointing at a page that does not exist or cannot
- * load safely — see docs/role-audit.md.
+ * Order history was held back until core returned email_verified AND enforced
+ * it. Both landed, so the tile links now; the page itself gates on
+ * email_verified and core refuses an unverified caller regardless.
  */
 type Tile = {
   label: string;
   blurb: string;
   Icon: ComponentType<{ size?: number; strokeWidth?: number }>;
-  to?: "/account/addresses" | "/account/wishlist";
+  to?: "/account/addresses" | "/account/wishlist" | "/account/orders";
   pending?: string;
 };
 
@@ -46,7 +43,7 @@ const TILES: Tile[] = [
     label: "Orders",
     blurb: "What you've ordered and where it is.",
     Icon: Package,
-    pending: "Not available yet",
+    to: "/account/orders",
   },
   {
     label: "Profile",

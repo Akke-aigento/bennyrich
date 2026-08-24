@@ -30,7 +30,9 @@ import { Route as AccountRegisterRouteImport } from './routes/account.register'
 import { Route as AccountLoginRouteImport } from './routes/account.login'
 import { Route as AccountForgotRouteImport } from './routes/account.forgot'
 import { Route as AccountAddressesRouteImport } from './routes/account.addresses'
+import { Route as AccountOrdersIndexRouteImport } from './routes/account.orders.index'
 import { Route as CheckoutConfirmationOrderIdRouteImport } from './routes/checkout.confirmation.$orderId'
+import { Route as AccountOrdersOrderIdRouteImport } from './routes/account.orders.$orderId'
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -137,12 +139,22 @@ const AccountAddressesRoute = AccountAddressesRouteImport.update({
   path: '/addresses',
   getParentRoute: () => AccountRoute,
 } as any)
+const AccountOrdersIndexRoute = AccountOrdersIndexRouteImport.update({
+  id: '/orders/',
+  path: '/orders/',
+  getParentRoute: () => AccountRoute,
+} as any)
 const CheckoutConfirmationOrderIdRoute =
   CheckoutConfirmationOrderIdRouteImport.update({
     id: '/confirmation/$orderId',
     path: '/confirmation/$orderId',
     getParentRoute: () => CheckoutRoute,
   } as any)
+const AccountOrdersOrderIdRoute = AccountOrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => AccountRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -166,7 +178,9 @@ export interface FileRoutesByFullPath {
   '/product/$slug': typeof ProductSlugRoute
   '/account/': typeof AccountIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/account/orders/$orderId': typeof AccountOrdersOrderIdRoute
   '/checkout/confirmation/$orderId': typeof CheckoutConfirmationOrderIdRoute
+  '/account/orders/': typeof AccountOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -188,7 +202,9 @@ export interface FileRoutesByTo {
   '/product/$slug': typeof ProductSlugRoute
   '/account': typeof AccountIndexRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/account/orders/$orderId': typeof AccountOrdersOrderIdRoute
   '/checkout/confirmation/$orderId': typeof CheckoutConfirmationOrderIdRoute
+  '/account/orders': typeof AccountOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -213,7 +229,9 @@ export interface FileRoutesById {
   '/product/$slug': typeof ProductSlugRoute
   '/account/': typeof AccountIndexRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/account/orders/$orderId': typeof AccountOrdersOrderIdRoute
   '/checkout/confirmation/$orderId': typeof CheckoutConfirmationOrderIdRoute
+  '/account/orders/': typeof AccountOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -239,7 +257,9 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/account/'
     | '/checkout/'
+    | '/account/orders/$orderId'
     | '/checkout/confirmation/$orderId'
+    | '/account/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -261,7 +281,9 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/account'
     | '/checkout'
+    | '/account/orders/$orderId'
     | '/checkout/confirmation/$orderId'
+    | '/account/orders'
   id:
     | '__root__'
     | '/'
@@ -285,7 +307,9 @@ export interface FileRouteTypes {
     | '/product/$slug'
     | '/account/'
     | '/checkout/'
+    | '/account/orders/$orderId'
     | '/checkout/confirmation/$orderId'
+    | '/account/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -451,12 +475,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountAddressesRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/account/orders/': {
+      id: '/account/orders/'
+      path: '/orders'
+      fullPath: '/account/orders/'
+      preLoaderRoute: typeof AccountOrdersIndexRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/checkout/confirmation/$orderId': {
       id: '/checkout/confirmation/$orderId'
       path: '/confirmation/$orderId'
       fullPath: '/checkout/confirmation/$orderId'
       preLoaderRoute: typeof CheckoutConfirmationOrderIdRouteImport
       parentRoute: typeof CheckoutRoute
+    }
+    '/account/orders/$orderId': {
+      id: '/account/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/account/orders/$orderId'
+      preLoaderRoute: typeof AccountOrdersOrderIdRouteImport
+      parentRoute: typeof AccountRoute
     }
   }
 }
@@ -470,6 +508,8 @@ interface AccountRouteChildren {
   AccountVerifyRoute: typeof AccountVerifyRoute
   AccountWishlistRoute: typeof AccountWishlistRoute
   AccountIndexRoute: typeof AccountIndexRoute
+  AccountOrdersOrderIdRoute: typeof AccountOrdersOrderIdRoute
+  AccountOrdersIndexRoute: typeof AccountOrdersIndexRoute
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
@@ -481,6 +521,8 @@ const AccountRouteChildren: AccountRouteChildren = {
   AccountVerifyRoute: AccountVerifyRoute,
   AccountWishlistRoute: AccountWishlistRoute,
   AccountIndexRoute: AccountIndexRoute,
+  AccountOrdersOrderIdRoute: AccountOrdersOrderIdRoute,
+  AccountOrdersIndexRoute: AccountOrdersIndexRoute,
 }
 
 const AccountRouteWithChildren =

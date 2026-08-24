@@ -97,8 +97,8 @@ function VerifyPage() {
           Checking your link…
         </p>
       ) : state === "done" ? (
-        <Link to="/account" className="neon-btn w-full justify-center">
-          Go to your account <span aria-hidden>→</span>
+        <Link to="/account/orders" className="neon-btn w-full justify-center">
+          View your orders <span aria-hidden>→</span>
         </Link>
       ) : (
         <div>
