@@ -1,5 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
+import { SITE_URL } from "./site";
+
 type ProxyInput = {
   path: string;
   method?: string;
@@ -247,7 +249,19 @@ const PUBLIC_CUSTOMER_ACTIONS = new Set([
   "login",
   "request_password_reset",
   "reset_password",
+  // The verification link is clicked from an email, often in a different
+  // browser than the one holding the session cookie. Requiring a token here
+  // would make the link unusable for exactly the people who need it.
+  "verify_email",
 ]);
+
+/**
+ * Actions whose email carries a link back into this storefront. Core allowlists
+ * `url_base` against the tenant's verified domains, so a wrong value does not
+ * become an open redirect — it just makes the link land somewhere useless.
+ * Injected server-side so the browser cannot influence it.
+ */
+const URL_BASE_ACTIONS = new Set(["register", "request_password_reset"]);
 
 export function isCustomerPath(path: string): boolean {
   return CUSTOMER_PATH_RE.test(path);
@@ -279,6 +293,7 @@ function resolveCustomerAction(
       if (segments[1] === "login") return { action: "login", params: withBody };
       if (segments[1] === "forgot") return { action: "request_password_reset", params: withBody };
       if (segments[1] === "reset") return { action: "reset_password", params: withBody };
+      if (segments[1] === "verify") return { action: "verify_email", params: withBody };
     }
     return null;
   }
@@ -291,6 +306,9 @@ function resolveCustomerAction(
     }
     if (segments[1] === "password" && method === "POST")
       return { action: "change_password", params: withBody };
+
+    if (segments[1] === "resend-verification" && method === "POST")
+      return { action: "resend_verification", params: withBody };
 
     if (segments[1] === "orders") {
       if (segments.length === 2 && method === "GET") return { action: "get_orders", params: q };
@@ -425,6 +443,14 @@ export const sellqoProxy = createServerFn({ method: "POST" })
         "/functions/v1/storefront-customer-api",
       );
 
+      // The verification and reset emails link back here. Core builds that link
+      // from `url_base`, so it has to come from us — and from the server, not
+      // from the browser, or the value in a security-sensitive email would be
+      // whatever the caller felt like sending.
+      if (URL_BASE_ACTIONS.has(resolved.action)) {
+        resolved.params = { ...resolved.params, url_base: SITE_URL };
+      }
+
       const needsAuth = !PUBLIC_CUSTOMER_ACTIONS.has(resolved.action);
       const token = needsAuth ? await readCustomerToken() : undefined;
       if (needsAuth && !token) {
@@ -452,6 +478,14 @@ export const sellqoProxy = createServerFn({ method: "POST" })
         customerJson = customerText ? JSON.parse(customerText) : null;
       } catch {
         customerJson = { raw: customerText };
+      }
+
+      // Core answers 403 for an unverified address on the order endpoints. That
+      // is a live, valid session hitting a gate — not a dead token. Clearing the
+      // cookie here would sign the customer out for clicking "Orders", which is
+      // the opposite of what the gate is for. Checked BEFORE the 401/403 branch.
+      if (customerJson?.error === "EMAIL_NOT_VERIFIED") {
+        throw new Error("EMAIL_NOT_VERIFIED");
       }
 
       // A rejected token is dead weight — drop it so the client cannot loop on
