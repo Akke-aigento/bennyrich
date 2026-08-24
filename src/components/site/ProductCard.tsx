@@ -4,6 +4,7 @@ import { formatEUR } from "@/lib/format";
 import { colourFromLabel } from "@/lib/product-image";
 import { isPurchasable } from "@/lib/categories";
 import { ProductImage } from "./ProductImage";
+import { WishlistButton } from "./WishlistButton";
 
 /**
  * A product is sold out when the API says so outright, or when it has variants
@@ -34,73 +35,85 @@ export function ProductCard({ product }: { product: SellqoProduct }) {
   const price = product.price_range?.min ?? product.price;
 
   return (
-    <Link to="/product/$slug" params={{ slug: product.slug }} className="group block">
-      <div
-        className="br-media br-media-frame group-hover:neon-line-blue border transition-[border-color,box-shadow] duration-200"
-        style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
-      >
-        <ProductImage
-          apiUrl={productCover(product)}
-          slug={product.slug}
-          colour={coverColour(product)}
-          alt={product.name}
-          showPlaceholder={!soldOut}
-          className={`transition-opacity duration-200 ${soldOut ? "opacity-40" : ""}`}
-        />
-        {soldOut && (
-          <>
+    // The heart is a SIBLING of the link, not a child. A <button> inside an <a>
+    // is invalid HTML and a keyboard/screen-reader trap; keeping them apart
+    // means neither needs to intercept the other's clicks. `group` moves up to
+    // this wrapper so the card's hover styles still fire.
+    <div className="group relative">
+      <Link to="/product/$slug" params={{ slug: product.slug }} className="block">
+        <div
+          className="br-media br-media-frame group-hover:neon-line-blue border transition-[border-color,box-shadow] duration-200"
+          style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
+        >
+          <ProductImage
+            apiUrl={productCover(product)}
+            slug={product.slug}
+            colour={coverColour(product)}
+            alt={product.name}
+            showPlaceholder={!soldOut}
+            className={`transition-opacity duration-200 ${soldOut ? "opacity-40" : ""}`}
+          />
+          {soldOut && (
+            <>
+              <span
+                className="br-label absolute inset-x-0 top-1/2 -translate-y-1/2 text-center"
+                style={{ color: "var(--br-mute)" }}
+              >
+                Sold out
+              </span>
+            </>
+          )}
+          {(product.coming_soon || !isPurchasable(product.slug)) && !soldOut && (
             <span
-              className="br-label absolute inset-x-0 top-1/2 -translate-y-1/2 text-center"
-              style={{ color: "var(--br-mute)" }}
+              className="br-label absolute left-3 top-3 border px-2 py-1 text-[10px]"
+              style={{
+                color: "var(--br-mute)",
+                borderColor: "var(--br-line)",
+                background: "var(--br-black)",
+              }}
             >
-              Sold out
+              Coming soon
             </span>
-          </>
-        )}
-        {(product.coming_soon || !isPurchasable(product.slug)) && !soldOut && (
-          <span
-            className="br-label absolute left-3 top-3 border px-2 py-1 text-[10px]"
+          )}
+        </div>
+
+        {/* Two lines, not an ellipsis: "Benny Rich Supercar 3D LED Lamp" is a real
+            product name and truncating it tells the shopper nothing. The height is
+            reserved for both lines so prices stay on one baseline across a row,
+            and the arrow aligns to the first line rather than floating. */}
+        <div className="mt-5 flex items-start justify-between gap-3">
+          <h3
+            className="br-label line-clamp-2"
             style={{
-              color: "var(--br-mute)",
-              borderColor: "var(--br-line)",
-              background: "var(--br-black)",
+              color: "var(--br-white)",
+              letterSpacing: "0.18em",
+              lineHeight: 1.35,
+              minHeight: "2.7em",
             }}
           >
-            Coming soon
+            {product.name}
+          </h3>
+          <span
+            aria-hidden
+            className="shrink-0 text-[14px] leading-none transition-colors duration-200 group-hover:text-[var(--br-blue)]"
+            style={{ color: "var(--br-mute)", marginTop: "0.1em" }}
+          >
+            →
           </span>
-        )}
-      </div>
+        </div>
+        <p className="br-price mt-2 text-[15px]" style={{ color: "var(--br-mute)" }}>
+          {product.price_range && product.price_range.min !== product.price_range.max
+            ? `From ${formatEUR(price)}`
+            : formatEUR(price)}
+        </p>
+      </Link>
 
-      {/* Two lines, not an ellipsis: "Benny Rich Supercar 3D LED Lamp" is a real
-          product name and truncating it tells the shopper nothing. The height is
-          reserved for both lines so prices stay on one baseline across a row,
-          and the arrow aligns to the first line rather than floating. */}
-      <div className="mt-5 flex items-start justify-between gap-3">
-        <h3
-          className="br-label line-clamp-2"
-          style={{
-            color: "var(--br-white)",
-            letterSpacing: "0.18em",
-            lineHeight: 1.35,
-            minHeight: "2.7em",
-          }}
-        >
-          {product.name}
-        </h3>
-        <span
-          aria-hidden
-          className="shrink-0 text-[14px] leading-none transition-colors duration-200 group-hover:text-[var(--br-blue)]"
-          style={{ color: "var(--br-mute)", marginTop: "0.1em" }}
-        >
-          →
-        </span>
-      </div>
-      <p className="br-price mt-2 text-[15px]" style={{ color: "var(--br-mute)" }}>
-        {product.price_range && product.price_range.min !== product.price_range.max
-          ? `From ${formatEUR(price)}`
-          : formatEUR(price)}
-      </p>
-    </Link>
+      <WishlistButton
+        productId={product.id}
+        productName={product.name}
+        className="absolute right-2 top-2 z-10"
+      />
+    </div>
   );
 }
 

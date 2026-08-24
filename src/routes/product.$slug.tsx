@@ -6,6 +6,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { EmptyState, BackToShop } from "@/components/site/PageShell";
 import { ProductCard, isSoldOut } from "@/components/site/ProductCard";
 import { ProductImage } from "@/components/site/ProductImage";
+import { WishlistButton } from "@/components/site/WishlistButton";
 import { AgeGate, useAgeRestricted, useAgeVerification } from "@/components/site/AgeGate";
 import { imageUrl, type SellqoProduct } from "@/lib/sellqo";
 import { formatEUR } from "@/lib/format";
@@ -358,24 +359,32 @@ function ProductBody({ product }: { product: SellqoProduct }) {
             </div>
           ) : null}
 
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={busy || needsVariant || soldOut || !purchasable}
-            className="neon-btn mt-9 w-full justify-center"
-          >
-            {!purchasable
-              ? "Coming soon"
-              : soldOut
-                ? "Sold out"
-                : needsVariant
-                  ? "Select options"
-                  : added
-                    ? "✓ Added"
-                    : busy
-                      ? "Adding…"
-                      : "Add to bag"}
-          </button>
+          <div className="mt-9 flex items-stretch gap-3">
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={busy || needsVariant || soldOut || !purchasable}
+              className="neon-btn w-full justify-center"
+            >
+              {!purchasable
+                ? "Coming soon"
+                : soldOut
+                  ? "Sold out"
+                  : needsVariant
+                    ? "Select options"
+                    : added
+                      ? "✓ Added"
+                      : busy
+                        ? "Adding…"
+                        : "Add to bag"}
+            </button>
+            <WishlistButton
+              productId={product.id}
+              productName={product.name}
+              size={20}
+              className="border-br-line h-auto w-[54px] shrink-0 border"
+            />
+          </div>
           {!purchasable && (
             <p className="mt-3 text-[13px]" style={{ color: "var(--br-mute)" }}>
               {NOT_PURCHASABLE_NOTE}

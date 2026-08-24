@@ -12,19 +12,48 @@ export const Route = createFileRoute("/account/")({
 });
 
 /**
- * Orders, addresses, profile and wishlist arrive in BR-9b. They are shown as
- * pending rather than linked, because a tile that navigates to a 404 is worse
- * than one that says what it is waiting for.
+ * Orders and Profile are deliberately NOT links.
+ *
+ * Order history cannot be shipped safely yet: get_orders matches by
+ * customer_email and get_profile does not return email_verified, so there is
+ * nothing to gate on and an unguarded page would expose other people's guest
+ * orders. Profile editing simply has not been built. Both stay visible with an
+ * honest note rather than pointing at a page that does not exist or cannot
+ * load safely — see docs/role-audit.md.
  */
-const TILES: Array<{
+type Tile = {
   label: string;
   blurb: string;
   Icon: ComponentType<{ size?: number; strokeWidth?: number }>;
-}> = [
-  { label: "Orders", blurb: "What you've ordered and where it is.", Icon: Package },
-  { label: "Addresses", blurb: "Where your pieces get delivered.", Icon: MapPin },
-  { label: "Profile", blurb: "Your details and password.", Icon: User },
-  { label: "Wishlist", blurb: "The pieces you're keeping an eye on.", Icon: Heart },
+  to?: "/account/addresses" | "/account/wishlist";
+  pending?: string;
+};
+
+const TILES: Tile[] = [
+  {
+    label: "Addresses",
+    blurb: "Where your pieces get delivered.",
+    Icon: MapPin,
+    to: "/account/addresses",
+  },
+  {
+    label: "Wishlist",
+    blurb: "The pieces you're keeping an eye on.",
+    Icon: Heart,
+    to: "/account/wishlist",
+  },
+  {
+    label: "Orders",
+    blurb: "What you've ordered and where it is.",
+    Icon: Package,
+    pending: "Not available yet",
+  },
+  {
+    label: "Profile",
+    blurb: "Your details and password.",
+    Icon: User,
+    pending: "Not available yet",
+  },
 ];
 
 function AccountPage() {
@@ -54,30 +83,50 @@ function AccountDashboard() {
       </p>
 
       <div className="mt-14 grid gap-5 sm:grid-cols-2">
-        {TILES.map(({ label, blurb, Icon }) => (
-          <div
-            key={label}
-            className="quiet-frame border p-7"
-            style={{ borderRadius: "var(--radius)" }}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="br-label" style={{ color: "var(--br-white)" }}>
-                  {label}
-                </h2>
-                <p className="mt-2.5 text-[13px]" style={{ color: "var(--br-mute)" }}>
-                  {blurb}
-                </p>
+        {TILES.map(({ label, blurb, Icon, to, pending }) => {
+          const body = (
+            <>
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <h2 className="br-label" style={{ color: "var(--br-white)" }}>
+                    {label}
+                  </h2>
+                  <p className="mt-2.5 text-[13px]" style={{ color: "var(--br-mute)" }}>
+                    {blurb}
+                  </p>
+                </div>
+                <span aria-hidden style={{ color: "var(--br-mute)" }}>
+                  {createElement(Icon, { size: 18, strokeWidth: 1.5 })}
+                </span>
               </div>
-              <span aria-hidden style={{ color: "var(--br-mute)" }}>
-                {createElement(Icon, { size: 18, strokeWidth: 1.5 })}
-              </span>
+              <p
+                className="br-label mt-6 text-[10px]"
+                style={{ color: pending ? "var(--br-mute)" : "var(--br-blue-text)" }}
+              >
+                {pending ?? "Open →"}
+              </p>
+            </>
+          );
+
+          return to ? (
+            <Link
+              key={label}
+              to={to}
+              className="quiet-frame hover:neon-line-blue border p-7 transition-[border-color,box-shadow] duration-200"
+              style={{ borderRadius: "var(--radius)" }}
+            >
+              {body}
+            </Link>
+          ) : (
+            <div
+              key={label}
+              className="quiet-frame border p-7"
+              style={{ borderRadius: "var(--radius)", opacity: 0.6 }}
+            >
+              {body}
             </div>
-            <p className="br-label mt-6 text-[10px]" style={{ color: "var(--br-mute)" }}>
-              Coming in the next drop
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mt-14 flex flex-wrap gap-4">

@@ -1,7 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { COUNTRIES, DEFAULT_COUNTRY } from "@/lib/countries";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useCart } from "@/lib/cart-context";
+import { useAuth } from "@/lib/auth";
+import { sellqoFetch } from "@/lib/sellqo";
+import { unwrapAddresses, isDefaultAddress } from "@/lib/account";
 import { checkoutSetAddress, checkoutSetCustomer, checkoutStart } from "@/lib/checkout";
 import {
   EmptyCartRedirect,
@@ -38,7 +43,7 @@ const emptyAddress = {
   address_line_2: "",
   postal_code: "",
   city: "",
-  country: "BE",
+  country: DEFAULT_COUNTRY,
 };
 
 function DetailsStep() {
@@ -55,6 +60,66 @@ function DetailsStep() {
   const [shipping, setShipping] = useState({ ...emptyAddress });
   const [billing, setBilling] = useState({ ...emptyAddress });
   const [billingSame, setBillingSame] = useState(true);
+
+  // --- Prefill for signed-in shoppers -------------------------------------
+  // Initial values ONLY. No checkout logic, no totals, nothing in checkout.ts
+  // or CheckoutForm.tsx is touched, and for a guest this whole block is inert.
+  const { customer, status } = useAuth();
+  const { data: addressData } = useQuery({
+    queryKey: ["customer", "addresses", customer?.id ?? "none"],
+    queryFn: () => sellqoFetch("/account/addresses"),
+    enabled: status === "authed",
+    staleTime: 60_000,
+  });
+  // Two flags, not one: the profile is available as soon as auth resolves, but
+  // the addresses arrive on their own schedule. A single flag would mark the
+  // job done on the first pass and the shipping fields would never fill.
+  const contactPrefilled = useRef(false);
+  const shippingPrefilled = useRef(false);
+
+  useEffect(() => {
+    if (status !== "authed" || !customer) return;
+
+    // Fill only what is still empty, so anything already typed survives, and
+    // only what the profile actually has, so partial data does not blank
+    // fields out.
+    const fill = <T extends Record<string, unknown>>(current: T, incoming: Partial<T>): T => {
+      const next = { ...current };
+      for (const [key, value] of Object.entries(incoming)) {
+        if (value == null || value === "") continue;
+        if ((next as Record<string, unknown>)[key]) continue;
+        (next as Record<string, unknown>)[key] = value;
+      }
+      return next;
+    };
+
+    if (!contactPrefilled.current) {
+      contactPrefilled.current = true;
+      setContact((c) =>
+        fill(c, {
+          email: customer.email,
+          first_name: customer.first_name ?? "",
+          last_name: customer.last_name ?? "",
+          phone: customer.phone ?? "",
+        }),
+      );
+    }
+
+    const addresses = unwrapAddresses(addressData);
+    const preferred = addresses.find(isDefaultAddress) ?? addresses[0];
+    if (preferred && !shippingPrefilled.current) {
+      shippingPrefilled.current = true;
+      setShipping((a) =>
+        fill(a, {
+          address_line_1: preferred.address_line_1 ?? "",
+          address_line_2: preferred.address_line_2 ?? "",
+          postal_code: preferred.postal_code ?? "",
+          city: preferred.city ?? "",
+          country: preferred.country ?? "",
+        }),
+      );
+    }
+  }, [status, customer, addressData]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [serverErr, setServerErr] = useState<string | null>(null);
@@ -259,20 +324,11 @@ function AddressFields({
           onChange={(e) => upd("country", e.target.value)}
           autoComplete="country"
         >
-          <option value="BE">Belgium</option>
-          <option value="NL">Netherlands</option>
-          <option value="LU">Luxembourg</option>
-          <option value="FR">France</option>
-          <option value="DE">Germany</option>
-          <option value="IT">Italy</option>
-          <option value="ES">Spain</option>
-          <option value="AT">Austria</option>
-          <option value="PT">Portugal</option>
-          <option value="IE">Ireland</option>
-          <option value="DK">Denmark</option>
-          <option value="SE">Sweden</option>
-          <option value="FI">Finland</option>
-          <option value="GB">United Kingdom</option>
+          {COUNTRIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.name}
+            </option>
+          ))}
         </select>
         <FieldError message={errors[`${prefix}_country`]} />
       </FormField>

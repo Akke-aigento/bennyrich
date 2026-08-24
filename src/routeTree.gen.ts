@@ -23,10 +23,12 @@ import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as AccountIndexRouteImport } from './routes/account.index'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as CheckoutPaymentRouteImport } from './routes/checkout.payment'
+import { Route as AccountWishlistRouteImport } from './routes/account.wishlist'
 import { Route as AccountResetRouteImport } from './routes/account.reset'
 import { Route as AccountRegisterRouteImport } from './routes/account.register'
 import { Route as AccountLoginRouteImport } from './routes/account.login'
 import { Route as AccountForgotRouteImport } from './routes/account.forgot'
+import { Route as AccountAddressesRouteImport } from './routes/account.addresses'
 import { Route as CheckoutConfirmationOrderIdRouteImport } from './routes/checkout.confirmation.$orderId'
 
 const TermsRoute = TermsRouteImport.update({
@@ -99,6 +101,11 @@ const CheckoutPaymentRoute = CheckoutPaymentRouteImport.update({
   path: '/payment',
   getParentRoute: () => CheckoutRoute,
 } as any)
+const AccountWishlistRoute = AccountWishlistRouteImport.update({
+  id: '/wishlist',
+  path: '/wishlist',
+  getParentRoute: () => AccountRoute,
+} as any)
 const AccountResetRoute = AccountResetRouteImport.update({
   id: '/reset',
   path: '/reset',
@@ -119,6 +126,11 @@ const AccountForgotRoute = AccountForgotRouteImport.update({
   path: '/forgot',
   getParentRoute: () => AccountRoute,
 } as any)
+const AccountAddressesRoute = AccountAddressesRouteImport.update({
+  id: '/addresses',
+  path: '/addresses',
+  getParentRoute: () => AccountRoute,
+} as any)
 const CheckoutConfirmationOrderIdRoute =
   CheckoutConfirmationOrderIdRouteImport.update({
     id: '/confirmation/$orderId',
@@ -137,10 +149,12 @@ export interface FileRoutesByFullPath {
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/account/addresses': typeof AccountAddressesRoute
   '/account/forgot': typeof AccountForgotRoute
   '/account/login': typeof AccountLoginRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
+  '/account/wishlist': typeof AccountWishlistRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
   '/account/': typeof AccountIndexRoute
@@ -156,10 +170,12 @@ export interface FileRoutesByTo {
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/account/addresses': typeof AccountAddressesRoute
   '/account/forgot': typeof AccountForgotRoute
   '/account/login': typeof AccountLoginRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
+  '/account/wishlist': typeof AccountWishlistRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
   '/account': typeof AccountIndexRoute
@@ -178,10 +194,12 @@ export interface FileRoutesById {
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
   '/terms': typeof TermsRoute
+  '/account/addresses': typeof AccountAddressesRoute
   '/account/forgot': typeof AccountForgotRoute
   '/account/login': typeof AccountLoginRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
+  '/account/wishlist': typeof AccountWishlistRoute
   '/checkout/payment': typeof CheckoutPaymentRoute
   '/product/$slug': typeof ProductSlugRoute
   '/account/': typeof AccountIndexRoute
@@ -201,10 +219,12 @@ export interface FileRouteTypes {
     | '/shipping-returns'
     | '/shop'
     | '/terms'
+    | '/account/addresses'
     | '/account/forgot'
     | '/account/login'
     | '/account/register'
     | '/account/reset'
+    | '/account/wishlist'
     | '/checkout/payment'
     | '/product/$slug'
     | '/account/'
@@ -220,10 +240,12 @@ export interface FileRouteTypes {
     | '/shipping-returns'
     | '/shop'
     | '/terms'
+    | '/account/addresses'
     | '/account/forgot'
     | '/account/login'
     | '/account/register'
     | '/account/reset'
+    | '/account/wishlist'
     | '/checkout/payment'
     | '/product/$slug'
     | '/account'
@@ -241,10 +263,12 @@ export interface FileRouteTypes {
     | '/shipping-returns'
     | '/shop'
     | '/terms'
+    | '/account/addresses'
     | '/account/forgot'
     | '/account/login'
     | '/account/register'
     | '/account/reset'
+    | '/account/wishlist'
     | '/checkout/payment'
     | '/product/$slug'
     | '/account/'
@@ -366,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutPaymentRouteImport
       parentRoute: typeof CheckoutRoute
     }
+    '/account/wishlist': {
+      id: '/account/wishlist'
+      path: '/wishlist'
+      fullPath: '/account/wishlist'
+      preLoaderRoute: typeof AccountWishlistRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/account/reset': {
       id: '/account/reset'
       path: '/reset'
@@ -394,6 +425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountForgotRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/account/addresses': {
+      id: '/account/addresses'
+      path: '/addresses'
+      fullPath: '/account/addresses'
+      preLoaderRoute: typeof AccountAddressesRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/checkout/confirmation/$orderId': {
       id: '/checkout/confirmation/$orderId'
       path: '/confirmation/$orderId'
@@ -405,18 +443,22 @@ declare module '@tanstack/react-router' {
 }
 
 interface AccountRouteChildren {
+  AccountAddressesRoute: typeof AccountAddressesRoute
   AccountForgotRoute: typeof AccountForgotRoute
   AccountLoginRoute: typeof AccountLoginRoute
   AccountRegisterRoute: typeof AccountRegisterRoute
   AccountResetRoute: typeof AccountResetRoute
+  AccountWishlistRoute: typeof AccountWishlistRoute
   AccountIndexRoute: typeof AccountIndexRoute
 }
 
 const AccountRouteChildren: AccountRouteChildren = {
+  AccountAddressesRoute: AccountAddressesRoute,
   AccountForgotRoute: AccountForgotRoute,
   AccountLoginRoute: AccountLoginRoute,
   AccountRegisterRoute: AccountRegisterRoute,
   AccountResetRoute: AccountResetRoute,
+  AccountWishlistRoute: AccountWishlistRoute,
   AccountIndexRoute: AccountIndexRoute,
 }
 
