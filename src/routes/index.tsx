@@ -164,7 +164,7 @@ function BuiltDifferentBanner() {
       {/* No neon frame. A hairline and a lot of black do the work the pink
           border used to do far too loudly. */}
       <div
-        className="quiet-frame grid items-center gap-12 border px-8 py-16 md:grid-cols-[1fr_minmax(0,46%)] md:px-20 md:py-24"
+        className="quiet-frame grid items-center gap-12 border px-8 py-16 md:grid-cols-[1fr_minmax(0,54%)] md:px-20 md:py-24"
         style={{ borderRadius: "var(--radius)" }}
       >
         <div>
@@ -183,17 +183,19 @@ function BuiltDifferentBanner() {
             Discover more <span aria-hidden>→</span>
           </Link>
         </div>
-        {/* The radial mask dissolves the artwork's square edge into the black
-            instead of letting it cut a visible box out of the panel. BR-4 ran it
-            at 62%/92%, which ate most of the cat — the fade started before the
-            body did. Holding full opacity out to 74% keeps the animal readable
-            and still hides the edge, and a small lift stops the darker flank
-            from sinking into the panel. */}
+        {/* The radial mask dissolves the artwork's edge into the black instead
+            of letting it cut a visible box out of the panel, and a small lift
+            keeps the line art off the ground. Held at 74% rather than BR-4's
+            62% because the fade used to start before the subject did.
+
+            The column is 54% rather than 46%: the rifle is a 3.58 ratio against
+            the panther's 1.13, so at the old width it read as a thin strip.
+            Right-aligned via justify-self-end, as before. */}
         <img
-          src="/hero/panther-blue.png"
-          alt="The BennyRich panther, reclining, in neon blue"
-          width={875}
-          height={673}
+          src="/hero/rifle-blue.png"
+          alt="The BennyRich rifle in neon blue line art"
+          width={1577}
+          height={441}
           loading="lazy"
           className="w-full max-w-[300px] justify-self-center md:max-w-none md:justify-self-end"
           style={{

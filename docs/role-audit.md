@@ -897,3 +897,55 @@ Unchanged, and now joined by the reshoot list above:
   Untouched again — it wants an explicit decision rather than another deferral.
 - `bun run lint` remains red at a pre-existing ~278 prettier-formatting problems
   on files these batches never touched.
+
+---
+
+# Banner artwork: panther → rifle (2026-08-24)
+
+**Change, at Sander's request:** the "BUILT DIFFERENT / MADE TO STAND OUT"
+banner on the homepage now carries `public/hero/rifle-blue.png` instead of
+`panther-blue.png`. Only the `src`, the `alt` and the column width changed —
+the radial mask (74%/100%), the `brightness(1.1)` lift, the blue drop-shadow
+riding `--glow-scale`, the `--br-line` hairline frame and the right alignment
+are all exactly as BR-4/BR-7 left them.
+
+The grid column went from `minmax(0,46%)` to `minmax(0,54%)`. The rifle is a
+3.58 aspect ratio against the panther's 1.13, so at the old width it rendered
+455×127 and read as a thin strip. It is now 535×149 — 46% of the panel, still
+right-aligned, with the heading still on one line at 1280. Mobile is unchanged
+(`max-w-[300px]`, centred).
+
+Intrinsic `width`/`height` are corrected to 1577×441 in the same edit. They had
+been left at the *original* panther's 875×673 through the cleaned-panther swap,
+so the reserved layout box had the wrong aspect ratio and the banner shifted as
+the image loaded. That is fixed as a side effect of this change.
+
+## ⚠️ FLAG — firearm imagery on the landing page
+
+**This is documented and accepted by the client. It is not a blocker, and it was
+their call.** Recording it so nobody is surprised later:
+
+- **Meta (Facebook/Instagram)** prohibits ads that promote the sale of firearms,
+  parts and ammunition, and applies the policy to *imagery* as well as to what
+  is actually being sold. A landing page whose main banner is a rifle can get a
+  creative rejected even when the advertised product is a t-shirt, and repeated
+  rejections put the ad account itself at risk.
+- **TikTok** similarly prohibits weapons content in ads and reviews the landing
+  page, not just the creative.
+- The exposure is **the whole homepage**, because this is the URL paid traffic
+  lands on. Anything pointing at `/` inherits the risk.
+
+BR-2.1 removed a rifle from this exact banner for this exact reason —
+`CLAUDE.md` recorded it as "read as a club flyer, not ad-safe" — so this
+reverses a previous deliberate decision. The artwork itself is different (clean
+neon line art rather than the old stand-in), but the ad-policy exposure is the
+same.
+
+**If paid social becomes a channel**, the cheapest mitigation is a dedicated
+ad-safe landing page rather than changing the brand: point campaigns at
+`/shop?category=apparel` or a purpose-built route, and leave `/` as it is. No
+work has been done toward that; noting it as the option if it is ever needed.
+
+The rifle-themed *products* (`cushion-rifle-blue`, `led-lamp-rifle`) are
+unaffected by this note — they are catalogue items, and the same policy would
+apply to advertising them regardless of the banner.

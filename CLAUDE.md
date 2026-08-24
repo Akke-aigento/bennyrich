@@ -247,8 +247,14 @@ glow — so they take **no** `neon-glow-*` filter on top. Two are wired up:
   it carries `fetchPriority="high"`; React 19 hoists its own
   `<link rel="preload" as="image">` from that, and adding one by hand only
   duplicates it at a lower priority.
-- `panther-blue.png` (875×673) — the "Built different" banner, under a
-  `radial-gradient` mask so its square edge dissolves into the black.
+- `rifle-blue.png` (1577×441) — the "Built different" banner, under a
+  `radial-gradient` mask so its edge dissolves into the black. It replaced
+  `panther-blue.png` at Sander's request; the banner column is `minmax(0,54%)`
+  rather than 46% because the rifle is a 3.58 ratio and read as a thin strip at
+  the narrower width. **See the ad-safety flag in `docs/role-audit.md` before
+  pointing paid social at `/`.**
+- `panther-blue.png` (706×624) — the previous banner artwork, still committed
+  and unused.
 
 `shh-kid-full.png` and `shh-kid-ticket.png` are committed but unused.
 
@@ -262,8 +268,11 @@ Because the glow is baked into the raster, **these two elements no longer track
 and the neon glow filter still apply to the strokes. They were the homepage
 stand-ins until BR-4 and are **kept but no longer rendered anywhere**.
 
-`rifle.svg` is likewise in the repo and deliberately **not** wired up — it read
-as a club flyer on the homepage banner and is not ad-safe.
+`rifle.svg` is likewise in the repo and not wired up — it read as a club flyer
+when it was the banner in BR-2. Note that the *reason* recorded here in BR-2.1,
+"not ad-safe", no longer reflects what ships: a rifle PNG is on the banner again
+as of 2026-08-24, at the client's documented request. The ad-policy exposure is
+real and is written up in `docs/role-audit.md`; it was accepted, not overlooked.
 
 To bring any of the three back on a product page, import it the way the panther
 used to be imported in `src/routes/index.tsx`.
