@@ -1,7 +1,10 @@
 import { createFileRoute, Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useCart } from "@/lib/cart-context";
+import { useCartVariantLabels } from "@/lib/cart-labels";
+import { ProductImage } from "@/components/site/ProductImage";
 import { formatEUR } from "@/lib/format";
+import { colourFromLabel } from "@/lib/product-image";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -90,6 +93,9 @@ function CheckoutLayout() {
 
 function OrderSummary() {
   const { items, subtotal, count, hydrated } = useCart();
+  // Same resolver the bag uses, so the two can never disagree about which
+  // variant was ordered. See lib/cart-labels.ts.
+  const labels = useCartVariantLabels(items);
   return (
     <aside
       className="h-fit border p-6 lg:sticky lg:top-24"
@@ -114,25 +120,30 @@ function OrderSummary() {
           <ul className="mt-4 space-y-4">
             {items.map((it) => (
               <li key={it.id} className="flex gap-3">
-                <div
-                  className="relative h-16 w-14 flex-shrink-0 overflow-hidden"
-                  style={{ background: "var(--paper)" }}
-                >
-                  {it.image ? (
-                    <img src={it.image} alt={it.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <div
-                      className="flex h-full w-full items-center justify-center text-[0.85rem]"
-                      style={{ color: "var(--muted-tone)", fontFamily: "var(--font-display)" }}
-                    >
-                      {it.name.charAt(0)}
-                    </div>
-                  )}
+                {/* Square .br-media well and a hairline, matching the bag: the
+                    thumbnail used to object-cover, which cropped, and carried no
+                    border while the drawer's did. ProductImage also brings the
+                    local fallback walk the raw <img> here never had. */}
+                {/* The badge is a SIBLING of the well, not a child: .br-media is
+                    overflow:hidden, so a badge nudged to -top-1/-right-1 inside it
+                    was being clipped. */}
+                <div className="relative flex-shrink-0">
+                  <div
+                    className="br-media h-16 w-16 border"
+                    style={{ borderColor: "var(--br-line)", borderRadius: "var(--radius)" }}
+                  >
+                    <ProductImage
+                      apiUrl={it.image}
+                      slug={it.slug}
+                      colour={colourFromLabel(labels.get(it.id))}
+                      alt={it.name}
+                    />
+                  </div>
                   <span
                     className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center px-1 text-[0.65rem]"
                     style={{
-                      background: "var(--ink)",
-                      color: "var(--paper)",
+                      background: "var(--br-white)",
+                      color: "var(--br-black)",
                       borderRadius: "999px",
                     }}
                   >
@@ -147,14 +158,14 @@ function OrderSummary() {
                     >
                       {it.name}
                     </p>
-                    {it.variant_label && (
+                    {labels.get(it.id) && (
                       <p className="text-[0.7rem]" style={{ color: "var(--muted-tone)" }}>
-                        {it.variant_label}
+                        {labels.get(it.id)}
                       </p>
                     )}
                   </div>
                   <span className="text-[0.85rem]" style={{ color: "var(--ink)" }}>
-                    {formatEUR(it.line_total ?? it.price * it.quantity)}
+                    {it.line_total != null ? formatEUR(it.line_total) : "—"}
                   </span>
                 </div>
               </li>

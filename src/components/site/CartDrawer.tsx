@@ -1,12 +1,15 @@
 import { Link } from "@tanstack/react-router";
 import { Minus, Plus, X } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useCartVariantLabels } from "@/lib/cart-labels";
 import { formatEUR } from "@/lib/format";
 import { colourFromLabel } from "@/lib/product-image";
 import { ProductImage } from "./ProductImage";
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, count, subtotal, updateItem, removeItem } = useCart();
+  // The API does not always send variant_label; see lib/cart-labels.ts.
+  const labels = useCartVariantLabels(items);
 
   return (
     <>
@@ -75,16 +78,18 @@ export function CartDrawer() {
             <ul className="space-y-6">
               {items.map((it) => (
                 <li key={it.id} className="flex gap-4">
+                  {/* Square .br-media well, same as the grid: object-contain and
+                      8% padding, so a wide product and a tall one sit identically
+                      and nothing is cropped. */}
                   <div
-                    className="h-24 w-20 flex-shrink-0 overflow-hidden border"
-                    style={{ background: "var(--br-ink)", borderColor: "var(--br-line)" }}
+                    className="br-media h-20 w-20 flex-shrink-0 border"
+                    style={{ borderColor: "var(--br-line)", borderRadius: "var(--radius)" }}
                   >
                     <ProductImage
                       apiUrl={it.image}
                       slug={it.slug}
-                      colour={colourFromLabel(it.variant_label)}
+                      colour={colourFromLabel(labels.get(it.id))}
                       alt={it.name}
-                      className="h-full w-full object-cover"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -93,9 +98,9 @@ export function CartDrawer() {
                         <p className="br-label truncate" style={{ color: "var(--br-white)" }}>
                           {it.name}
                         </p>
-                        {it.variant_label && (
+                        {labels.get(it.id) && (
                           <p className="mt-1.5 text-[12px]" style={{ color: "var(--br-mute)" }}>
-                            {it.variant_label}
+                            {labels.get(it.id)}
                           </p>
                         )}
                       </div>
