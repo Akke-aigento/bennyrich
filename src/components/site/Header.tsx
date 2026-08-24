@@ -112,7 +112,7 @@ export function Header() {
                   className="br-nav inline-flex items-center gap-1 transition-colors duration-200"
                   style={{ color: "var(--br-white)" }}
                   activeProps={{
-                    className: "br-nav neon-text-blue inline-flex items-center gap-1",
+                    className: "br-nav neon-text-blue-sm inline-flex items-center gap-1",
                   }}
                   aria-haspopup="true"
                   aria-expanded={shopOpen}
@@ -138,7 +138,7 @@ export function Header() {
                           <Link
                             to="/shop"
                             search={{ category: c.slug }}
-                            className="br-nav block px-5 py-3 transition-colors duration-200 hover:text-[var(--br-blue)]"
+                            className="br-nav block px-5 py-3 transition-colors duration-200 hover:text-[var(--br-blue-text)]"
                             style={{ color: "var(--br-white)" }}
                           >
                             {c.name}
@@ -155,7 +155,7 @@ export function Header() {
                 to={item.to}
                 className="br-nav transition-colors duration-200"
                 style={{ color: "var(--br-white)" }}
-                activeProps={{ className: "br-nav neon-text-blue" }}
+                activeProps={{ className: "br-nav neon-text-blue-sm" }}
                 activeOptions={{ exact: item.to === "/" }}
               >
                 {item.label}
@@ -171,7 +171,7 @@ export function Header() {
             onClick={() => setSearchOpen((v) => !v)}
             aria-label="Search"
             aria-expanded={searchOpen}
-            className="hidden h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue)] sm:inline-flex"
+            className="hidden h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue-text)] sm:inline-flex"
             style={{ color: "var(--br-white)" }}
           >
             <Search size={19} strokeWidth={1.5} />
@@ -183,7 +183,7 @@ export function Header() {
               onClick={() => setAccountOpen((v) => !v)}
               aria-label="Account"
               aria-expanded={accountOpen}
-              className="inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue)]"
+              className="inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue-text)]"
               style={{ color: "var(--br-white)" }}
             >
               <User size={19} strokeWidth={1.5} />
@@ -201,7 +201,7 @@ export function Header() {
                 </p>
                 <Link
                   to="/contact"
-                  className="br-label mt-3 inline-block transition-colors duration-200 hover:text-[var(--br-blue)]"
+                  className="br-label mt-3 inline-block transition-colors duration-200 hover:text-[var(--br-blue-text)]"
                   style={{ color: "var(--br-blue)" }}
                 >
                   Need help? →
@@ -214,7 +214,7 @@ export function Header() {
             type="button"
             onClick={openCart}
             aria-label={`Open bag, ${count} ${count === 1 ? "item" : "items"}`}
-            className="relative -mr-2 inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue)]"
+            className="relative -mr-2 inline-flex h-11 w-11 items-center justify-center transition-colors duration-200 hover:text-[var(--br-blue-text)]"
             style={{ color: "var(--br-white)" }}
           >
             <ShoppingBag size={19} strokeWidth={1.5} />

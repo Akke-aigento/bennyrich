@@ -143,13 +143,13 @@ function ProductPage() {
           style={{ color: "var(--br-mute)" }}
         >
           <li>
-            <Link to="/" className="transition-colors duration-200 hover:text-[var(--br-blue)]">
+            <Link to="/" className="transition-colors duration-200 hover:text-[var(--br-blue-text)]">
               Home
             </Link>
           </li>
           <li aria-hidden>/</li>
           <li>
-            <Link to="/shop" className="transition-colors duration-200 hover:text-[var(--br-blue)]">
+            <Link to="/shop" className="transition-colors duration-200 hover:text-[var(--br-blue-text)]">
               Shop
             </Link>
           </li>
@@ -397,7 +397,7 @@ function ProductBody({ product }: { product: SellqoProduct }) {
 
       {product.related_products && product.related_products.length > 0 && (
         <section className="br-shell br-section-b">
-          <h2 className="br-section-label neon-text-blue">You may also like</h2>
+          <h2 className="br-section-label neon-text-blue-sm">You may also like</h2>
           <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-12 md:grid-cols-4 md:gap-8">
             {product.related_products.slice(0, 4).map((p) => (
               <ProductCard key={p.id} product={p} />

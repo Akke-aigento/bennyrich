@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useCart } from "@/lib/cart-context";
@@ -33,6 +33,38 @@ function PaymentStep() {
   const [terms, setTerms] = useState(false);
   const [busy, setBusy] = useState(false);
   const [serverErr, setServerErr] = useState<string | null>(null);
+  const [shipPending, setShipPending] = useState(false);
+  // Monotonic ticket per shipping selection. A slower earlier response must not
+  // overwrite the summary with a method the shopper has already moved on from.
+  const shipSeq = useRef(0);
+
+  /**
+   * Push the chosen shipping method as soon as it is picked, then refetch, so
+   * the order summary shows that method's cost immediately. Until BR-8 this was
+   * deferred to submit, which meant the total said "Free" right up to the
+   * moment the order was placed.
+   *
+   * `checkoutSetShipping` is the existing function from lib/checkout.ts — only
+   * WHEN it runs has changed. The submit path still calls it as a safety net if
+   * this ever failed.
+   */
+  async function selectShipping(methodId: string) {
+    if (methodId === shipId) return;
+    const ticket = ++shipSeq.current;
+    setShipId(methodId);
+    setShipPending(true);
+    setServerErr(null);
+    try {
+      await checkoutSetShipping(methodId);
+      if (ticket !== shipSeq.current) return; // superseded by a newer choice
+      await refetch();
+    } catch (err: unknown) {
+      if (ticket !== shipSeq.current) return;
+      setServerErr(err instanceof Error ? err.message : "Could not update shipping");
+    } finally {
+      if (ticket === shipSeq.current) setShipPending(false);
+    }
+  }
 
   useEffect(() => {
     if (!data) return;
@@ -127,7 +159,7 @@ function PaymentStep() {
                       type="radio"
                       name="shipping"
                       checked={active}
-                      onChange={() => setShipId(m.id)}
+                      onChange={() => selectShipping(m.id)}
                       className="mt-1"
                     />
                     <div>
@@ -206,8 +238,9 @@ function PaymentStep() {
 
       {data && (
         <div
-          className="mt-8 border-t pt-4 space-y-1 text-[0.9rem]"
-          style={{ borderColor: "var(--line)" }}
+          className="mt-8 space-y-1 border-t pt-4 text-[0.9rem] transition-opacity duration-200"
+          style={{ borderColor: "var(--line)", opacity: shipPending ? 0.55 : 1 }}
+          aria-busy={shipPending}
         >
           {data.subtotal != null && <Row label="Subtotal" value={formatEUR(data.subtotal)} />}
           {data.shipping_total != null && (
@@ -250,8 +283,8 @@ function PaymentStep() {
           {serverErr}
         </p>
       )}
-      <PrimaryButton disabled={busy || !shipId || !payId || !terms}>
-        {busy ? "Processing…" : "Complete order"}
+      <PrimaryButton disabled={busy || shipPending || !shipId || !payId || !terms}>
+        {busy ? "Processing…" : shipPending ? "Updating…" : "Complete order"}
       </PrimaryButton>
     </form>
   );

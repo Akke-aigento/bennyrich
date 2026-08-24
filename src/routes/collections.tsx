@@ -123,7 +123,7 @@ function CollectionTile({
         <p className="mt-2.5 text-[13px]" style={{ color: "var(--br-mute)" }}>
           {category.blurb}
         </p>
-        <span className="br-label mt-5 inline-block" style={{ color: "var(--br-blue)" }}>
+        <span className="br-label mt-5 inline-block" style={{ color: "var(--br-blue-text)" }}>
           Explore <span aria-hidden>→</span>
         </span>
       </div>

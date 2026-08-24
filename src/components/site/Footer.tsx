@@ -54,7 +54,7 @@ export function Footer() {
               aria-label={label}
               target={href.startsWith("mailto:") ? undefined : "_blank"}
               rel={href.startsWith("mailto:") ? undefined : "noreferrer noopener"}
-              className="transition-colors duration-200 hover:text-[var(--br-blue)]"
+              className="transition-colors duration-200 hover:text-[var(--br-blue-text)]"
               style={{ color: "var(--br-white)" }}
             >
               <Icon size={19} />
@@ -77,7 +77,7 @@ export function Footer() {
               <Link
                 key={l.to}
                 to={l.to}
-                className="br-nav text-[11px] transition-colors duration-200 hover:text-[var(--br-blue)]"
+                className="br-nav text-[11px] transition-colors duration-200 hover:text-[var(--br-blue-text)]"
                 style={{ color: "var(--br-white)" }}
               >
                 {l.label}

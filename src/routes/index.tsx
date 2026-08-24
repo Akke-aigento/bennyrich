@@ -119,7 +119,7 @@ function FeaturedCollection() {
   return (
     <section className="br-shell br-section">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 className="br-section-label neon-text-blue">Featured Collection</h2>
+        <h2 className="br-section-label neon-text-blue-sm">Featured Collection</h2>
         <Link
           to="/shop"
           className="br-section-label transition-opacity duration-200 hover:opacity-70"

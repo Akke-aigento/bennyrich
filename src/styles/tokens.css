@@ -95,6 +95,17 @@
     0 0 var(--glow-text-halo) color-mix(in srgb, var(--br-blue) var(--glow-text-alpha), transparent);
 }
 
+/* Small-text variant of neon-text-blue: same glow, AA-passing colour. Used at
+   11px — nav states, section eyebrows, small links. neon-text-blue keeps
+   --br-blue for the wordmark and display headings, where it passes as large
+   text. */
+@utility neon-text-blue-sm {
+  color: var(--br-blue-text);
+  text-shadow:
+    0 0 var(--glow-text-core) var(--br-blue-core),
+    0 0 var(--glow-text-halo) color-mix(in srgb, var(--br-blue) var(--glow-text-alpha), transparent);
+}
+
 @utility neon-text-pink {
   color: var(--br-pink);
   text-shadow:
@@ -219,7 +230,9 @@
   background: transparent;
   border: 1px solid var(--br-blue);
   border-radius: var(--radius);
-  color: var(--br-blue);
+  /* Border keeps the house blue; the LABEL uses the lighter one because it is
+     11px and --br-blue fails AA at that size. */
+  color: var(--br-blue-text);
   font-family: var(--br-font-body);
   font-size: 0.7rem;
   font-weight: 500;

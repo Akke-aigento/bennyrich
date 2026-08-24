@@ -19,6 +19,7 @@ import {
 } from "../lib/site";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "../lib/cart-context";
+import { Wordmark } from "../assets/brand/Wordmark";
 import { CartDrawer } from "../components/site/CartDrawer";
 import { CookieBanner } from "../components/site/CookieBanner";
 import { ConsentProvider } from "../lib/consent";
@@ -27,21 +28,33 @@ import { Toaster } from "sonner";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
-        </div>
+    <div
+      className="br-shell flex min-h-screen flex-col items-center justify-center py-24 text-center"
+      style={{ background: "var(--br-black)" }}
+    >
+      <Wordmark tone="blue" className="text-[22px]" />
+      <p className="br-section-label mt-14" style={{ color: "var(--br-mute)" }}>
+        404
+      </p>
+      <h1
+        className="br-display neon-hero-white mt-5"
+        style={{ fontSize: "clamp(26px, 4.2vw, 46px)", letterSpacing: "0.06em" }}
+      >
+        Page not found
+      </h1>
+      <p
+        className="mt-6 max-w-[42ch] text-[15px]"
+        style={{ color: "var(--br-mute)", lineHeight: 1.8 }}
+      >
+        This page doesn&rsquo;t exist, or it has moved. The collection is still where you left it.
+      </p>
+      <div className="mt-11 flex flex-wrap justify-center gap-4">
+        <Link to="/shop" className="neon-btn">
+          Shop the collection <span aria-hidden>&rarr;</span>
+        </Link>
+        <Link to="/" className="neon-btn neon-btn-quiet">
+          Home
+        </Link>
       </div>
     </div>
   );
@@ -55,31 +68,40 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
-        <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <button
-            onClick={() => {
-              router.invalidate();
-              reset();
-            }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Try again
-          </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            Go home
-          </a>
-        </div>
+    <div
+      className="br-shell flex min-h-screen flex-col items-center justify-center py-24 text-center"
+      style={{ background: "var(--br-black)" }}
+    >
+      <Wordmark tone="blue" className="text-[22px]" />
+      <p className="br-section-label mt-14" style={{ color: "var(--br-mute)" }}>
+        Something broke
+      </p>
+      <h1
+        className="br-display neon-hero-white mt-5"
+        style={{ fontSize: "clamp(26px, 4.2vw, 46px)", letterSpacing: "0.06em" }}
+      >
+        This page didn&rsquo;t load
+      </h1>
+      <p
+        className="mt-6 max-w-[42ch] text-[15px]"
+        style={{ color: "var(--br-mute)", lineHeight: 1.8 }}
+      >
+        Something went wrong on our end. Try again, or head back to the collection.
+      </p>
+      <div className="mt-11 flex flex-wrap justify-center gap-4">
+        <button
+          type="button"
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+          className="neon-btn"
+        >
+          Try again
+        </button>
+        <a href="/" className="neon-btn neon-btn-quiet">
+          Home
+        </a>
       </div>
     </div>
   );
