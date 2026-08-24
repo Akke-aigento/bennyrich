@@ -20,6 +20,7 @@ import {
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "../lib/cart-context";
 import { CartDrawer } from "../components/site/CartDrawer";
+import { SOCIALS } from "../components/site/Footer";
 import { Toaster } from "sonner";
 
 function NotFoundComponent() {
@@ -82,6 +83,22 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+/**
+ * Organization schema. `sameAs` is derived from the footer's own SOCIALS list
+ * (mailto excluded — sameAs is for profile URLs), so the structured data cannot
+ * drift from the links actually on the page.
+ */
+const ORGANIZATION_LD = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "BennyRich",
+  url: SITE_URL,
+  logo: absoluteUrl("/android-chrome-512.png"),
+  description:
+    "BennyRich is more than fashion. It's a lifestyle built on ambition, confidence and legacy.",
+  sameAs: SOCIALS.map((s) => s.href).filter((href) => !href.startsWith("mailto:")),
+};
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -138,6 +155,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         rel: "stylesheet",
         href: appCss,
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify(ORGANIZATION_LD),
       },
     ],
   }),

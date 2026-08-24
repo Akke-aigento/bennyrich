@@ -27,7 +27,9 @@ function TikTok({ size = 19 }: { size?: number }) {
   );
 }
 
-const SOCIALS = [
+/** Also the `sameAs` source for the Organization JSON-LD in __root.tsx —
+ *  one list, so the schema can never drift from what the footer links to. */
+export const SOCIALS = [
   { href: "https://instagram.com/bennyrich", label: "Instagram", Icon: Instagram },
   { href: "https://tiktok.com/@bennyrich", label: "TikTok", Icon: TikTok },
   { href: "mailto:hello@bennyrich.com", label: "Email us", Icon: Mail },

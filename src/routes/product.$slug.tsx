@@ -67,6 +67,32 @@ export const Route = createFileRoute("/product/$slug")({
     // piece someone is actually linking to. Falls back when it has no artwork.
     const image = absoluteUrl(productCover(product) ?? DEFAULT_OG_IMAGE);
 
+    // Product schema, built from the loader data already fetched — no extra
+    // call. Availability mirrors the same isSoldOut the card and the add button
+    // use, so the schema cannot claim in-stock while the page says otherwise.
+    // Availability must match what the page will actually let a shopper do.
+    // The vodka is held behind NOT_PURCHASABLE pending excise clearance, so
+    // advertising it as InStock would tell Google it is buyable while the add
+    // button says "Coming soon".
+    const buyable = !isSoldOut(product) && isPurchasable(product.slug);
+    const productLd = {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: product.name,
+      description,
+      image: [image],
+      sku: product.sku ?? undefined,
+      brand: { "@type": "Brand", name: SITE_NAME },
+      offers: {
+        "@type": "Offer",
+        url: absoluteUrl(path),
+        priceCurrency: "EUR",
+        // The API's price, never recomputed.
+        price: (product.price_range?.min ?? product.price).toFixed(2),
+        availability: buyable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      },
+    };
+
     return {
       meta: [
         { title },
@@ -83,6 +109,7 @@ export const Route = createFileRoute("/product/$slug")({
         { name: "twitter:image", content: image },
       ],
       links: [canonical(path)],
+      scripts: [{ type: "application/ld+json", children: JSON.stringify(productLd) }],
     };
   },
 
