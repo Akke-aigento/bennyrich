@@ -398,6 +398,14 @@ A Meta pixel uses the same check with category `marketing`. **Never put a
 tracking script in `__root`'s `scripts`** — it would load before the shopper has
 answered, defeating the gate.
 
+### Order history is deliberately absent
+
+There is no `/account/orders`. `get_orders` matches by `customer_email` and
+`get_profile` does **not** return `email_verified`, so there is nothing to gate
+on and an unguarded page would expose other customers' guest orders. Do not add
+one until core returns `email_verified` **and** enforces verification. The
+dashboard tile is intentionally non-linking; see `docs/role-audit.md`.
+
 ## Batch log
 
 | Batch  | Date       | What                                                                                                                                                                                                                                                                                                                               |
@@ -411,3 +419,4 @@ answered, defeating the gate.
 | BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                           |
 | BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep. |
 | BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                |
+| BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                  |

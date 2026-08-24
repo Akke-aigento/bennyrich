@@ -1248,3 +1248,120 @@ tenant-aware is a core change.
 - **Akke:** DB image reconcile to the bucket; live end-to-end auth pass.
 - `br-sunglasses` image; BR-7 reshoot list; sitemap products; Google Fonts
   loading before consent.
+
+---
+
+# BR-9b — account area (2026-08-24)
+
+Completes the account area with the parts that can ship **safely**: addresses
+CRUD, wishlist, and checkout prefill.
+
+## ⛔ Order history was cut, and why
+
+**`get_profile` does not return `email_verified`.** The gate BR-9a designed and
+BR-9b briefed therefore **cannot be built** — there is nothing to gate on.
+
+That is decisive rather than inconvenient. `get_orders` matches by
+`customer_email` and core enforces no verification, so an unguarded order page
+would expose **other people's guest orders** — names, shipping addresses, items,
+totals — to anyone who registers with their email address.
+
+`/account/orders` and `/account/orders/:id` are **not built**. Order history
+returns only once core does **both**:
+
+1. returns `email_verified` from `get_profile`, **and**
+2. enforces email verification at register, or requires `email_verified` for
+   `get_orders`.
+
+Nothing dangles: the dashboard's Orders tile stays visible but **non-linking**,
+with an honest "Not available yet" rather than a link to a page that cannot load
+safely. Confirmed by grep that no route, header menu or mobile menu references
+either path.
+
+> **Profile editing is also absent.** It was in the original BR-9 brief but fell
+> between the two halves of the 9a/9b split and was in neither's steps. Its tile
+> is non-linking too. Recorded so it is not mistaken for an oversight.
+
+## `sellqo.functions.ts` was not touched
+
+The brief refers to "the customerProxy from 9a". **No such export exists** — 9a
+added an _additive branch inside_ `sellqoProxy`. The outcome matches the intent
+anyway: 9a deliberately landed the **full** customer action map in one go, so
+9b needed no change to that file at all.
+
+## Addresses
+
+List, add, edit, delete. Every mutation **reconciles against the array the API
+returns** rather than patching local state, so the list cannot drift from the
+server's view.
+
+**Defaulting is probed, not assumed.** Core's addresses are jsonb and may carry
+no default flag; `hasDefaultFlag()` checks whether any address mentions one and
+the chip and control render only if so. The mock deliberately **omits** the
+flag, so the absent case is the one under test — a default that was invented
+here would be a lie the backend cannot honour.
+
+The 15-country list moved from `checkout.index.tsx` into `src/lib/countries.ts`
+so checkout and the address form share one source instead of drifting.
+
+## Wishlist
+
+`useWishlist()` holds the saved-id set from **one cached query per customer** —
+a grid of 24 cards reads a single `wishlist_get`, not 24. **Guests never fetch
+at all**; there is nothing to fetch and asking would guarantee a 401.
+
+`ProductCard`'s root is now a relative `<div>` holding the `<Link>` **plus the
+heart as a sibling**. A `<button>` inside an `<a>` is invalid HTML and a known
+keyboard and screen-reader trap; `preventDefault` would only paper over a
+structure that should not exist. This is the batch's highest-regression change —
+the card renders on the homepage grid (inside `SpotlightCard`), `/shop`,
+`/collections` and related products, and all four were re-verified.
+
+## Checkout prefill
+
+Fills **only fields still empty** and **only values that exist**, so partial
+data cannot blank anything and typing is never overwritten. `checkout.ts`,
+`CheckoutForm.tsx`, every total and every logic path are untouched.
+
+**Two refs, not one.** The profile is ready as soon as auth resolves, but the
+addresses arrive on their own schedule; a single "done" flag would fire on the
+first pass and leave the shipping fields permanently empty. Caught while
+writing it, not in review.
+
+## Verification
+
+`bun run build` and `bunx tsc --noEmit` green; no frozen file touched.
+
+Asserted in a browser against the extended mock:
+
+- a **guest** clicking the heart lands on `/account/login?next=%2Fshop`, and
+  **zero `wishlist_get` requests** are made for a guest
+- an authed heart saves **without navigating**, and flips to its pressed state
+- the saved piece appears on `/account/wishlist`; removing it there clears the
+  heart back on the shop grid (0 pressed, 24 unpressed)
+- address add round-trips and renders with its country name
+- signed-in checkout arrives prefilled with profile **and** address; a guest's
+  checkout renders **completely empty**, so prefill is a genuine no-op
+- regression: `/`, `/shop`, `/collections`, `/product/:slug` all still 200 after
+  the ProductCard restructure
+
+The "typing is never overwritten" guarantee is enforced by construction — the
+fill helper skips any field that already has a value — rather than by a timed
+test.
+
+Address and wishlist envelopes are **modelled in the mock**, not verified
+against live: the API key is a Cloud secret. Reads are deliberately tolerant of
+a bare array or a wrapper object. **A live pass is Akke's follow-up.**
+
+## Open items
+
+- **Core, blocking order history:** `get_profile` does not return
+  `email_verified`; register neither sends a verification email nor enforces
+  verification. **Both** must land before order history can ship.
+- **Core:** the reset email points at `sellqo.lovable.app/shop/{slug}`, not
+  `/account/reset`.
+- Profile editing not built (above). Loyalty/points deferred; tables exist.
+- **Sander:** Stripe Connect; vodka accijns.
+- **Akke:** DB image reconcile to the bucket; live end-to-end account pass.
+- `br-sunglasses` image; BR-7 reshoot list; sitemap products; Google Fonts
+  loading before consent.
