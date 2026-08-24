@@ -23,7 +23,7 @@ type Tile = {
   label: string;
   blurb: string;
   Icon: ComponentType<{ size?: number; strokeWidth?: number }>;
-  to?: "/account/addresses" | "/account/wishlist" | "/account/orders";
+  to?: "/account/addresses" | "/account/wishlist" | "/account/orders" | "/account/profile";
   pending?: string;
 };
 
@@ -50,7 +50,7 @@ const TILES: Tile[] = [
     label: "Profile",
     blurb: "Your details and password.",
     Icon: User,
-    pending: "Not available yet",
+    to: "/account/profile",
   },
 ];
 

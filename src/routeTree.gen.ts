@@ -27,6 +27,7 @@ import { Route as AccountWishlistRouteImport } from './routes/account.wishlist'
 import { Route as AccountVerifyRouteImport } from './routes/account.verify'
 import { Route as AccountResetRouteImport } from './routes/account.reset'
 import { Route as AccountRegisterRouteImport } from './routes/account.register'
+import { Route as AccountProfileRouteImport } from './routes/account.profile'
 import { Route as AccountLoginRouteImport } from './routes/account.login'
 import { Route as AccountForgotRouteImport } from './routes/account.forgot'
 import { Route as AccountAddressesRouteImport } from './routes/account.addresses'
@@ -124,6 +125,11 @@ const AccountRegisterRoute = AccountRegisterRouteImport.update({
   path: '/register',
   getParentRoute: () => AccountRoute,
 } as any)
+const AccountProfileRoute = AccountProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AccountRoute,
+} as any)
 const AccountLoginRoute = AccountLoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/account/addresses': typeof AccountAddressesRoute
   '/account/forgot': typeof AccountForgotRoute
   '/account/login': typeof AccountLoginRoute
+  '/account/profile': typeof AccountProfileRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
   '/account/verify': typeof AccountVerifyRoute
@@ -194,6 +201,7 @@ export interface FileRoutesByTo {
   '/account/addresses': typeof AccountAddressesRoute
   '/account/forgot': typeof AccountForgotRoute
   '/account/login': typeof AccountLoginRoute
+  '/account/profile': typeof AccountProfileRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
   '/account/verify': typeof AccountVerifyRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/account/addresses': typeof AccountAddressesRoute
   '/account/forgot': typeof AccountForgotRoute
   '/account/login': typeof AccountLoginRoute
+  '/account/profile': typeof AccountProfileRoute
   '/account/register': typeof AccountRegisterRoute
   '/account/reset': typeof AccountResetRoute
   '/account/verify': typeof AccountVerifyRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/account/addresses'
     | '/account/forgot'
     | '/account/login'
+    | '/account/profile'
     | '/account/register'
     | '/account/reset'
     | '/account/verify'
@@ -273,6 +283,7 @@ export interface FileRouteTypes {
     | '/account/addresses'
     | '/account/forgot'
     | '/account/login'
+    | '/account/profile'
     | '/account/register'
     | '/account/reset'
     | '/account/verify'
@@ -299,6 +310,7 @@ export interface FileRouteTypes {
     | '/account/addresses'
     | '/account/forgot'
     | '/account/login'
+    | '/account/profile'
     | '/account/register'
     | '/account/reset'
     | '/account/verify'
@@ -454,6 +466,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRegisterRouteImport
       parentRoute: typeof AccountRoute
     }
+    '/account/profile': {
+      id: '/account/profile'
+      path: '/profile'
+      fullPath: '/account/profile'
+      preLoaderRoute: typeof AccountProfileRouteImport
+      parentRoute: typeof AccountRoute
+    }
     '/account/login': {
       id: '/account/login'
       path: '/login'
@@ -503,6 +522,7 @@ interface AccountRouteChildren {
   AccountAddressesRoute: typeof AccountAddressesRoute
   AccountForgotRoute: typeof AccountForgotRoute
   AccountLoginRoute: typeof AccountLoginRoute
+  AccountProfileRoute: typeof AccountProfileRoute
   AccountRegisterRoute: typeof AccountRegisterRoute
   AccountResetRoute: typeof AccountResetRoute
   AccountVerifyRoute: typeof AccountVerifyRoute
@@ -516,6 +536,7 @@ const AccountRouteChildren: AccountRouteChildren = {
   AccountAddressesRoute: AccountAddressesRoute,
   AccountForgotRoute: AccountForgotRoute,
   AccountLoginRoute: AccountLoginRoute,
+  AccountProfileRoute: AccountProfileRoute,
   AccountRegisterRoute: AccountRegisterRoute,
   AccountResetRoute: AccountResetRoute,
   AccountVerifyRoute: AccountVerifyRoute,
