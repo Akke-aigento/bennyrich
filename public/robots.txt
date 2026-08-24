@@ -1,0 +1,11 @@
+# BennyRich
+User-agent: *
+Allow: /
+
+# Transactional and personal paths — nothing here belongs in an index.
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /account
+Disallow: /account/
+
+Sitemap: https://akke-aigento-bennyrich.lovable.app/sitemap.xml
