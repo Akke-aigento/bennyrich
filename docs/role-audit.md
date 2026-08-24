@@ -1365,3 +1365,181 @@ a bare array or a wrapper object. **A live pass is Akke's follow-up.**
 - **Akke:** DB image reconcile to the bucket; live end-to-end account pass.
 - `br-sunglasses` image; BR-7 reshoot list; sitemap products; Google Fonts
   loading before consent.
+
+---
+
+# BR-10 — accounts complete: verification + order history (2026-08-24)
+
+Closes the chain BR-9a and BR-9b could not close: **register → verification mail
+→ confirm → order history**. Everything BR-9b listed as blocking has landed in
+core (CUSTAUTH-1), so this batch is the storefront half.
+
+Commits: `570f2f2` (proxy), `971d917` (`/account/verify`), `dad3108` (orders),
+`824faa3` (banner), `63dea03` (profile), plus this paper trail.
+
+## What core now guarantees
+
+`storefront-customer-api` sends a verification email on `register`, exposes
+`verify_email` and `resend_verification`, returns `email_verified` from `login`
+and `get_profile`, and answers `get_orders` / `get_order` with **HTTP 403 +
+`EMAIL_NOT_VERIFIED`** while the address is unconfirmed. Verification and reset
+mails build their link from a `url_base` the storefront supplies, checked
+against core's allowlist.
+
+## ⛔ The blocker this batch had to fix first
+
+`sellqo.functions.ts` cleared the session cookie on **any 401 or 403**:
+
+```ts
+if (customerRes.status === 401 || customerRes.status === 403) {
+  await clearCustomerToken();
+  throw new Error("NOT_AUTHENTICATED");
+}
+```
+
+Core's new 403 is not "you are not signed in" — it is "you are signed in and not
+yet verified". Shipping order history without touching this would have **signed
+customers out the moment they clicked Orders**. An `EMAIL_NOT_VERIFIED` check
+now sits **before** that branch and throws a distinct error instead. This is the
+regression the batch would have introduced, so it is asserted explicitly (check
+D below), not reasoned about.
+
+## `sellqo.functions.ts` — three additive changes, 34 insertions, 0 deletions
+
+The most sensitive file in the project; it is extend-additively-only, not
+frozen.
+
+1. `verify_email` and `resend_verification` added to `PUBLIC_CUSTOMER_ACTIONS`
+   and mapped from `/auth/verify` and `/account/resend-verification`. Verify
+   must be public: the click arrives from an inbox, with no session cookie.
+2. `url_base` injected **server-side** from `SITE_URL` for `register` and
+   `request_password_reset` only. The function runs with `verify_jwt = false`,
+   so a client-supplied `url_base` would be a phishing vector — a branded mail
+   from the real sender pointing anywhere. Client code cannot set or override
+   it here.
+3. The `EMAIL_NOT_VERIFIED` exception above.
+
+`resolveAction` (7498 chars) and the storefront-api tail (1561 chars) were
+diffed **byte-for-byte** before and after — identical. The product, cart and
+checkout routing is untouched.
+
+## Order history
+
+`/account/orders` and `/account/orders/$orderId`, both behind `<RequireAuth>`
+and gated twice: on `email_verified` up front, and on core's 403 as the
+backstop. Both gates render the same `VerifyGate` — one screen, whichever gate
+fires — with a resend button.
+
+**No total is ever computed here.** Subtotal, shipping, VAT and total are read
+from the API and formatted; a figure this page added up could disagree with the
+invoice. Amounts go through `formatEUR` from `src/lib/format.ts` (nl-BE), not
+the `it-IT` one still living in the frozen `sellqo.ts`. Dates are en-GB
+("12 August 2026"), statuses mapped to English labels.
+
+The query does **not retry** on the gate: `retry: (count, error) =>
+!isNotVerifiedError(error) && count < 2`. Retrying a 403 that will stay a 403
+just delays the message.
+
+## Verification banner
+
+Renders only when `customer?.email_verified === false` — an explicit `false`,
+never a falsy check. An older core omits the field, and `undefined` read as
+"unverified" would nag people about an email that was never sent.
+
+It is a nudge, not a wall: sign-in, profile, addresses and wishlist all keep
+working unverified. Only order history is gated, because only order history
+exposes data that predates the account. Shape and motion follow `CookieBanner` —
+`quiet-frame`, hard edge, opacity-only entrance, nothing pulses.
+
+## `/account/profile`
+
+Never existed; it fell between the halves of the 9a/9b split. Two cards:
+details (`PATCH /account/me`, with the marketing opt-in) and password
+(`POST /account/password`). `refresh()` runs after a successful save or the
+header keeps greeting you by your old name. The confirm field is validated in
+the browser and **never sent** — core wants two passwords, not three.
+
+## Security choices
+
+- `url_base` is server-side only (above).
+- `/account/verify` fires its POST **once**, guarded by a `useRef`. React 19's
+  double-invoked effects would otherwise burn the single-use token on the first
+  render and show the customer an "invalid link" for a link that was valid.
+- Every new route carries `noindex, nofollow`, like the rest of `/account/*`.
+- The session token stays in the httpOnly cookie; nothing added here reads it.
+
+## Verification
+
+`bun run build` and `bunx tsc --noEmit` green. No frozen file touched:
+`sellqo.ts`, `cart-context.tsx`, `checkout.ts`, `integrations/**` unchanged;
+`sellqo.functions.ts` additive and diffed as above.
+
+The mock was extended with `verify_email` (above the auth gate),
+`resend_verification`, a token map, and orders that return **403
+`EMAIL_NOT_VERIFIED`** while unverified — so both branches are genuinely
+exercised. Six branches were first checked over curl: 403 unverified → bad token
+400 → good token 200 → replay 400 (single-use) → 2 orders after verify → detail
+with items, totals and address.
+
+Then in a real browser, end to end, all green:
+
+```
+PASS A dashboard shows the verification banner — /account
+PASS A signed in after register
+PASS B Orders + Profile tiles link — orders=true profile=true
+PASS B no 'Not available yet' left
+PASS C orders gated for unverified — /account/orders
+PASS D STILL SIGNED IN after the 403 — landed on /account/orders
+PASS D session survives a follow-up navigation
+PASS E expired/invalid link explained
+PASS F verify success
+PASS G orders listed after verifying — 2 order links
+PASS G EUR nl-BE formatting — ORDER BR-1001 €189,98 12 August 2026 · Shipped
+PASS H detail shows items and totals — /account/orders/ord-1001
+PASS H detail shows the delivery address
+PASS I banner gone after verifying
+PASS J profile renders both cards — /account/profile
+```
+
+Screenshots in `docs/screens/BR-10/` (1280, plus 390 for the gate, verify
+success and the orders list).
+
+Two notes on the harness, both my own bugs rather than the code's: the first run
+failed everywhere because a cold Vite dev server was still compiling when the
+register form was submitted (fixed with warm-up navigations), and checks H and J
+failed because the assertion truncated the page text at 320 chars and matched
+case-sensitively against headings the CSS uppercases. Verified with a full-body
+probe before changing anything.
+
+## Deviations from the brief
+
+1. **"Use the existing `customerProxy` from 9a"** — no such export. BR-9a added
+   an additive branch *inside* `sellqoProxy`; `docs/role-audit.md` already said
+   so. Extended that branch instead.
+2. **"Re-enable order history (removed in 9b)"** — it was never built. `git log
+   --all --diff-filter=D` finds no deleted `account.orders*` file. Built from
+   scratch; only the proxy mapping pre-existed, with no caller.
+3. **`/account/profile` likewise did not exist** — a new page, not a gap.
+4. **The 403 blocker** was not in the brief and had to be fixed before step 3
+   could work at all.
+
+## Not touched
+
+Frozen plumbing, the product/cart/checkout proxy paths, `CheckoutForm`, every
+9a/9b screen. `routeTree.gen.ts` is regenerated by the build, never hand-edited.
+
+## Open items
+
+- **Akke, before the mails are real:** `SITE_URL` is still the Lovable preview.
+  Core allowlists `*.lovable.app`, so it works today. The real domain must land
+  in `tenant_domains` (`dns_verified` + `is_active`) or `tenants.custom_domain`
+  **and** in `src/lib/site.ts`, or core refuses the `url_base` and the links
+  fall back to the old path.
+- **Akke:** live end-to-end pass against real core with a real inbox — the mock
+  sends nothing. DB image reconcile to the bucket.
+- **Sander:** Stripe Connect; vodka accijns.
+- Loyalty/points deferred; the tables exist.
+- `br-sunglasses` image; BR-7 reshoot list; sitemap products; Google Fonts
+  loading before consent.
+- The mock and the CDP check script still live in a scratchpad, not in git.
+  Worth moving into the repo before the next account batch.

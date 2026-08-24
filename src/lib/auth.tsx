@@ -24,8 +24,11 @@ export type Customer = {
   phone?: string | null;
   accepts_marketing?: boolean;
   /**
-   * Core does not verify addresses at registration, so this is false for
-   * everyone today. BR-9b gates order history on it — see docs/role-audit.md.
+   * True once the customer has clicked the link in the verification email.
+   * Core sends that email on register (CUSTAUTH-1) and refuses get_orders /
+   * get_order with 403 EMAIL_NOT_VERIFIED until it is true, so the gate exists
+   * on both sides. Still optional on the type: an older core omits the field,
+   * and `undefined` must not be read as "unverified" — see VerifyBanner.
    */
   email_verified?: boolean;
 };

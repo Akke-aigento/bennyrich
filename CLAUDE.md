@@ -398,13 +398,23 @@ A Meta pixel uses the same check with category `marketing`. **Never put a
 tracking script in `__root`'s `scripts`** — it would load before the shopper has
 answered, defeating the gate.
 
-### Order history is deliberately absent
+### Order history is gated on a verified email
 
-There is no `/account/orders`. `get_orders` matches by `customer_email` and
-`get_profile` does **not** return `email_verified`, so there is nothing to gate
-on and an unguarded page would expose other customers' guest orders. Do not add
-one until core returns `email_verified` **and** enforces verification. The
-dashboard tile is intentionally non-linking; see `docs/role-audit.md`.
+`/account/orders` exists since BR-10, and it is gated twice. Core (CUSTAUTH-1)
+sends a verification email on register, returns `email_verified` on login and
+`get_profile`, and answers `get_orders` / `get_order` with **HTTP 403
+`EMAIL_NOT_VERIFIED`** until the address is confirmed. The storefront gates on
+`email_verified` up front and treats that 403 as the same gate — `get_orders`
+matches by `customer_email`, so an ungated page would hand someone else's guest
+orders to anyone who registered with their address.
+
+The trap: the proxy used to clear the session cookie on **any** 401 or 403, so
+core's new 403 signed the customer out mid-click. `sellqo.functions.ts` now
+checks for `EMAIL_NOT_VERIFIED` **before** that branch. Keep that check first if
+you ever touch the error handling there.
+
+Never read `email_verified === undefined` as unverified — an older core simply
+omits the field, and the banner would then nag about an email nobody sent.
 
 ## Batch log
 
@@ -420,3 +430,4 @@ dashboard tile is intentionally non-linking; see `docs/role-audit.md`.
 | BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep. |
 | BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                |
 | BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                  |
+| BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                |
