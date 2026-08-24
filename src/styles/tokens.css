@@ -338,13 +338,34 @@
   background: var(--br-black);
 }
 
+/* Fill the well edge to edge. Source aspect ratios differ, and under `contain`
+   each product floated at a different size inside an identical frame, so a row
+   read as products floating in black rather than as a grid. `cover` gives every
+   tile the same framing at the cost of cropping the edges. */
 .br-media > img {
   width: 100%;
   height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* The one exception: the large product-detail image, where a shopper is
+   deciding whether to buy and needs to see the whole garment. Measured, a
+   centre crop costs the countach hoodie 32% of its width (it is a front+back
+   shot) and the vodka 26% of its height.
+
+   ORDER IS LOAD-BEARING. The gallery element carries BOTH classes and the two
+   selectors have equal specificity (0,1,1), so this must stay AFTER the rule
+   above or it silently stops winning. */
+.br-media-contain > img {
   object-fit: contain;
   padding: 8%;
 }
 
+/* Under `contain` this dissolved the residual dark edge of a black-ground photo
+   so it did not form a seam against the well. Under `cover` there is no edge to
+   dissolve and it is simply a faint corner darkening over the product. Kept at
+   6% — imperceptible, and it holds the house look. */
 .br-media::after {
   content: "";
   position: absolute;

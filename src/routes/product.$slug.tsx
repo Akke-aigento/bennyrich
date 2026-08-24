@@ -178,7 +178,10 @@ function ProductBody({ product }: { product: SellqoProduct }) {
         {/* Gallery */}
         <div className="md:sticky md:top-[92px] md:self-start">
           <div
-            className="br-media br-media-frame border"
+            // Contain, not cover: this is the one image on the site where the
+            // whole product has to be visible. The thumbnail strip below is a
+            // row and follows the row rule.
+            className="br-media br-media-contain br-media-frame border"
             style={{ borderRadius: "var(--radius)", aspectRatio: "1 / 1" }}
           >
             <ProductImage
