@@ -20,13 +20,7 @@ import {
   variantFor,
 } from "@/lib/variants";
 import { productCover, sellqoFetch } from "@/lib/sellqo";
-import {
-  absoluteUrl,
-  canonical,
-  DEFAULT_OG_IMAGE,
-  metaDescription,
-  SITE_NAME,
-} from "@/lib/site";
+import { absoluteUrl, canonical, DEFAULT_OG_IMAGE, metaDescription, SITE_NAME } from "@/lib/site";
 import { useCart } from "@/lib/cart-context";
 
 type ProductResponse = SellqoProduct | { product: SellqoProduct };
@@ -143,13 +137,19 @@ function ProductPage() {
           style={{ color: "var(--br-mute)" }}
         >
           <li>
-            <Link to="/" className="transition-colors duration-200 hover:text-[var(--br-blue-text)]">
+            <Link
+              to="/"
+              className="transition-colors duration-200 hover:text-[var(--br-blue-text)]"
+            >
               Home
             </Link>
           </li>
           <li aria-hidden>/</li>
           <li>
-            <Link to="/shop" className="transition-colors duration-200 hover:text-[var(--br-blue-text)]">
+            <Link
+              to="/shop"
+              className="transition-colors duration-200 hover:text-[var(--br-blue-text)]"
+            >
               Shop
             </Link>
           </li>

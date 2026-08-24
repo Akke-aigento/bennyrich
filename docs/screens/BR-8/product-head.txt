@@ -1,0 +1,16 @@
+<title>Panther Tee — BennyRich</title>
+<meta name="description" content="Oversized cut, heavyweight cotton, neon graphic."/>
+<meta property="og:site_name" content="BennyRich"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+<meta property="og:type" content="product"/>
+<meta property="og:title" content="Panther Tee — BennyRich"/>
+<meta property="og:description" content="Oversized cut, heavyweight cotton, neon graphic."/>
+<meta property="og:url" content="https://akke-aigento-bennyrich.lovable.app/product/panther-tee"/>
+<meta property="og:image" content="https://akke-aigento-bennyrich.lovable.app/products/panther-tee-blue.jpg"/>
+<meta property="og:image:alt" content="Panther Tee"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Panther Tee — BennyRich"/>
+<meta name="twitter:description" content="Oversized cut, heavyweight cotton, neon graphic."/>
+<meta name="twitter:image" content="https://akke-aigento-bennyrich.lovable.app/products/panther-tee-blue.jpg"/>
+<link rel="canonical" href="https://akke-aigento-bennyrich.lovable.app/product/panther-tee"/>

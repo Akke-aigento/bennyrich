@@ -100,18 +100,19 @@ SELLQO_API_URL=http://localhost:8788/functions/v1/storefront-api bun run dev
 Black canvas everywhere, with restrained neon on top of it — signage seen from
 across a quiet room, not a lit sign in your face. Tokens: `src/styles/tokens.css`.
 
-| Token            | Value     | Role                                          |
-| ---------------- | --------- | --------------------------------------------- |
-| `--br-black`     | `#050505` | page background                               |
-| `--br-ink`       | `#0B0B0D` | surfaces: cards, image wells, inputs          |
-| `--br-line`      | `#1C1C22` | hairlines                                     |
-| `--br-white`     | `#F4F4F6` | primary text (18.6:1 on black)                |
-| `--br-mute`      | `#8A8A94` | secondary text (5.96:1 on black — AA passes)  |
-| `--br-blue`      | `#1E5BFF` | default UI accent                             |
-| `--br-blue-core` | `#0F55C9` | inner core of the blue glow                   |
-| `--br-pink`      | `#FF2D8A` | emphasis, sale/attention, pink-variant pieces |
-| `--br-pink-core` | `#C8287C` | inner core of the pink glow                   |
-| `--br-rose`      | `#F06CA6` | soft pink, home-decor accents                 |
+| Token            | Value     | Role                                                |
+| ---------------- | --------- | --------------------------------------------------- |
+| `--br-black`     | `#050505` | page background                                     |
+| `--br-ink`       | `#0B0B0D` | surfaces: cards, image wells, inputs                |
+| `--br-line`      | `#1C1C22` | hairlines                                           |
+| `--br-white`     | `#F4F4F6` | primary text (18.6:1 on black)                      |
+| `--br-mute`      | `#8A8A94` | secondary text (5.96:1 on black — AA passes)        |
+| `--br-blue`      | `#1E5BFF` | default UI accent — borders, glows, large type      |
+| `--br-blue-text` | `#4A7DFF` | small blue text (11px). 5.50:1 vs AA-failing 3.88:1 |
+| `--br-blue-core` | `#0F55C9` | inner core of the blue glow                         |
+| `--br-pink`      | `#FF2D8A` | emphasis, sale/attention, pink-variant pieces       |
+| `--br-pink-core` | `#C8287C` | inner core of the pink glow                         |
+| `--br-rose`      | `#F06CA6` | soft pink, home-decor accents                       |
 
 ### Glow
 
@@ -316,14 +317,60 @@ licence position and the reuse pattern for future tenants; `grep -ri aceternity
 src/` returning 0 hits is a standing check that no vendored source has crept
 back in.
 
+## Site URL, metadata and the consent gate
+
+`src/lib/site.ts` exports **`SITE_URL`** plus `absoluteUrl`, `canonical` and
+`metaDescription`. Canonical links and `og:image` must be absolute — a relative
+path silently produces a broken share preview.
+
+> **`SITE_URL` is the single line to change when the real domain lands.** It
+> currently points at the Lovable preview host.
+
+Canonicals live **only on routes, never in `__root`**: root and route `links`
+are concatenated, not merged, so a canonical at the root emits a second one on
+every page and a crawler then honours neither.
+
+`/product/:slug` has a **route loader**, and needs one: `head()` cannot see
+`useQuery` data and social scrapers do not run JavaScript, so per-product titles
+and images have to be server-rendered. The component's query is seeded from
+`loaderData`, so it stays one fetch.
+
+`sitemap.xml` is served from `src/server.ts` — this TanStack Start version has
+no server-route factory. Product URLs are currently absent; see
+`docs/role-audit.md` for why and what would change.
+
+### Adding analytics or a pixel
+
+Nothing is tracked today. `src/lib/consent.tsx` is the gate; `hasConsent()` is
+false for everything optional until the shopper accepts, and the choice lives in
+the first-party `br_consent` cookie.
+
+```ts
+const { hasConsent } = useConsent();
+useEffect(() => {
+  if (!hasConsent("analytics")) return;
+  const s = document.createElement("script");
+  s.defer = true;
+  s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  s.dataset.cfBeacon = JSON.stringify({ token: "<token>" });
+  document.head.appendChild(s);
+  return () => s.remove();
+}, [hasConsent]);
+```
+
+A Meta pixel uses the same check with category `marketing`. **Never put a
+tracking script in `__root`'s `scripts`** — it would load before the shopper has
+answered, defeating the gate.
+
 ## Batch log
 
-| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                          |
-| ------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                     |
-| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                            |
-| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                              |
-| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                               |
-| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter. |
-| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                   |
-| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                      |
+| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                               |
+| ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                          |
+| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                                 |
+| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                                   |
+| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                                    |
+| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter.      |
+| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                        |
+| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                           |
+| BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep. |

@@ -949,3 +949,181 @@ work has been done toward that; noting it as the option if it is ever needed.
 The rifle-themed _products_ (`cushion-rifle-blue`, `led-lamp-rifle`) are
 unaffected by this note — they are catalogue items, and the same policy would
 apply to advertising them regardless of the banner.
+
+---
+
+# BR-8 — launch essentials + technical cleanup (2026-08-24)
+
+Launch-web plumbing plus four technical debts cleared. Everything frontend; no
+SellQo plumbing touched.
+
+## Favicons
+
+Full set — `favicon.ico` (16/32/48), `favicon-16`, `favicon-32`,
+`android-chrome-192`, `android-chrome-512`, `site.webmanifest` — all rasterised
+from the existing `favicon.svg`, so every icon is provably the same BR monogram
+rather than a redraw. `apple-touch-icon.png` was left alone: rendering the SVG
+at 180 and diffing gives a mean absolute difference of **1.0/255**, so it is
+already the same artwork and regenerating would be churn. Rasterising used
+`cairosvg` in the throwaway venv — **no project dependency added**.
+
+## Metadata, OG and canonicals
+
+`src/lib/site.ts` holds `SITE_URL` and the helpers everything derives from.
+
+> **`SITE_URL` is the one line to change when the real domain lands.** It
+> currently points at `https://akke-aigento-bennyrich.lovable.app`, inferred
+> from the Cloudflare worker name because nothing in the repo recorded the
+> deployed origin. If that guess is wrong, canonicals and share previews point
+> at the wrong host until that string is corrected — nothing else needs editing.
+
+Root: `twitter:card` → `summary_large_image`, absolute `og:image` /
+`twitter:image` at `/hero/og-image.jpg`, `og:url`, and the 1200×630 dimensions.
+
+**`/product/:slug` needed a route loader, and that is the substantive change in
+this batch.** `head()` cannot see data fetched by `useQuery` inside the
+component, and social scrapers do not run JavaScript — so metadata set on the
+client would never reach Facebook, X or a crawler. The route now loads the
+product via the existing `sellqoFetch`, `head()` builds the title, description
+and `og:image` from it, and the component's `useQuery` is seeded with
+`initialData` from the loader, so it is **one fetch, not two**.
+
+Verified with `curl` against the SSR HTML rather than in a browser, because that
+is what a scraper sees. `docs/screens/BR-8/product-head.txt` is the captured
+head; `/product/panther-tee` returns its own title, an absolute `og:image`
+pointing at that product's photo, and a single canonical. A product with no
+artwork (`br-sunglasses`) correctly falls back to the house image.
+
+**Bug found while verifying:** a canonical in the root head emitted a _second_
+canonical on every page, because root and route `links` are concatenated rather
+than merged — and two canonicals mean a crawler honours neither. Canonicals now
+live only on routes; the noindex checkout routes deliberately have none.
+
+## robots.txt and sitemap.xml
+
+`robots.txt` allows all, disallows `/checkout` and `/account`, points at the
+sitemap. `sitemap.xml` is rendered on request from `src/server.ts`: this build
+of TanStack Start exports **no server-route factory**
+(`createServerFileRoute` / `createAPIFileRoute` do not exist in 1.167.50), and
+our SSR entry already sees every request.
+
+> **Products are not in the sitemap yet — the flagged risk landed.**
+> `sellqoProxy` is a TanStack server function and needs the Start
+> AsyncLocalStorage context; the fetch entry runs _before_ Start does, so the
+> call throws `No Start context found in AsyncLocalStorage`. The approved
+> fallback engaged: the lookup is wrapped, one warning is logged, and the
+> sitemap still returns 200 with valid XML listing the eight static routes.
+>
+> To add the ~24 product URLs, `productEntries()` in `src/lib/sitemap.ts` is the
+> only function that changes — it would have to talk to the storefront API
+> directly rather than through the proxy, which means duplicating the action
+> protocol. That trade was deliberately not taken.
+
+## JSON-LD
+
+Organization in the root, with `sameAs` derived from the footer's own `SOCIALS`
+list rather than retyped, so the schema cannot drift from the links on the page.
+Product on `/product/:slug`, built from the loader data already fetched — no
+extra API call.
+
+**Caught while verifying:** availability reported `InStock` for the vodka, which
+is held behind `NOT_PURCHASABLE` pending excise clearance. That would have told
+Google the bottle is buyable while the page's own button says "Coming soon".
+Availability now requires in-stock **and** purchasable.
+
+## Consent gate — nothing is tracked
+
+`src/lib/consent.tsx` provides `useConsent()` / `hasConsent(category)`, false
+for everything except `necessary` until accepted. The choice is a **first-party
+cookie** (`br_consent`, SameSite=Lax, ~6 months), not localStorage: a consent
+decision should be presentable and readable server-side. The consent cookie is
+strictly necessary and exempt from requiring prior consent.
+
+**No third-party analytics or advertising script is loaded anywhere in this
+batch.** Verified from the network log, not by reading code: a full session
+produced no third-party request other than the Google Fonts stylesheet that was
+already there.
+
+### Adding analytics later
+
+Gate it — never load it unconditionally:
+
+```ts
+const { hasConsent } = useConsent();
+useEffect(() => {
+  if (!hasConsent("analytics")) return;
+  const s = document.createElement("script");
+  s.defer = true;
+  s.src = "https://static.cloudflareinsights.com/beacon.min.js";
+  s.dataset.cfBeacon = JSON.stringify({ token: "<token>" });
+  document.head.appendChild(s);
+  return () => s.remove();
+}, [hasConsent]);
+```
+
+A Meta pixel goes behind the same check with category `marketing`. **Do not put
+the script in `__root`'s `scripts`** — that loads it before the shopper has
+answered, which is the whole thing the gate exists to prevent.
+
+## Technical cleanup
+
+**Shipping updates the summary immediately.** `checkoutSetShipping` is now
+called on _selection_ rather than deferred to submit — the total used to read
+"Free" right up to the moment the order was placed. Only _when_ the existing
+function runs changed; no checkout logic was reimplemented. Races are guarded
+with a monotonic ticket so a slow earlier response cannot overwrite a newer
+choice. Verified: choosing Express moves the summary from
+**Shipping Free / Total €89,99** to **Shipping €12,50 / Total €102,49** before
+submit. **This closes the item deferred through BR-5, BR-6 and BR-7.**
+
+**AA contrast.** `--br-blue` (#1E5BFF) is **3.88:1** on black — fails AA for
+normal text. New `--br-blue-text` (**#4A7DFF, 5.50:1**, measured) covers the
+11px uses: nav states, section eyebrows, small links and the `neon-btn` _label_.
+`neon-btn`'s border and every glow, large accent and the wordmark keep #1E5BFF.
+Confirmed from the live DOM: the section eyebrow computes `rgb(74,125,255)` at
+11px, ratio 5.50.
+
+**Three error surfaces, not two.** The 404 and the router error boundary moved
+off shadcn defaults onto black, Bodoni, the wordmark and ghost buttons — and so
+did `src/lib/error-page.ts`, the SSR catastrophic fallback, which was a white
+`#fafafa` system-font page and is the only screen shown when SSR itself fails.
+It cannot import from the app, so its brand values are inlined literals with a
+note to keep them in sync.
+
+**Prettier sweep**, run _first_ rather than last so it could not swallow the
+batch's new code. Lint went 278 → 144 problems.
+
+> **`bun run lint` cannot reach green.** Every remaining auto-fixable error is
+> inside a frozen file — `sellqo.ts`, `sellqo.functions.ts`, `cart-context.tsx`,
+> `integrations/**` — which the sweep touched and which were reverted, because
+> a cosmetic change to a frozen file is still a change. Outside the frozen set,
+> **39 problems remain and none are formatting**: 26 `no-explicit-any` and 13
+> `react-refresh/only-export-components`, nearly all in unused shadcn `ui/`
+> primitives.
+
+## New finding worth a decision
+
+**Google Fonts loads before consent.** The stylesheet and two woff2 files are
+fetched from `fonts.googleapis.com` / `fonts.gstatic.com` on first paint, which
+transmits the visitor's IP to Google before they have answered the banner. A
+German court has ruled against exactly this. Self-hosting the two families would
+remove the only third-party request the site makes. Not done here — it is a
+separate change with its own testing — but it is the obvious next privacy item.
+
+## Verification
+
+`bun run build` green, `bunx tsc --noEmit` clean, **no frozen file touched**
+across the whole batch (`checkout.ts` changed by formatting only — called, never
+rewritten). Screenshots in `docs/screens/BR-8/`.
+
+## Open items
+
+- **Stripe Connect — Sander.**
+- **Vodka accijns — Sander.** `NOT_PURCHASABLE` holds it; delete the slug to release.
+- **DB image reconcile to the Supabase bucket — Akke.**
+- `br-sunglasses` still has no image.
+- **BR-7 reshoot list:** 10 of 26 seed images lose ≥19% of their content to the
+  centre crop; six white-ground images now fill their frame with white.
+- Products missing from the sitemap (above).
+- Google Fonts before consent (above).
+- **Accounts phase next.**
