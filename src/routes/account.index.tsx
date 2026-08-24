@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { createElement, type ComponentType } from "react";
 import { Heart, MapPin, Package, User } from "lucide-react";
 import { RequireAuth } from "@/components/site/RequireAuth";
+import { VerifyBanner } from "@/components/site/VerifyBanner";
 import { customerName, useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/account/")({
@@ -78,6 +79,8 @@ function AccountDashboard() {
       <p className="mt-5 text-[14px]" style={{ color: "var(--br-mute)" }}>
         {customer?.email}
       </p>
+
+      <VerifyBanner />
 
       <div className="mt-14 grid gap-5 sm:grid-cols-2">
         {TILES.map(({ label, blurb, Icon, to, pending }) => {
