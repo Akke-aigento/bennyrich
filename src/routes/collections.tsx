@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { canonical } from "@/lib/site";
 import { useQueries } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHeading } from "@/components/site/PageShell";
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/collections")({
           "Apparel, accessories, home, lighting and beverages — the five BennyRich collections.",
       },
     ],
+    links: [canonical("/collections")],
   }),
   component: CollectionsPage,
 });

@@ -10,6 +10,13 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import {
+  absoluteUrl,
+  DEFAULT_OG_IMAGE,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
+  SITE_URL,
+} from "../lib/site";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "../lib/cart-context";
 import { CartDrawer } from "../components/site/CartDrawer";
@@ -94,7 +101,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content: "More than fashion. A lifestyle built on ambition, confidence and legacy.",
       },
       { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
+      // Absolute, not relative: scrapers resolve og:image against nothing.
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: absoluteUrl(DEFAULT_OG_IMAGE) },
+      { property: "og:image:width", content: String(OG_IMAGE_WIDTH) },
+      { property: "og:image:height", content: String(OG_IMAGE_HEIGHT) },
+      { property: "og:image:alt", content: "BennyRich — Timeless. Bold. Luxurious." },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:image", content: absoluteUrl(DEFAULT_OG_IMAGE) },
       { name: "twitter:title", content: "BennyRich — Timeless. Bold. Luxurious." },
       {
         name: "twitter:description",
@@ -102,6 +116,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
     links: [
+      // No canonical here on purpose. `links` from the root and the matched
+      // route are concatenated, not merged, so a canonical at the root emits a
+      // SECOND one on every page — and two canonicals mean a crawler honours
+      // neither. Every route supplies its own; the noindex checkout routes
+      // deliberately have none.
       // SVG stays primary — it is the sharpest at every size. The rest are
       // fallbacks for browsers and platforms that do not take an SVG favicon.
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },

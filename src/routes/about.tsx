@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { canonical } from "@/lib/site";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHeading } from "@/components/site/PageShell";
 import { Wordmark } from "@/assets/brand/Wordmark";
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/about")({
       { property: "og:title", content: "About — BennyRich" },
       { property: "og:type", content: "website" },
     ],
+    links: [canonical("/about")],
   }),
   component: AboutPage,
 });

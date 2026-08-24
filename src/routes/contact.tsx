@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { canonical } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/contact")({
         content: "Questions about an order, a drop or a collaboration? Talk to BennyRich.",
       },
     ],
+    links: [canonical("/contact")],
   }),
   component: ContactPage,
 });

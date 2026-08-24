@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { canonical } from "@/lib/site";
 import { ArticlePage, Section, P, List, Signature } from "@/components/site/PageShell";
 
 export const Route = createFileRoute("/privacy-policy")({
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/privacy-policy")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [canonical("/privacy-policy")],
   }),
   component: PrivacyPolicyPage,
 });

@@ -19,18 +19,15 @@ import {
   optionValuesOf,
   variantFor,
 } from "@/lib/variants";
-import { sellqoFetch } from "@/lib/sellqo";
+import { productCover, sellqoFetch } from "@/lib/sellqo";
+import {
+  absoluteUrl,
+  canonical,
+  DEFAULT_OG_IMAGE,
+  metaDescription,
+  SITE_NAME,
+} from "@/lib/site";
 import { useCart } from "@/lib/cart-context";
-
-export const Route = createFileRoute("/product/$slug")({
-  head: () => ({
-    meta: [
-      { title: "Product — BennyRich" },
-      { name: "description", content: "Discover this piece at BennyRich." },
-    ],
-  }),
-  component: ProductPage,
-});
 
 type ProductResponse = SellqoProduct | { product: SellqoProduct };
 
@@ -39,12 +36,69 @@ function unwrap(r: ProductResponse | undefined): SellqoProduct | null {
   return (r as { product?: SellqoProduct }).product ?? (r as SellqoProduct);
 }
 
+export const Route = createFileRoute("/product/$slug")({
+  /**
+   * The product is loaded here as well as in the component, and it has to be.
+   * `head()` cannot see data fetched by `useQuery` inside the component, and
+   * social scrapers do not run JavaScript — so a title or og:image set on the
+   * client would never reach Facebook, X or a search crawler. Loading it at the
+   * route makes the real product's metadata part of the server-rendered HTML.
+   *
+   * The component's existing `useQuery` is seeded from this result, so this is
+   * one fetch, not two.
+   */
+  loader: ({ params }) => sellqoFetch<ProductResponse>(`/products/${params.slug}`),
+
+  head: ({ loaderData, params }) => {
+    const product = unwrap(loaderData as ProductResponse | undefined);
+    const path = `/product/${params.slug}`;
+
+    if (!product) {
+      return {
+        meta: [{ title: `Product — ${SITE_NAME}` }],
+        links: [canonical(path)],
+      };
+    }
+
+    const title = `${product.name} — ${SITE_NAME}`;
+    const description =
+      metaDescription(product.description) ?? `${product.name}, from the ${SITE_NAME} collection.`;
+    // Share the PRODUCT, not the house image, so a shared link previews the
+    // piece someone is actually linking to. Falls back when it has no artwork.
+    const image = absoluteUrl(productCover(product) ?? DEFAULT_OG_IMAGE);
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:type", content: "product" },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:url", content: absoluteUrl(path) },
+        { property: "og:image", content: image },
+        { property: "og:image:alt", content: product.name },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+        { name: "twitter:image", content: image },
+      ],
+      links: [canonical(path)],
+    };
+  },
+
+  component: ProductPage,
+});
+
 function ProductPage() {
   const { slug } = Route.useParams();
+  const loaderData = Route.useLoaderData();
   const { data, isLoading, error } = useQuery({
     queryKey: ["sellqo", "product", slug],
     queryFn: () => sellqoFetch<ProductResponse>(`/products/${slug}`),
     staleTime: 60_000,
+    // Seeded from the route loader, so the page renders immediately and the
+    // metadata and the body can never disagree about which product this is.
+    initialData: loaderData as ProductResponse | undefined,
   });
 
   const product = unwrap(data);

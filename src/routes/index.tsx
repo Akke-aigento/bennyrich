@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { canonical } from "@/lib/site";
 import { useQueries } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/")({
           "BennyRich is more than fashion. It's a lifestyle built on ambition, confidence and legacy.",
       },
     ],
+    links: [canonical("/")],
   }),
   component: Index,
 });

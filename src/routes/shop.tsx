@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { canonical } from "@/lib/site";
 import { CategoryProductsPage } from "@/components/site/CategoryProductsPage";
 
 type ShopSearch = { category?: string; q?: string };
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/shop")({
         content: "Every BennyRich piece: apparel, accessories, home, lighting and beverages.",
       },
     ],
+    links: [canonical("/shop")],
   }),
   component: ShopPage,
 });

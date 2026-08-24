@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { canonical } from "@/lib/site";
 import { ArticlePage, Section, P, List, Signature } from "@/components/site/PageShell";
 
 export const Route = createFileRoute("/terms")({
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/terms")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [canonical("/terms")],
   }),
   component: TermsPage,
 });
