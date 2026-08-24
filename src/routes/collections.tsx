@@ -105,25 +105,39 @@ function CollectionTile({
           apiUrl={apiImage}
           slug={productSlug}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover opacity-45 transition-opacity duration-200 group-hover:opacity-65"
+          className="absolute inset-0 h-full w-full object-cover brightness-[1.15] transition-[filter] duration-200 group-hover:brightness-[1.35]"
         />
       )}
+      {/* Dark only where the type sits. The old overlay held 0.25 all the way to
+          the top of the tile and the image ran at 45% opacity on top of that, so
+          the artwork was down to roughly a third of its brightness before it had
+          a chance — the neon line work simply vanished. This scrim is opaque
+          along the bottom edge and clears entirely by the top third. */}
       <div
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(to top, rgba(5,5,5,0.94) 12%, rgba(5,5,5,0.55) 55%, rgba(5,5,5,0.25))",
+            "linear-gradient(to top, rgba(5,5,5,0.92) 0%, rgba(5,5,5,0.55) 35%, rgba(5,5,5,0.1) 70%, transparent 100%)",
         }}
         aria-hidden
       />
       <div className="absolute inset-x-0 bottom-0 p-6">
-        <h2 className="br-display neon-text-blue text-[19px]" style={{ letterSpacing: "0.08em" }}>
+        <h2
+          className="br-display neon-text-blue text-[19px]"
+          style={{ letterSpacing: "0.08em", textShadow: "0 1px 12px rgba(5,5,5,0.9)" }}
+        >
           {name}
         </h2>
-        <p className="mt-2.5 text-[13px]" style={{ color: "var(--br-mute)" }}>
+        <p
+          className="mt-2.5 text-[13px]"
+          style={{ color: "var(--br-mute)", textShadow: "0 1px 10px rgba(5,5,5,0.95)" }}
+        >
           {category.blurb}
         </p>
-        <span className="br-label mt-5 inline-block" style={{ color: "var(--br-blue-text)" }}>
+        <span
+          className="br-label mt-5 inline-block"
+          style={{ color: "var(--br-blue-text)", textShadow: "0 1px 10px rgba(5,5,5,0.95)" }}
+        >
           Explore <span aria-hidden>→</span>
         </span>
       </div>
