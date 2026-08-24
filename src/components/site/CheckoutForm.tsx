@@ -45,12 +45,15 @@ export function PrimaryButton({
   disabled?: boolean;
   type?: "submit" | "button";
 }) {
+  // Ghost, not filled. This rendered `background: var(--ink)` — which aliases to
+  // --br-white — i.e. a solid white slab on a black page, against the house rule
+  // that buttons are transparent with a 1px neon border. It is the button that
+  // closes the sale, so it should look like the rest of the shop.
   return (
     <button
       type={type}
       disabled={disabled}
-      className="mt-8 ui-label w-full py-4 text-[0.8rem] transition-opacity disabled:opacity-50"
-      style={{ background: "var(--ink)", color: "var(--paper)" }}
+      className="neon-btn mt-8 w-full justify-center disabled:opacity-50"
     >
       {children}
     </button>
@@ -62,7 +65,7 @@ export function EmptyCartRedirect() {
   const { hydrated, count } = useCart();
   useEffect(() => {
     if (!hydrated || count > 0) return;
-    const t = setTimeout(() => navigate({ to: "/perfumes" }), 1500);
+    const t = setTimeout(() => navigate({ to: "/shop" }), 1500);
     return () => clearTimeout(t);
   }, [navigate, hydrated, count]);
   if (!hydrated) {
@@ -85,12 +88,8 @@ export function EmptyCartRedirect() {
       <p className="mt-2 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>
         Redirecting you to the collection…
       </p>
-      <Link
-        to="/perfumes"
-        className="mt-6 inline-block ui-label text-[0.7rem] px-6 py-3"
-        style={{ border: "1px solid var(--ink)", color: "var(--ink)" }}
-      >
-        Shop Perfumes
+      <Link to="/shop" className="neon-btn mt-6">
+        Shop the collection <span aria-hidden>→</span>
       </Link>
     </div>
   );

@@ -354,7 +354,12 @@
   opacity: 0.06;
 }
 
-/* --- Inputs (also consumed by the frozen CheckoutForm via .zd-input) ----- */
+/* --- Inputs -------------------------------------------------------------
+ * `.zd-input` is a Zona Dorata-era class name kept because checkout.index.tsx
+ * uses it at ten call sites; renaming it would be churn for no visible gain.
+ * (It is NOT used by CheckoutForm, which has no inputs of its own, and that
+ * file is no longer frozen as of BR-6.)
+ * ---------------------------------------------------------------------- */
 .zd-input,
 .br-input {
   width: 100%;

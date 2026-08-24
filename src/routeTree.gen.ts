@@ -13,7 +13,6 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as ShippingReturnsRouteImport } from './routes/shipping-returns'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
-import { Route as PerfumesRouteImport } from './routes/perfumes'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -42,11 +41,6 @@ const ShippingReturnsRoute = ShippingReturnsRouteImport.update({
 const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
   id: '/privacy-policy',
   path: '/privacy-policy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PerfumesRoute = PerfumesRouteImport.update({
-  id: '/perfumes',
-  path: '/perfumes',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -102,7 +96,6 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
-  '/perfumes': typeof PerfumesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
@@ -117,7 +110,6 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
-  '/perfumes': typeof PerfumesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
@@ -134,7 +126,6 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/contact': typeof ContactRoute
-  '/perfumes': typeof PerfumesRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/shipping-returns': typeof ShippingReturnsRoute
   '/shop': typeof ShopRoute
@@ -152,7 +143,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/contact'
-    | '/perfumes'
     | '/privacy-policy'
     | '/shipping-returns'
     | '/shop'
@@ -167,7 +157,6 @@ export interface FileRouteTypes {
     | '/about'
     | '/collections'
     | '/contact'
-    | '/perfumes'
     | '/privacy-policy'
     | '/shipping-returns'
     | '/shop'
@@ -183,7 +172,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/collections'
     | '/contact'
-    | '/perfumes'
     | '/privacy-policy'
     | '/shipping-returns'
     | '/shop'
@@ -200,7 +188,6 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRouteWithChildren
   CollectionsRoute: typeof CollectionsRoute
   ContactRoute: typeof ContactRoute
-  PerfumesRoute: typeof PerfumesRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   ShippingReturnsRoute: typeof ShippingReturnsRoute
   ShopRoute: typeof ShopRoute
@@ -236,13 +223,6 @@ declare module '@tanstack/react-router' {
       path: '/privacy-policy'
       fullPath: '/privacy-policy'
       preLoaderRoute: typeof PrivacyPolicyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/perfumes': {
-      id: '/perfumes'
-      path: '/perfumes'
-      fullPath: '/perfumes'
-      preLoaderRoute: typeof PerfumesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -333,7 +313,6 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRouteWithChildren,
   CollectionsRoute: CollectionsRoute,
   ContactRoute: ContactRoute,
-  PerfumesRoute: PerfumesRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   ShippingReturnsRoute: ShippingReturnsRoute,
   ShopRoute: ShopRoute,
