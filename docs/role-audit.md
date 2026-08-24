@@ -1127,3 +1127,124 @@ rewritten). Screenshots in `docs/screens/BR-8/`.
 - Products missing from the sitemap (above).
 - Google Fonts before consent (above).
 - **Accounts phase next.**
+
+---
+
+# BR-9a — accounts foundation (2026-08-24)
+
+Phase 2 is customer accounts. Core already runs a live, multi-tenant
+`storefront-customer-api` edge function, so this is a frontend integration, not
+a backend build. **Split in two**: BR-9a lands the foundation and everything
+needed to get _into_ an account; **BR-9b** brings orders, addresses, wishlist
+and checkout prefill.
+
+## Proxy extended to the customer-api (additive)
+
+`sellqo.functions.ts` now reaches a second edge function via a branch taken
+before any existing code runs. Verified rather than asserted: `resolveAction`
+and the storefront-api tail of the handler are **semantically identical to
+HEAD** (compared with comments and whitespace normalised away). The only changes
+to pre-existing lines are prettier reflowing long ones — impossible while the
+file was frozen.
+
+The customer endpoint is **derived from the URL the existing guard already
+validated**, swapping `storefront-api` for `storefront-customer-api`, so there
+is no second secret and the guard keeps working. The full action map landed in
+one go, including BR-9b's routes, so the file is opened once.
+
+## The token never reaches the browser
+
+**Decision, and a correction to the brief's reasoning.** The brief proposed a
+client-set cookie over localStorage "for the XSS surface". That does not hold: a
+cookie written by client JS is exactly as readable by injected script as
+localStorage is. The only version that actually resists XSS is an **httpOnly**
+cookie, which has to be set server-side.
+
+So login/register responses are intercepted **in the proxy**: the token goes
+into an httpOnly, SameSite=Lax, 7-day cookie and is **stripped from the payload
+returned to the client**. Two things fall out of that:
+
+- Nothing needs forwarding from the client, so the frozen `sellqo.ts` — whose
+  `FetchOpts` cannot carry headers anyway — stays untouched.
+- The browser cannot tell whether a session exists without asking, so
+  `AuthProvider` starts in `loading` and calls `/account/me` once on mount.
+  Consumers must treat `loading` as a real state; reading "no customer yet" as
+  "signed out" flashes a login form at every signed-in visitor.
+
+Proved in a browser, not assumed: after registering, `document.cookie` and
+`localStorage` contain **no token**, and the response header is
+`br_customer_token=…; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800`.
+
+## Pages
+
+`/account/login` (with `?next=` return-to), `/account/register` (min 8
+characters, stated up front), `/account/forgot`, `/account/reset`, and a guarded
+`/account` dashboard. The `/account` layout is **deliberately unguarded** —
+login and register live under it, and guarding there would make signing in
+impossible.
+
+`RequireAuth` says in its own header that it is **UX, not security**: it only
+decides what to render. The protection is the bearer token checked inside the
+edge function.
+
+**Bug found while verifying:** the guard read `next` from live router state, so
+the redirect changed the pathname, the effect re-ran while still `guest`, and
+`next` ended up pointing at the login page itself — signing in would have
+bounced the shopper back to the form they had just completed. The intended path
+is now captured once, on first render.
+
+Header replaces "Accounts coming soon". The mobile menu gained the same entries:
+the account icon is `hidden sm:block`, so without it there was no way into an
+account from a phone.
+
+## Verification
+
+`bun run build` and `bunx tsc --noEmit` green. No frozen file touched —
+`sellqo.ts`, `cart-context.tsx`, `checkout.ts` and `integrations/**` are
+untouched; only `sellqo.functions.ts`, and only additively.
+
+**Regression checked first**, because the proxy change is the risky part: `/`,
+`/shop`, `/collections` and `/product/:slug` all still return 200 and the
+product page still renders its own per-product title.
+
+Then: register signs in and lands on `/account`; the session survives a reload;
+`/account` while signed out redirects to `/account/login?next=%2Faccount`; sign
+out clears the cookie and returns the header to its signed-out state.
+
+Everything is proved against the **mock**, which now models the customer-api
+(note that `storefront-customer-api` does not contain the substring
+`storefront-api`, so it needs its own branch in the mock exactly as in the
+proxy). **A live end-to-end pass against the real tenant is Akke's follow-up** —
+the API key is a Cloud secret and cannot be reached from here.
+
+## ⚠️ Two core blockers
+
+**1. Order history is exposed without email verification.** The customer-api
+matches orders by `customer_email` and verification is not enforced
+(`email_verified` stays false). Anyone can register with someone else's email
+and see that person's past guest orders — names, shipping addresses, items,
+totals. No password, no inbox access.
+
+Agreed response: **BR-9b will gate `/account/orders` behind `email_verified`**,
+so the exposure is closed from our side, and core must either enforce
+verification at register or require `email_verified` for `get_orders`. Accepted
+trade-off, stated plainly: **orders stay invisible to everyone until core sends
+a verification email.** Better than shipping the leak.
+
+**2. The reset email does not link here.** Core's reset email points at
+`sellqo.lovable.app/shop/{slug}/reset-password`, not our `/account/reset`, so
+**nobody currently arrives on our reset page from an email**. The page works for
+anyone who arrives with the right query parameters. Making that URL
+tenant-aware is a core change.
+
+## Open items
+
+- **Core:** reset-email URL is not tenant-aware (above).
+- **Core:** email verification not enforced; orders exposed by email (above).
+- Loyalty/points deferred to a later phase; the tables exist.
+- **BR-9b:** orders + detail, addresses CRUD, wishlist + heart toggle, checkout
+  prefill.
+- **Sander:** Stripe Connect; vodka accijns.
+- **Akke:** DB image reconcile to the bucket; live end-to-end auth pass.
+- `br-sunglasses` image; BR-7 reshoot list; sitemap products; Google Fonts
+  loading before consent.

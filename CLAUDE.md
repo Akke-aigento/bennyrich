@@ -23,12 +23,16 @@ favicon and font links are in `src/routes/__root.tsx` under `head()`.
 **Do not modify these files.** Read them and reuse them. If a UI need seems to
 require changing one, stop and report instead of editing:
 
-- `src/lib/sellqo.functions.ts`
 - `src/lib/sellqo.ts`
 - `src/lib/cart-context.tsx`
 - `src/lib/checkout.ts`
 - `src/lib/use-sellqo.ts`
 - `src/integrations/**`
+
+`src/lib/sellqo.functions.ts` is **extend-additively-only** as of BR-9a: new
+API surfaces may be bolted on, but the existing `resolveAction` and the
+storefront-api request path must not change behaviour. Verify it by diffing them
+semantically, not by eye.
 
 (`src/components/site/CheckoutForm.tsx` was on this list until BR-6. It is
 presentation only — `FormField`, `FieldError`, `PrimaryButton`,
@@ -48,6 +52,38 @@ Also:
   importing the frozen one and rendering `89,99 €` on the money-facing steps;
   if you add a page that shows a price, check the import.)
 - Work on `main`, commit per step.
+
+## Customer accounts (the second edge function)
+
+Core runs a **second** edge function, `storefront-customer-api`, alongside the
+`storefront-api` this app uses for products and carts. Same
+`{ action, tenant_id, params }` protocol, same `X-API-Key`, plus an
+`x-storefront-token` bearer for authed actions.
+
+`sellqoProxy` reaches it through a branch taken before any storefront-api code
+runs. Paths under **`/auth/*`, `/account/*` and `/wishlist/*`** go to the
+customer API; everything else is unchanged. The endpoint is derived from the
+already-validated `SELLQO_API_URL` by swapping `storefront-api` for
+`storefront-customer-api` — there is no second secret.
+
+> Naming trap: the proxy's `/account/*` **paths** are an internal vocabulary for
+> that function. They are not the app's `/account/*` **routes**, which merely
+> share a prefix.
+
+**The session token never reaches the browser.** login/register responses are
+intercepted in the proxy: the token goes into an httpOnly `br_customer_token`
+cookie and is stripped from the payload returned to JS. A cookie written by
+client JS would be no safer than localStorage — injected script reads both — so
+this only works because it is set server-side.
+
+Consequences to keep in mind:
+
+- `useAuth()` starts in **`status: "loading"`** and resolves via `/account/me`.
+  Treat `loading` as a real state; reading "no customer yet" as "signed out"
+  flashes a login form at signed-in visitors.
+- `RequireAuth` is **UX, not security**. The real check is inside the edge
+  function.
+- `POST /auth/logout` never leaves the proxy — the session _is_ the cookie.
 
 ## Cart variant labels
 
@@ -374,3 +410,4 @@ answered, defeating the gate.
 | BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                        |
 | BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                           |
 | BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep. |
+| BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                |
