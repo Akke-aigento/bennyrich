@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { useCart } from "@/lib/cart-context";
-import {
-  checkoutSetAddress,
-  checkoutSetCustomer,
-  checkoutStart,
-} from "@/lib/checkout";
+import { checkoutSetAddress, checkoutSetCustomer, checkoutStart } from "@/lib/checkout";
 import {
   EmptyCartRedirect,
   FieldError,
@@ -16,10 +12,7 @@ import {
 
 export const Route = createFileRoute("/checkout/")({
   head: () => ({
-    meta: [
-      { title: "Checkout · Details — BennyRich" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Checkout · Details — BennyRich" }, { name: "robots", content: "noindex" }],
   }),
   component: DetailsStep,
 });
@@ -121,21 +114,45 @@ function DetailsStep() {
       </h2>
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <FormField label="First name" required>
-          <input className="zd-input" value={contact.first_name} onChange={(e) => setC("first_name", e.target.value)} autoComplete="given-name" />
+          <input
+            className="zd-input"
+            value={contact.first_name}
+            onChange={(e) => setC("first_name", e.target.value)}
+            autoComplete="given-name"
+          />
           <FieldError message={errors.first_name} />
         </FormField>
         <FormField label="Last name" required>
-          <input className="zd-input" value={contact.last_name} onChange={(e) => setC("last_name", e.target.value)} autoComplete="family-name" />
+          <input
+            className="zd-input"
+            value={contact.last_name}
+            onChange={(e) => setC("last_name", e.target.value)}
+            autoComplete="family-name"
+          />
           <FieldError message={errors.last_name} />
         </FormField>
         <FormField label="Email" required className="sm:col-span-2">
-          <input type="email" className="zd-input" value={contact.email} onChange={(e) => setC("email", e.target.value)} autoComplete="email" />
+          <input
+            type="email"
+            className="zd-input"
+            value={contact.email}
+            onChange={(e) => setC("email", e.target.value)}
+            autoComplete="email"
+          />
           <FieldError message={errors.email} />
         </FormField>
         <FormField label="Phone (optional)" className="sm:col-span-2">
-          <input className="zd-input" value={contact.phone} onChange={(e) => setC("phone", e.target.value)} autoComplete="tel" />
+          <input
+            className="zd-input"
+            value={contact.phone}
+            onChange={(e) => setC("phone", e.target.value)}
+            autoComplete="tel"
+          />
         </FormField>
-        <label className="sm:col-span-2 flex items-start gap-3 text-[0.85rem]" style={{ color: "var(--ink)" }}>
+        <label
+          className="sm:col-span-2 flex items-start gap-3 text-[0.85rem]"
+          style={{ color: "var(--ink)" }}
+        >
           <input
             type="checkbox"
             checked={contact.accepts_marketing}
@@ -166,7 +183,10 @@ function DetailsStep() {
 
       {!billingSame && (
         <>
-          <h2 className="mt-10 text-[1.4rem]" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+          <h2
+            className="mt-10 text-[1.4rem]"
+            style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+          >
             Billing address
           </h2>
           <AddressFields values={billing} onChange={setBilling} prefix="b" errors={errors} />
@@ -198,18 +218,38 @@ function AddressFields({
   return (
     <div className="mt-6 grid gap-4 sm:grid-cols-2">
       <FormField label="Address" required className="sm:col-span-2">
-        <input className="zd-input" value={values.address_line_1} onChange={(e) => upd("address_line_1", e.target.value)} autoComplete="address-line1" />
+        <input
+          className="zd-input"
+          value={values.address_line_1}
+          onChange={(e) => upd("address_line_1", e.target.value)}
+          autoComplete="address-line1"
+        />
         <FieldError message={errors[`${prefix}_address_line_1`]} />
       </FormField>
       <FormField label="Apartment, suite (optional)" className="sm:col-span-2">
-        <input className="zd-input" value={values.address_line_2} onChange={(e) => upd("address_line_2", e.target.value)} autoComplete="address-line2" />
+        <input
+          className="zd-input"
+          value={values.address_line_2}
+          onChange={(e) => upd("address_line_2", e.target.value)}
+          autoComplete="address-line2"
+        />
       </FormField>
       <FormField label="Postal code" required>
-        <input className="zd-input" value={values.postal_code} onChange={(e) => upd("postal_code", e.target.value)} autoComplete="postal-code" />
+        <input
+          className="zd-input"
+          value={values.postal_code}
+          onChange={(e) => upd("postal_code", e.target.value)}
+          autoComplete="postal-code"
+        />
         <FieldError message={errors[`${prefix}_postal_code`]} />
       </FormField>
       <FormField label="City" required>
-        <input className="zd-input" value={values.city} onChange={(e) => upd("city", e.target.value)} autoComplete="address-level2" />
+        <input
+          className="zd-input"
+          value={values.city}
+          onChange={(e) => upd("city", e.target.value)}
+          autoComplete="address-level2"
+        />
         <FieldError message={errors[`${prefix}_city`]} />
       </FormField>
       <FormField label="Country" required className="sm:col-span-2">

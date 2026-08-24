@@ -35,7 +35,7 @@ ecosystem repeats: their licence forbids redistributing an item's source files
 intended use; shipping their source inside a repo that syncs to Lovable and may
 be handed to a client is not.
 
-So BR-4 kept the approved *look* and rewrote the *code*. **The full licence
+So BR-4 kept the approved _look_ and rewrote the _code_. **The full licence
 research, and the name of the library, are in `docs/design-kit.md` §2** — kept
 out of `src/` deliberately, so that `grep -ri <vendor> src/` stays clean and can
 be used as a standing check that no vendored source has crept back in.
@@ -53,10 +53,10 @@ so the dependency was removed outright rather than paid for.
    words, sale states and pink-variant products.
 3. **Nothing pulses.** `TextReveal` runs once on mount and holds. The card glow
    is a hover transition. The only continuous motion is the spotlight drift,
-   which is ambient *light*, not an animated glow — 60px over 14–18s.
+   which is ambient _light_, not an animated glow — 60px over 14–18s.
 4. **Reduced motion is handled by name, not by duration.** `tokens.css` has a
    global block that crushes `animation-duration` to `0.001ms`. That is a good
-   backstop but on its own it makes an animation *snap*. Each component also has
+   backstop but on its own it makes an animation _snap_. Each component also has
    an explicit `animation: none` rule so it renders its rest state.
 5. **Radius never exceeds 2px** (`var(--radius)`).
 6. **SSR-safe.** No `Math.random()` or `Date.now()` in a render body, no

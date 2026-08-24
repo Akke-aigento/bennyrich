@@ -15,10 +15,7 @@ import { EmptyCartRedirect, PrimaryButton } from "@/components/site/CheckoutForm
 
 export const Route = createFileRoute("/checkout/payment")({
   head: () => ({
-    meta: [
-      { title: "Checkout · Payment — BennyRich" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Checkout · Payment — BennyRich" }, { name: "robots", content: "noindex" }],
   }),
   component: PaymentStep,
 });
@@ -94,13 +91,20 @@ function PaymentStep() {
         </Link>
       </div>
 
-      <h2 className="text-[1.4rem]" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+      <h2
+        className="text-[1.4rem]"
+        style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}
+      >
         Shipping method
       </h2>
       {isLoading ? (
-        <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>Loading…</p>
+        <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>
+          Loading…
+        </p>
       ) : error ? (
-        <p className="mt-4 text-[0.9rem]" style={{ color: "var(--destructive)" }}>{(error as Error).message}</p>
+        <p className="mt-4 text-[0.9rem]" style={{ color: "var(--destructive)" }}>
+          {(error as Error).message}
+        </p>
       ) : shipMethods.length === 0 ? (
         <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>
           No shipping options available for your address.
@@ -119,9 +123,17 @@ function PaymentStep() {
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    <input type="radio" name="shipping" checked={active} onChange={() => setShipId(m.id)} className="mt-1" />
+                    <input
+                      type="radio"
+                      name="shipping"
+                      checked={active}
+                      onChange={() => setShipId(m.id)}
+                      className="mt-1"
+                    />
                     <div>
-                      <p className="text-[0.95rem]" style={{ color: "var(--ink)" }}>{m.name}</p>
+                      <p className="text-[0.95rem]" style={{ color: "var(--ink)" }}>
+                        {m.name}
+                      </p>
                       {(m.description || m.estimated_delivery) && (
                         <p className="mt-1 text-[0.75rem]" style={{ color: "var(--muted-tone)" }}>
                           {m.description}
@@ -148,7 +160,9 @@ function PaymentStep() {
         Payment method
       </h2>
       {isLoading ? (
-        <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>Loading…</p>
+        <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>
+          Loading…
+        </p>
       ) : payMethods.length === 0 ? (
         <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>
           No payment options available. Please contact us.
@@ -166,11 +180,21 @@ function PaymentStep() {
                     background: active ? "var(--br-ink)" : "transparent",
                   }}
                 >
-                  <input type="radio" name="payment" checked={active} onChange={() => setPayId(m.id)} className="mt-1" />
+                  <input
+                    type="radio"
+                    name="payment"
+                    checked={active}
+                    onChange={() => setPayId(m.id)}
+                    className="mt-1"
+                  />
                   <div className="min-w-0">
-                    <p className="text-[0.95rem]" style={{ color: "var(--ink)" }}>{m.name}</p>
+                    <p className="text-[0.95rem]" style={{ color: "var(--ink)" }}>
+                      {m.name}
+                    </p>
                     {m.description && (
-                      <p className="mt-1 text-[0.75rem]" style={{ color: "var(--muted-tone)" }}>{m.description}</p>
+                      <p className="mt-1 text-[0.75rem]" style={{ color: "var(--muted-tone)" }}>
+                        {m.description}
+                      </p>
                     )}
                   </div>
                 </label>
@@ -181,17 +205,28 @@ function PaymentStep() {
       )}
 
       {data && (
-        <div className="mt-8 border-t pt-4 space-y-1 text-[0.9rem]" style={{ borderColor: "var(--line)" }}>
+        <div
+          className="mt-8 border-t pt-4 space-y-1 text-[0.9rem]"
+          style={{ borderColor: "var(--line)" }}
+        >
           {data.subtotal != null && <Row label="Subtotal" value={formatEUR(data.subtotal)} />}
           {data.shipping_total != null && (
-            <Row label="Shipping" value={data.shipping_total === 0 ? "Free" : formatEUR(data.shipping_total)} />
+            <Row
+              label="Shipping"
+              value={data.shipping_total === 0 ? "Free" : formatEUR(data.shipping_total)}
+            />
           )}
           {data.tax_total != null && data.tax_total > 0 && (
             <Row label="Tax" value={formatEUR(data.tax_total)} />
           )}
           {data.total != null && (
-            <div className="mt-2 flex items-baseline justify-between pt-2 border-t" style={{ borderColor: "var(--line)" }}>
-              <span className="ui-label text-[0.75rem]" style={{ color: "var(--ink)" }}>Total</span>
+            <div
+              className="mt-2 flex items-baseline justify-between pt-2 border-t"
+              style={{ borderColor: "var(--line)" }}
+            >
+              <span className="ui-label text-[0.75rem]" style={{ color: "var(--ink)" }}>
+                Total
+              </span>
               <span className="text-[1.1rem]" style={{ color: "var(--ink)", fontWeight: 500 }}>
                 {formatEUR(data.total)}
               </span>
@@ -201,12 +236,19 @@ function PaymentStep() {
       )}
 
       <label className="mt-6 flex items-start gap-3 text-[0.85rem]" style={{ color: "var(--ink)" }}>
-        <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="mt-1" />
+        <input
+          type="checkbox"
+          checked={terms}
+          onChange={(e) => setTerms(e.target.checked)}
+          className="mt-1"
+        />
         I agree to the terms of sale and privacy policy.
       </label>
 
       {serverErr && (
-        <p className="mt-4 text-[0.85rem]" style={{ color: "var(--destructive)" }}>{serverErr}</p>
+        <p className="mt-4 text-[0.85rem]" style={{ color: "var(--destructive)" }}>
+          {serverErr}
+        </p>
       )}
       <PrimaryButton disabled={busy || !shipId || !payId || !terms}>
         {busy ? "Processing…" : "Complete order"}

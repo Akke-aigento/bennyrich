@@ -18,8 +18,8 @@ The headline lesson, learned the expensive way:
 
 ## 1. What actually shipped
 
-| Component       | What it does                                | Deps |
-| --------------- | ------------------------------------------- | ---- |
+| Component       | What it does                                     | Deps |
+| --------------- | ------------------------------------------------ | ---- |
 | `Spotlight`     | Two ambient blue washes drifting behind the hero | none |
 | `SpotlightCard` | Cursor-following blue breath on a product card   | none |
 | `TextReveal`    | Word-by-word settle on the house tagline         | none |
@@ -77,17 +77,17 @@ for the pattern.
 at ~35–50 KB gzipped **on every route**, and flagged "is it worth it?" as an open
 question for BR-4. Rewriting answered the question by removing it:
 
-| | BR-3 (vendored) | BR-4 (ours) |
-| --- | --- | --- |
-| Runtime deps | `motion@13.1.0` | none |
-| Server bundle | `framer-motion+[…].mjs` 370 KB / 96.6 KB gz | gone |
-| JS in the components | full animation runtime | one `rAF` pointer handler |
-| Licence to carry | proprietary, redistribution forbidden | ours |
+|                      | BR-3 (vendored)                             | BR-4 (ours)               |
+| -------------------- | ------------------------------------------- | ------------------------- |
+| Runtime deps         | `motion@13.1.0`                             | none                      |
+| Server bundle        | `framer-motion+[…].mjs` 370 KB / 96.6 KB gz | gone                      |
+| JS in the components | full animation runtime                      | one `rAF` pointer handler |
+| Licence to carry     | proprietary, redistribution forbidden       | ours                      |
 
 The mechanisms are not exotic once you look at them plainly:
 
 - **Ambient light** is two `radial-gradient` ellipses and a `@keyframes` that
-  translates them. Give the two layers *different* periods (14s and 18s) so the
+  translates them. Give the two layers _different_ periods (14s and 18s) so the
   pair never lands on a visible beat.
 - **A cursor-following glow** is two custom properties written on `pointermove`,
   read by one `radial-gradient`, faded with a `transition`. Coalesce the writes
@@ -128,7 +128,7 @@ the thing really is a single composable utility.
 
 `TextReveal` merges `br-reveal-part` onto the caller's own `<span class="block">`.
 Had `.br-reveal-part` set `display`, it would have silently beaten Tailwind's
-`.block` — both are single-class selectors, and `tokens.css` is imported *after*
+`.block` — both are single-class selectors, and `tokens.css` is imported _after_
 Tailwind, so source order decides. Merge-in classes should carry animation and
 nothing structural.
 
@@ -137,7 +137,7 @@ nothing structural.
 `tokens.css` has a global block crushing `animation-duration` to `0.001ms`. It
 is a good backstop, but on its own it makes an animation **snap** to its end
 frame rather than not play — a drift freezing at one extreme, a blur slamming
-off. Every component also needs an explicit `animation: none`, placed *after*
+off. Every component also needs an explicit `animation: none`, placed _after_
 the global block so it wins without `!important`.
 
 Verified on the shipped homepage under emulated `prefers-reduced-motion: reduce`:
@@ -156,7 +156,7 @@ extend; and `card-spotlight` carries a **registry dependency** on
 **Read the registry JSON instead**, at
 `https://ui.aceternity.com/registry/<name>.json`. `.files[].content` holds the
 source; `.dependencies` and `.registryDependencies` tell you what it drags along
-*before* you commit to it. That is how the `three` dependency was caught, and
+_before_ you commit to it. That is how the `three` dependency was caught, and
 `registryDependencies` is the single most useful early-warning signal there is.
 
 ---
@@ -166,12 +166,12 @@ source; `.dependencies` and `.registryDependencies` tell you what it drags along
 Full-page screenshots at real device sizes are harder than they look. Four
 approaches were tried and rejected before one worked:
 
-1. **`--window-size`** does not set the *emulated* viewport, so media queries and
+1. **`--window-size`** does not set the _emulated_ viewport, so media queries and
    `vh` units resolve against the wrong box.
 2. **`captureBeyondViewport`** ghosts the footer at the page origin.
 3. **Resizing the viewport to the page height** inflates the layout, because
    `br-section` padding is `clamp(80px, 12vh, 160px)` — a 3200px viewport grows
-   the page by hundreds of pixels *as you measure it*.
+   the page by hundreds of pixels _as you measure it_.
 4. **Priming the scroll range** (scroll to the bottom, then back to top, to warm
    the compositor) leaves a **stale footer tile ghosted over the hero**. This was
    BR-4's own discovery, arrived at while trying to fix (2). Tile 0 must be taken
@@ -198,7 +198,7 @@ flow) or the header is stitched in once per tile.
    their code client-side, so fetching the HTML gets you nothing. Read
    `.registryDependencies` first.
 3. **Prove the look on one throwaway route** — out of the nav, `noindex`, static
-   data so screenshots need no API. Get an explicit sign-off on *which*
+   data so screenshots need no API. Get an explicit sign-off on _which_
    components, before writing anything real.
 4. **Then throw the vendored code away and write it from a spec**, not from the
    source. Describe the effect in words — colours as tokens, distances, periods,

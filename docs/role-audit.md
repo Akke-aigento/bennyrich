@@ -487,7 +487,7 @@ deleted; `routeTree.gen.ts` regenerated with 0 `kit` references.
 - **Reduced motion checked with computed styles**, not by eye. Under emulated
   `prefers-reduced-motion: reduce`: `animation-name` is `none` on both the
   spotlight and the reveal, and the reveal renders `opacity: 1; filter: none;
-  transform: none` — the final state, not a snapped one. With motion on, the
+transform: none` — the final state, not a snapped one. With motion on, the
   spotlight drifts (`br-spotlight-drift-a`, 14s) and the reveal has settled to
   the same final state. The card glow sits at opacity 0 with a 200ms transition.
 - Screenshots: `docs/screens/BR-4/home-390.png`, `home-1280.png`, captured over
@@ -499,13 +499,13 @@ deleted; `routeTree.gen.ts` regenerated with 0 `kit` references.
 ## New findings this batch
 
 **React 19 preloads high-priority images by itself.** An explicit
-`<link rel="preload" as="image">` in the route's `head()` produced a *duplicate*
+`<link rel="preload" as="image">` in the route's `head()` produced a _duplicate_
 preload at a **lower** priority than the one React already hoists from
 `<img fetchPriority="high">`. The hand-written one was removed; verified in the
 SSR output that exactly one preload remains, carrying `fetchPriority="high"`.
 
 **A fourth screenshot capture path that does not work.** BR-3 recorded three.
-Add: *priming the scroll range* — scrolling to the bottom and back to warm the
+Add: _priming the scroll range_ — scrolling to the bottom and back to warm the
 compositor — leaves a **stale footer tile ghosted over the hero**. It was
 introduced while trying to fix the ghosting and turned out to cause it. Tile 0
 must be taken on a page that has never been scrolled. Also, a `position: sticky`
@@ -602,7 +602,7 @@ option data is treated as **buyable** rather than locked out — absent data
 should degrade to a default add, not a dead page.
 
 Also: out-of-stock combinations render struck through and disabled, judged
-against the *other* selected options (picking Blue greys the sizes out of stock
+against the _other_ selected options (picking Blue greys the sizes out of stock
 in blue, not Blue itself); single-value options are auto-selected; and the
 "Full variant picker arrives in the next drop" placeholder is gone.
 
@@ -652,7 +652,7 @@ existing checkout logic and this batch was explicitly told not to reimplement
 any, so it is **flagged, not fixed** — worth a decision next batch.
 
 **A fifth screenshot capture trap**, on top of BR-4's four: `position: fixed`
-overlays (the cart drawer, the age gate) repaint in *every* tile exactly like a
+overlays (the cart drawer, the age gate) repaint in _every_ tile exactly like a
 sticky header, so stitching stamps the drawer down the page three times. They
 are viewport-sized by design and must be captured as a single frame.
 
@@ -742,7 +742,7 @@ The checkout thumbnail also picked up the hairline the drawer's already had, and
 `ProductImage`'s local fallback walk that its raw `<img>` never had.
 
 **Fixed in passing:** the checkout quantity badge sat at `-top-1/-right-1`
-*inside* an `overflow: hidden` well and was being clipped. It is now a sibling of
+_inside_ an `overflow: hidden` well and was being clipped. It is now a sibling of
 the well, and its colours moved off the legacy `--ink`/`--paper` aliases.
 
 ## Zona Dorata leftovers
@@ -829,7 +829,7 @@ and follows the row rule.
 
 Rule order in `tokens.css` is load-bearing: the gallery element carries both
 classes and the selectors have equal specificity, so `.br-media-contain > img`
-must stay *after* `.br-media > img`. Commented in place.
+must stay _after_ `.br-media > img`. Commented in place.
 
 ## What cover costs, measured
 
@@ -841,15 +841,15 @@ because the cap sits centred in black.
 **10 of 26 lose ≥19% of their content — these are Sander's to reshoot or
 recrop:**
 
-| Product | Ratio | Lost | Why it matters |
-| --- | --- | --- | --- |
-| `led-lamp-rifle` | 1.87 | 39% H | Not wired up anywhere (ad-safety) — cosmetic only |
-| `countach-hoodie` blue + pink | 1.50 | 32% H | **Front+back shot; one garment is cut off** |
-| `vodka` blue + pink | 0.71 | 26% V | Tall bottle; cap and/or base clipped |
-| `led-lamp-rolls-pink` | 1.50 | 26% H | Wide lamp shot |
-| `runner-champagne-pink` | 0.80 | 20% V | Tall runner |
-| `led-lamp-rolls-blue` | 1.82 | 20% H | Wide lamp shot |
-| `f8-tee` blue + pink | 1.25 | 19% H | Two-model shot; one model clipped |
+| Product                       | Ratio | Lost  | Why it matters                                    |
+| ----------------------------- | ----- | ----- | ------------------------------------------------- |
+| `led-lamp-rifle`              | 1.87  | 39% H | Not wired up anywhere (ad-safety) — cosmetic only |
+| `countach-hoodie` blue + pink | 1.50  | 32% H | **Front+back shot; one garment is cut off**       |
+| `vodka` blue + pink           | 0.71  | 26% V | Tall bottle; cap and/or base clipped              |
+| `led-lamp-rolls-pink`         | 1.50  | 26% H | Wide lamp shot                                    |
+| `runner-champagne-pink`       | 0.80  | 20% V | Tall runner                                       |
+| `led-lamp-rolls-blue`         | 1.82  | 20% H | Wide lamp shot                                    |
+| `f8-tee` blue + pink          | 1.25  | 19% H | Two-model shot; one model clipped                 |
 
 Borderline (7–18%): `shh-tee`, `bust-tee`, `cherub-tee`,
 `rug-monogram-frame`, `distressed-tee` ×2.
@@ -868,7 +868,7 @@ with black around them. Under cover they are **solid white squares filling the
 neon frame**, edge to edge, on a black page — clearly visible in
 `docs/screens/BR-7/shop-grid-1280.png`.
 
-So the row is now uniform in *shape* but not in *ground*: black tiles beside
+So the row is now uniform in _shape_ but not in _ground_: black tiles beside
 white ones. Same reshoot list, and it is the most likely thing to look worse
 than expected.
 
@@ -916,7 +916,7 @@ right-aligned, with the heading still on one line at 1280. Mobile is unchanged
 (`max-w-[300px]`, centred).
 
 Intrinsic `width`/`height` are corrected to 1577×441 in the same edit. They had
-been left at the *original* panther's 875×673 through the cleaned-panther swap,
+been left at the _original_ panther's 875×673 through the cleaned-panther swap,
 so the reserved layout box had the wrong aspect ratio and the banner shifted as
 the image loaded. That is fixed as a side effect of this change.
 
@@ -926,7 +926,7 @@ the image loaded. That is fixed as a side effect of this change.
 their call.** Recording it so nobody is surprised later:
 
 - **Meta (Facebook/Instagram)** prohibits ads that promote the sale of firearms,
-  parts and ammunition, and applies the policy to *imagery* as well as to what
+  parts and ammunition, and applies the policy to _imagery_ as well as to what
   is actually being sold. A landing page whose main banner is a rifle can get a
   creative rejected even when the advertised product is a t-shirt, and repeated
   rejections put the ad account itself at risk.
@@ -946,6 +946,6 @@ ad-safe landing page rather than changing the brand: point campaigns at
 `/shop?category=apparel` or a purpose-built route, and leave `/` as it is. No
 work has been done toward that; noting it as the option if it is ever needed.
 
-The rifle-themed *products* (`cushion-rifle-blue`, `led-lamp-rifle`) are
+The rifle-themed _products_ (`cushion-rifle-blue`, `led-lamp-rifle`) are
 unaffected by this note — they are catalogue items, and the same policy would
 apply to advertising them regardless of the banner.

@@ -33,7 +33,7 @@ require changing one, stop and report instead of editing:
 (`src/components/site/CheckoutForm.tsx` was on this list until BR-6. It is
 presentation only — `FormField`, `FieldError`, `PrimaryButton`,
 `EmptyCartRedirect` and a read-only `useCart` — with no SellQo logic in it, so
-it is editable. The checkout *routes* were never frozen either.)
+it is editable. The checkout _routes_ were never frozen either.)
 
 Also:
 
@@ -223,7 +223,7 @@ cropping the edges.
 
 **The one exception is `.br-media-contain`**, used only on the large
 product-detail image, where the whole garment has to be visible. Its rule must
-stay *after* the base rule in `tokens.css` — equal specificity, so source order
+stay _after_ the base rule in `tokens.css` — equal specificity, so source order
 decides.
 
 Two consequences to know:
@@ -271,7 +271,7 @@ and the neon glow filter still apply to the strokes. They were the homepage
 stand-ins until BR-4 and are **kept but no longer rendered anywhere**.
 
 `rifle.svg` is likewise in the repo and not wired up — it read as a club flyer
-when it was the banner in BR-2. Note that the *reason* recorded here in BR-2.1,
+when it was the banner in BR-2. Note that the _reason_ recorded here in BR-2.1,
 "not ad-safe", no longer reflects what ships: a rifle PNG is on the banner again
 as of 2026-08-24, at the client's documented request. The ad-policy exposure is
 real and is written up in `docs/role-audit.md`; it was accepted, not overlooked.
@@ -302,7 +302,7 @@ over a brand token so they ride `--glow-scale`, all three are blue, and radius
 never exceeds 2px.
 
 **Motion.** The spotlight drift is the one continuous movement on the site
-besides the header, and it is permitted as *ambient light*, not an animated
+besides the header, and it is permitted as _ambient light_, not an animated
 glow — two washes travelling 60px over 14s and 18s. Nothing pulses,
 `TextReveal` runs once on mount and holds, and the card glow is a 200ms hover
 transition. Each component switches its animation off **by name** under
@@ -318,12 +318,12 @@ back in.
 
 ## Batch log
 
-| Batch  | Date       | What                                                                                                                                                                                                                                                               |
-| ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                          |
-| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm. |
-| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                   |
-| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                          |
+| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                          |
+| ------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                     |
+| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                            |
+| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                              |
+| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                               |
 | BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter. |
-| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen. |
-| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot. |
+| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                   |
+| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                      |

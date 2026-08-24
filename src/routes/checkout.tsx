@@ -37,11 +37,7 @@ function CheckoutLayout() {
   return (
     <SiteLayout>
       <div className="mx-auto max-w-[1200px] px-4 pt-8 md:px-6 md:pt-12">
-        <Link
-          to="/"
-          className="ui-label text-[0.7rem]"
-          style={{ color: "var(--muted-tone)" }}
-        >
+        <Link to="/" className="ui-label text-[0.7rem]" style={{ color: "var(--muted-tone)" }}>
           ← Continue shopping
         </Link>
         <h1
@@ -60,7 +56,12 @@ function CheckoutLayout() {
                   style={{
                     border: `1px solid ${i <= activeIdx ? "var(--ink)" : "var(--line)"}`,
                     background: i < activeIdx ? "var(--ink)" : "transparent",
-                    color: i < activeIdx ? "var(--paper)" : i === activeIdx ? "var(--ink)" : "var(--muted-tone)",
+                    color:
+                      i < activeIdx
+                        ? "var(--paper)"
+                        : i === activeIdx
+                          ? "var(--ink)"
+                          : "var(--muted-tone)",
                     borderRadius: "999px",
                   }}
                 >
@@ -73,7 +74,9 @@ function CheckoutLayout() {
                   {s.label}
                 </span>
                 {i < STEPS.length - 1 && (
-                  <span aria-hidden style={{ color: "var(--line)" }}>—</span>
+                  <span aria-hidden style={{ color: "var(--line)" }}>
+                    —
+                  </span>
                 )}
               </li>
             ))}
@@ -101,10 +104,7 @@ function OrderSummary() {
       className="h-fit border p-6 lg:sticky lg:top-24"
       style={{ borderColor: "var(--line)", background: "var(--br-ink)" }}
     >
-      <h2
-        className="ui-label text-[0.7rem]"
-        style={{ color: "var(--muted-tone)" }}
-      >
+      <h2 className="ui-label text-[0.7rem]" style={{ color: "var(--muted-tone)" }}>
         Order Summary ({count})
       </h2>
       {!hydrated ? (

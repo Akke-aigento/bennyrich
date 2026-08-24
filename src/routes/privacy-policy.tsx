@@ -5,7 +5,10 @@ export const Route = createFileRoute("/privacy-policy")({
   head: () => ({
     meta: [
       { title: "Privacy Policy — BennyRich" },
-      { name: "description", content: "How BennyRich collects, uses and safeguards your personal information." },
+      {
+        name: "description",
+        content: "How BennyRich collects, uses and safeguards your personal information.",
+      },
       { property: "og:title", content: "Privacy Policy — BennyRich" },
       { property: "og:description", content: "How we collect, use and safeguard your data." },
       { property: "og:type", content: "website" },
@@ -21,8 +24,8 @@ function PrivacyPolicyPage() {
       <Section>
         <P>
           At BennyRich, we value your privacy and are committed to protecting your personal
-          information. This Privacy Policy explains how we collect, use, and safeguard your data when
-          you visit our website or make a purchase.
+          information. This Privacy Policy explains how we collect, use, and safeguard your data
+          when you visit our website or make a purchase.
         </P>
       </Section>
 
@@ -58,8 +61,8 @@ function PrivacyPolicyPage() {
 
       <Section heading="Payment Security">
         <P>
-          We do not store your full payment card details. All payments are processed securely through
-          trusted third-party payment providers using industry-standard encryption.
+          We do not store your full payment card details. All payments are processed securely
+          through trusted third-party payment providers using industry-standard encryption.
         </P>
       </Section>
 
@@ -95,15 +98,15 @@ function PrivacyPolicyPage() {
 
       <Section heading="Data Security">
         <P>
-          We use appropriate technical and organizational measures to protect your personal information
-          against unauthorized access, loss, misuse, or disclosure.
+          We use appropriate technical and organizational measures to protect your personal
+          information against unauthorized access, loss, misuse, or disclosure.
         </P>
       </Section>
 
       <Section heading="Changes to This Policy">
         <P>
-          We may update this Privacy Policy from time to time. Any changes will be posted on this page
-          with the updated revision date.
+          We may update this Privacy Policy from time to time. Any changes will be posted on this
+          page with the updated revision date.
         </P>
       </Section>
 

@@ -5,10 +5,7 @@ import { formatEUR } from "@/lib/format";
 
 export const Route = createFileRoute("/checkout/confirmation/$orderId")({
   head: () => ({
-    meta: [
-      { title: "Order confirmed — BennyRich" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Order confirmed — BennyRich" }, { name: "robots", content: "noindex" }],
   }),
   component: ConfirmationPage,
 });
@@ -74,7 +71,9 @@ function ConfirmationPage() {
                 className="mt-2 flex items-baseline justify-between pt-2 border-t"
                 style={{ borderColor: "var(--line)" }}
               >
-                <span className="ui-label text-[0.75rem]" style={{ color: "var(--ink)" }}>Total</span>
+                <span className="ui-label text-[0.75rem]" style={{ color: "var(--ink)" }}>
+                  Total
+                </span>
                 <span className="text-[1.1rem]" style={{ color: "var(--ink)", fontWeight: 500 }}>
                   {formatEUR(data.total)}
                 </span>
@@ -131,14 +130,10 @@ function Row({ label, value }: { label: string; value: string }) {
 function AddressBlock({ a }: { a: any }) {
   return (
     <>
-      <p>
-        {[a.first_name, a.last_name].filter(Boolean).join(" ")}
-      </p>
+      <p>{[a.first_name, a.last_name].filter(Boolean).join(" ")}</p>
       <p>{a.address_line_1 ?? a.address1}</p>
       {(a.address_line_2 ?? a.address2) && <p>{a.address_line_2 ?? a.address2}</p>}
-      <p>
-        {[a.postal_code ?? a.zip, a.city].filter(Boolean).join(" ")}
-      </p>
+      <p>{[a.postal_code ?? a.zip, a.city].filter(Boolean).join(" ")}</p>
       <p>{a.country}</p>
     </>
   );

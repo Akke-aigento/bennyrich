@@ -15,10 +15,7 @@ export function FormField({
 }) {
   return (
     <label className={"block " + (className ?? "")}>
-      <span
-        className="ui-label text-[0.65rem] block mb-1.5"
-        style={{ color: "var(--muted-tone)" }}
-      >
+      <span className="ui-label text-[0.65rem] block mb-1.5" style={{ color: "var(--muted-tone)" }}>
         {label}
         {required && <span style={{ color: "var(--destructive)" }}> *</span>}
       </span>

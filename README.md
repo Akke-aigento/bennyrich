@@ -13,16 +13,15 @@ Een rustige, dure, klassiek-elegante luxury webshop (ivoor/bone + goud, serif), 
 Color tokens (CSS variables):
 
 :root{
-  --bone:#F6F3EB;
-  --paper:#FDFBF6;
-  --ink:#1A1813;
-  --gold:#B8902E;
-  --gold-l:#D8B14A;
-  --muted:#8A8578;
-  --line:#E2DCCE;
-  --black:#0E0D0C;
+--bone:#F6F3EB;
+--paper:#FDFBF6;
+--ink:#1A1813;
+--gold:#B8902E;
+--gold-l:#D8B14A;
+--muted:#8A8578;
+--line:#E2DCCE;
+--black:#0E0D0C;
 }
-
 
 Fonts (Google Fonts):
 
@@ -72,12 +71,11 @@ artworks.jpg — tijdelijke placeholder (effen --bone met gecentreerde "ARTWORKS
 
 3. PAGINA-STRUCTUUR (Fase 1)
 
-/                 → Homepage: Choose Your World
-/perfumes         → Categoriepagina Perfumes (ECHTE SellQo-producten)
-/jewellery        → placeholder-pagina "Coming soon" (zelfde tokens)
-/artworks         → placeholder-pagina "Coming soon"
+/ → Homepage: Choose Your World
+/perfumes → Categoriepagina Perfumes (ECHTE SellQo-producten)
+/jewellery → placeholder-pagina "Coming soon" (zelfde tokens)
+/artworks → placeholder-pagina "Coming soon"
 /designer-clothes → placeholder-pagina "Coming soon"
-
 
 Alleen /perfumes haalt echte data op. De rest is later copy-paste.
 
@@ -117,10 +115,9 @@ Zona Dorata is een bestaande tenant op het SellQo-platform. Tenant en API key be
 
 Maak deze env-secrets aan in Lovable Cloud:
 
-SELLQO_BASE_URL    = <https://sellqo.app/api/storefront>
-SELLQO_TENANT_ID   = <05b419c3-d9a4-4ad8-bbf0-2d1c672e266f>
-SELLQO_API_KEY     = Will be given in secrets
-
+SELLQO_BASE_URL = <https://sellqo.app/api/storefront>
+SELLQO_TENANT_ID = <05b419c3-d9a4-4ad8-bbf0-2d1c672e266f>
+SELLQO_API_KEY = Will be given in secrets
 
 Vul deze in via Lovable Cloud secrets nadat het project staat. NOOIT hardcoden, NOOIT in de frontend bundelen. De frontend praat ALLEEN met de proxy, nooit rechtstreeks met SellQo.
 
@@ -136,11 +133,10 @@ Proxy is een action resolver, geen domme forwarder.
 
 Actions nodig voor Fase 1:
 
-list_products      { category }                  → producten van een categorie
-get_product        { product_id | slug }         → één product
-get_cart           { session_id, cart_id? }      → huidige cart
-add_to_cart        { session_id, product_id, qty }
-
+list_products { category } → producten van een categorie
+get_product { product_id | slug } → één product
+get_cart { session_id, cart_id? } → huidige cart
+add_to_cart { session_id, product_id, qty }
 
 Belangrijke patronen (uit master template v2 — niet vergeten):
 

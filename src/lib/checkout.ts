@@ -72,11 +72,9 @@ export function normalizeCheckout(raw: any): CheckoutState {
     shipping_address: src.shipping_address ?? null,
     billing_address: src.billing_address ?? null,
     shipping_methods: shippingMethods,
-    selected_shipping_method_id:
-      src.selected_shipping_method_id ?? src.shipping_method_id ?? null,
+    selected_shipping_method_id: src.selected_shipping_method_id ?? src.shipping_method_id ?? null,
     payment_methods: paymentMethods,
-    selected_payment_method_id:
-      src.selected_payment_method_id ?? src.payment_method_id ?? null,
+    selected_payment_method_id: src.selected_payment_method_id ?? src.payment_method_id ?? null,
     subtotal: num(src.subtotal),
     shipping_total: num(src.shipping_total ?? src.shipping_amount),
     tax_total: num(src.tax_total ?? src.tax_amount),
