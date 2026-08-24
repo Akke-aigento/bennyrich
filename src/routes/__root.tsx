@@ -20,6 +20,8 @@ import {
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "../lib/cart-context";
 import { CartDrawer } from "../components/site/CartDrawer";
+import { CookieBanner } from "../components/site/CookieBanner";
+import { ConsentProvider } from "../lib/consent";
 import { SOCIALS } from "../components/site/Footer";
 import { Toaster } from "sonner";
 
@@ -189,12 +191,15 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <CartDrawer />
-        <Toaster position="bottom-right" />
-      </CartProvider>
+      <ConsentProvider>
+        <CartProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <CartDrawer />
+          <CookieBanner />
+          <Toaster position="bottom-right" />
+        </CartProvider>
+      </ConsentProvider>
     </QueryClientProvider>
   );
 }

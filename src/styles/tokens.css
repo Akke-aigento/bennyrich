@@ -22,6 +22,11 @@
 
   /* Neon accents */
   --br-blue: #1e5bff;
+  /* Small-text blue. --br-blue is 3.88:1 on --br-black, which fails WCAG AA
+     for normal text (4.5:1) though it passes for large. This lighter blue is
+     5.50:1, measured, and is used for 11px labels, nav states and button text.
+     --br-blue keeps borders, glows, large accents and the wordmark. */
+  --br-blue-text: #4a7dff;
   --br-blue-core: #0f55c9;
   --br-pink: #ff2d8a;
   --br-pink-core: #c8287c;
@@ -581,6 +586,24 @@
     filter: blur(0);
     transform: none;
   }
+}
+
+/* Consent banner entrance — opacity only, one shot, no loop. */
+@keyframes br-consent-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* A neon button that recedes: same ghost shape, hairline border and muted
+   label, for the secondary choice in a pair. */
+@utility neon-btn-quiet {
+  border-color: var(--br-line);
+  color: var(--br-mute);
+  box-shadow: none;
 }
 
 /* --- Motion --------------------------------------------------------------
