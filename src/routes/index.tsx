@@ -8,6 +8,7 @@ import { SpotlightCard } from "@/components/kit/SpotlightCard";
 import { VodkaSpotlight } from "@/components/site/VodkaSpotlight";
 import { CategoryTiles } from "@/components/site/CategoryTiles";
 import { ShopTheRange } from "@/components/site/ShopTheRange";
+import { BrandStatement } from "@/components/site/BrandStatement";
 import { TextReveal } from "@/components/kit/TextReveal";
 import { CATEGORIES } from "@/lib/categories";
 import { pickSpread, type CategoryGroup } from "@/lib/featured";
@@ -243,6 +244,7 @@ function HomeV2() {
       <FeaturedCollection />
       <ShopTheRange />
       <VodkaSpotlight />
+      <BrandStatement />
       <BuiltDifferentBanner />
     </>
   );

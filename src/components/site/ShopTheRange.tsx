@@ -24,9 +24,9 @@ const HAS_OWN_SECTION = new Set(["beverages"]);
 /**
  * A second product row, after the featured grid.
  *
- * It is deliberately NOT "New arrivals". Every product in this catalogue was
- * bulk-imported on 18–19 August, so nothing here is newer than anything else
- * and the label would be a lie inside a week.
+ * It is deliberately not framed as newly-arrived stock. Every product in this
+ * catalogue was bulk-imported on 18-19 August, so nothing here is any newer
+ * than anything else and that framing would be a lie inside a week.
  *
  * Selection reuses `pickSpread` — the same resolver the featured grid uses —
  * and then subtracts, rather than slicing blind:

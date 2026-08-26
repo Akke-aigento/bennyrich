@@ -39,7 +39,8 @@ function coverFor(categoryImage: string | undefined, products: SellqoProduct[]):
  * The five categories, straight under the hero.
  *
  * This is the buy motor: the hero says who BennyRich is, this says what you can
- * actually get. They are CATEGORIES and nothing more — never "worlds".
+ * actually get. They are CATEGORIES and nothing grander — the client was
+ * explicit about that; see the copy rules in CLAUDE.md.
  *
  * Blue is the one accent and it lives on the border alone; the name does not
  * glow too. Nothing pulses.
