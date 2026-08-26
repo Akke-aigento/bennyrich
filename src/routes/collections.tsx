@@ -14,8 +14,7 @@ export const Route = createFileRoute("/collections")({
       { title: "Collections — BennyRich" },
       {
         name: "description",
-        content:
-          "Apparel, accessories, home, lighting and beverages — the five BennyRich collections.",
+        content: "Apparel, accessories, home, lighting and beverages — the BennyRich collections.",
       },
     ],
     links: [canonical("/collections")],
@@ -45,11 +44,7 @@ function CollectionsPage() {
 
   return (
     <SiteLayout>
-      <PageHeading
-        eyebrow="Five worlds"
-        title="Collections"
-        lede="One lifestyle, five ways to live it."
-      />
+      <PageHeading title="Collections" lede="Everything BennyRich, in one place." />
 
       <div className="br-shell br-section-b grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
         {CATEGORIES.map((category, i) => {
