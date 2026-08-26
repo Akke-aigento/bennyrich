@@ -9,32 +9,10 @@ const LINKS = [
   { to: "/privacy-policy", label: "Privacy Policy" },
 ] as const;
 
-/** lucide-react has no TikTok glyph, so the note is drawn to match its weight. */
-function TikTok({ size = 19 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M15 3c.4 2.6 2 4.2 4.6 4.5v3c-1.7.1-3.3-.4-4.6-1.4v6.3A6.4 6.4 0 1 1 9.6 9v3.1a3.3 3.3 0 1 0 2.3 3.2V3H15Z" />
-    </svg>
-  );
-}
-
 /** Also the `sameAs` source for the Organization JSON-LD in __root.tsx —
  *  one list, so the schema can never drift from what the footer links to. */
 export const SOCIALS = [
   { href: INSTAGRAM_URL, label: "Instagram", Icon: Instagram },
-  // Unverified handle, and not something the client asked for — left exactly as
-  // it was rather than blessed into src/lib/site.ts. See docs/role-audit.md.
-  { href: "https://tiktok.com/@bennyrich", label: "TikTok", Icon: TikTok },
   { href: `mailto:${CONTACT_EMAIL}`, label: "Email us", Icon: Mail },
 ];
 

@@ -176,16 +176,6 @@ function ContactPage() {
                 Instagram
               </a>
             </li>
-            <li>
-              <a
-                href="https://tiktok.com/@bennyrich"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="transition-colors duration-200 hover:text-[var(--br-blue)]"
-              >
-                TikTok
-              </a>
-            </li>
           </ul>
 
           <h2 className="br-label mt-8" style={{ color: "var(--br-white)" }}>

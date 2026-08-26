@@ -24,9 +24,9 @@ export const SITE_NAME = "BennyRich";
  * parameter attached; that is a referral token, not part of the profile URL,
  * and it is stripped.
  *
- * The TikTok link in the footer is deliberately NOT here: nobody has confirmed
- * that handle exists and Sander did not mention it. Open question in
- * docs/role-audit.md — do not promote it to a constant until it is verified.
+ * Instagram is the only social channel on the site. The second one that used to
+ * sit beside it in the footer was removed at the client's request in BR-12 —
+ * see docs/role-audit.md before adding another.
  */
 export const CONTACT_EMAIL = "info@bennyrich.com";
 export const INSTAGRAM_URL = "https://www.instagram.com/bennyrichstore";
