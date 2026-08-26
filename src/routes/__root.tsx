@@ -33,7 +33,7 @@ function NotFoundComponent() {
       className="br-shell flex min-h-screen flex-col items-center justify-center py-24 text-center"
       style={{ background: "var(--br-black)" }}
     >
-      <Wordmark tone="blue" className="text-[22px]" />
+      <Wordmark tone="blue" className="h-24 w-auto" />
       <p className="br-section-label mt-14" style={{ color: "var(--br-mute)" }}>
         404
       </p>
@@ -73,7 +73,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       className="br-shell flex min-h-screen flex-col items-center justify-center py-24 text-center"
       style={{ background: "var(--br-black)" }}
     >
-      <Wordmark tone="blue" className="text-[22px]" />
+      <Wordmark tone="blue" className="h-24 w-auto" />
       <p className="br-section-label mt-14" style={{ color: "var(--br-mute)" }}>
         Something broke
       </p>

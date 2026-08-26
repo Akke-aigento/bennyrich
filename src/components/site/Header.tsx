@@ -202,7 +202,7 @@ export function Header() {
           aria-label="BennyRich — home"
           className="hidden justify-self-start md:inline-flex"
         >
-          <Wordmark tone="blue" layout="inline" size={18} />
+          <Wordmark tone="blue" layout="inline" className="h-7 w-auto" />
         </Link>
 
         {/* Centre: nav (desktop) / monogram (mobile) */}

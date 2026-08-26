@@ -43,7 +43,8 @@ export function Footer() {
     >
       <div className="br-shell flex flex-col items-center px-6 pb-10 pt-20">
         <Link to="/" aria-label="BennyRich — home">
-          <Wordmark tone="blue" size={34} showCity />
+          {/* The official lockup already carries WORLDWIDE — no city line. */}
+          <Wordmark tone="blue" className="h-32 w-auto md:h-40" />
         </Link>
 
         <div className="mt-9 flex items-center gap-7">

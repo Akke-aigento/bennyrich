@@ -10,14 +10,30 @@ const glowByIntensity: Record<MarkIntensity, Record<NeonTone, string>> = {
 
 export const glowClass: Record<NeonTone, string> = glowByIntensity.sign;
 
+/** Official monogram crop: 157x136, with the ring 101px across inside it. */
+const ASSET = {
+  src: "/brand/logo-monogram-blue.png",
+  width: 157,
+  height: 136,
+  /** Ring diameter as a fraction of the crop's height. */
+  ringOfHeight: 101 / 136,
+};
+
 /**
- * BennyRich monogram — a hairline circle enclosing an overlapping serif "B"
- * and "R". The R sits down-right of the B so its stem crosses the B's lower
- * bowl, which is the join the printed logo is built around.
+ * BennyRich monogram — the BR ring.
  *
- * Drawn as strokes in `currentColor` so the neon utilities can light it up.
- * `intensity="logotype"` keeps the halo down to a whisper, which is what the
- * header and footer lockups use — a logo should read as print, not as signage.
+ * Since BR-11 this is the client's official artwork (`public/brand/`), not the
+ * hand-drawn SVG. It is a raster that carries its own glow, so it takes NO
+ * neon/logotype filter on top of it, and it no longer tracks `--glow-scale` —
+ * the same accepted cost as the hero and banner art.
+ *
+ * `size` still means what it always did: the RING's diameter. The old SVG ring
+ * was r=45 in a 100 box; this crop's ring is 101/136 of its height, so the
+ * image is scaled to match rather than being dropped in at `size` square.
+ *
+ * TODO(pink): there is no pink asset yet, so `tone="pink"` keeps the drawn SVG
+ * below. Run `docs/brand/tools/neon_alpha.py` over `docs/brand/logo-pink.jpg`
+ * to produce `logo-monogram-pink.png` and this branch can go.
  */
 export function Monogram({
   tone = "blue",
@@ -30,6 +46,57 @@ export function Monogram({
   size?: number | string;
   intensity?: MarkIntensity;
   className?: string;
+  title?: string;
+}) {
+  if (tone === "pink") {
+    return (
+      <DrawnMonogram
+        tone={tone}
+        size={size}
+        intensity={intensity}
+        className={className}
+        title={title}
+      />
+    );
+  }
+
+  // `size` is the ring; derive the box the ring lives in.
+  const numeric = typeof size === "number" ? size : Number.parseFloat(size);
+  const height = Number.isFinite(numeric) ? numeric / ASSET.ringOfHeight : undefined;
+  const width = height ? (height * ASSET.width) / ASSET.height : undefined;
+
+  return (
+    <img
+      src={ASSET.src}
+      alt={title ?? ""}
+      width={ASSET.width}
+      height={ASSET.height}
+      decoding="async"
+      role={title ? "img" : "presentation"}
+      aria-hidden={title ? undefined : true}
+      aria-label={title}
+      className={className}
+      style={{ height, width, maxWidth: "100%" }}
+    />
+  );
+}
+
+/**
+ * The hand-drawn mark, kept only for `tone="pink"` (the 18+ gate) until a pink
+ * asset exists. A hairline circle enclosing an overlapping serif "B" and "R",
+ * stroked in `currentColor` so the neon utilities light it up.
+ */
+function DrawnMonogram({
+  tone,
+  size,
+  intensity,
+  className,
+  title,
+}: {
+  tone: NeonTone;
+  size: number | string;
+  intensity: MarkIntensity;
+  className: string;
   title?: string;
 }) {
   return (
