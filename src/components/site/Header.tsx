@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
-import { Monogram } from "@/assets/brand/Monogram";
 import { Wordmark } from "@/assets/brand/Wordmark";
 import { useCart } from "@/lib/cart-context";
 import { customerName, useAuth } from "@/lib/auth";
@@ -94,7 +93,7 @@ export function Header() {
               className="br-shell flex h-[72px] shrink-0 items-center justify-between border-b"
               style={{ borderColor: "var(--br-line)" }}
             >
-              <Monogram tone="blue" intensity="logotype" size={32} />
+              <Wordmark tone="blue" layout="inline" className="h-7 w-auto max-w-[52vw]" />
               <button
                 type="button"
                 onClick={() => setMenuOpen(false)}
@@ -206,8 +205,12 @@ export function Header() {
         </Link>
 
         {/* Centre: nav (desktop) / monogram (mobile) */}
+        {/* The written-out wordmark, not the ring: on a phone the centre slot is
+            the only brand mark on screen, and a BR monogram alone does not say
+            whose shop this is. Capped at 52vw so it cannot crowd the hamburger
+            or the bag on a narrow device. */}
         <Link to="/" aria-label="BennyRich — home" className="justify-self-center md:hidden">
-          <Monogram tone="blue" intensity="logotype" size={32} />
+          <Wordmark tone="blue" layout="inline" className="h-7 w-auto max-w-[52vw]" />
         </Link>
         <nav className="hidden justify-self-center md:flex md:items-center md:gap-7 lg:gap-9">
           {NAV.map((item) =>
