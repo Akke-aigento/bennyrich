@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { canonical } from "@/lib/site";
+import { canonical, HOME_V2 } from "@/lib/site";
 import { useQueries } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
@@ -214,13 +214,36 @@ function BuiltDifferentBanner() {
   );
 }
 
-function Index() {
+/**
+ * The pre-BR-12 homepage, restored by flipping HOME_V2 to false.
+ *
+ * Every component below is the ORIGINAL, untouched by BR-12. Do not "tidy" any
+ * of them — the moment one changes, this stops being what the client last
+ * approved and the escape hatch is worth nothing. See src/lib/site.ts.
+ */
+function HomeV1() {
   return (
-    <SiteLayout>
+    <>
       <Hero />
       <FeaturedCollection />
       <VodkaSpotlight />
       <BuiltDifferentBanner />
-    </SiteLayout>
+    </>
   );
+}
+
+/** The BR-12 homepage. New sections land here and nowhere else. */
+function HomeV2() {
+  return (
+    <>
+      <Hero />
+      <FeaturedCollection />
+      <VodkaSpotlight />
+      <BuiltDifferentBanner />
+    </>
+  );
+}
+
+function Index() {
+  return <SiteLayout>{HOME_V2 ? <HomeV2 /> : <HomeV1 />}</SiteLayout>;
 }

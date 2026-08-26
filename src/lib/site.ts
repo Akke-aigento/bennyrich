@@ -18,6 +18,29 @@ export const SITE_URL = "https://akke-aigento-bennyrich.lovable.app";
 export const SITE_NAME = "BennyRich";
 
 /**
+ * The BR-12 homepage, behind one line.
+ *
+ * The rebuilt homepage is a go/no-go on the client's taste, not a refactor, so
+ * it has to come back out in ONE move rather than by unpicking five commits.
+ *
+ *   true  -> Hero, CategoryTiles, FeaturedCollection, ShopTheRange,
+ *            VodkaSpotlight, BrandStatement, BuiltDifferentBanner
+ *   false -> the pre-BR-12 page, unchanged: Hero, FeaturedCollection,
+ *            VodkaSpotlight, BuiltDifferentBanner
+ *
+ * The `false` arm renders the ORIGINAL components untouched — Hero,
+ * FeaturedCollection, VodkaSpotlight and BuiltDifferentBanner were not edited
+ * by BR-12 at all. That is what makes this an escape hatch rather than a
+ * reconstruction, and it is why they must stay untouched: the moment one of
+ * them is "tidied up", flipping this to false no longer restores what the
+ * client last approved.
+ *
+ * Rejecting the new homepage = set this to false. Accepting it = delete the
+ * flag and the false branch in src/routes/index.tsx.
+ */
+export const HOME_V2 = true;
+
+/**
  * Where a shopper reaches BennyRich. One place, so the next change is one line.
  *
  * The Instagram handle came in as a share link with an `?igsi=` tracking
