@@ -6,6 +6,7 @@ import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard"
 import { Spotlight } from "@/components/kit/Spotlight";
 import { SpotlightCard } from "@/components/kit/SpotlightCard";
 import { VodkaSpotlight } from "@/components/site/VodkaSpotlight";
+import { CategoryTiles } from "@/components/site/CategoryTiles";
 import { TextReveal } from "@/components/kit/TextReveal";
 import { CATEGORIES } from "@/lib/categories";
 import { pickSpread, type CategoryGroup } from "@/lib/featured";
@@ -237,6 +238,7 @@ function HomeV2() {
   return (
     <>
       <Hero />
+      <CategoryTiles />
       <FeaturedCollection />
       <VodkaSpotlight />
       <BuiltDifferentBanner />
