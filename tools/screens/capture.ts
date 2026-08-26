@@ -33,7 +33,14 @@ const CHROME =
 const DEBUG_PORT = Number(process.env.CDP_PORT ?? 9222);
 const DSF = 2;
 
-type Shot = { name: string; url: string; width: number; fullPage: boolean; evals: string[] };
+type Shot = {
+  name: string;
+  url: string;
+  width: number;
+  fullPage: boolean;
+  evals: string[];
+  delay?: number;
+};
 
 function parseArgs(argv: string[]) {
   let out = "docs/screens/tmp";
@@ -42,7 +49,12 @@ function parseArgs(argv: string[]) {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--out") out = argv[++i];
     else if (argv[i] === "--reduced-motion") reducedMotion = true;
-    else if (argv[i] === "--eval") {
+    else if (argv[i] === "--delay") {
+      // Applies to the shot before it: how long to settle after load. Default
+      // 3500ms; the splash needs a specific moment in its own timeline.
+      const shot = shots[shots.length - 1];
+      if (shot) shot.delay = Number(argv[++i]);
+    } else if (argv[i] === "--eval") {
       // Applies to the shot declared immediately before it: JS run after load
       // and before capture, for states only reachable by interacting (scroll,
       // open the menu, expand the accordion).
@@ -152,7 +164,7 @@ async function main() {
       mobile: shot.width < 500,
     });
     await S("Page.navigate", { url: shot.url });
-    await sleep(3500); // fonts, images, the splash's own timeline
+    await sleep(shot.delay ?? 3500); // fonts, images, the splash's own timeline
 
     for (const expression of shot.evals) {
       await S("Runtime.evaluate", { expression, awaitPromise: true });
