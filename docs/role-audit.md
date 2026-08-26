@@ -2005,6 +2005,9 @@ An empty image well is worse than no image.
 
 ## "Shop the range"
 
+> **Superseded — this section was removed in BR-12b.** What follows is the
+> record of what was built and why; the row is no longer on the page.
+
 Deliberately **not** framed as newly-arrived stock: every product was
 bulk-imported on 18–19 August, so nothing is newer than anything else and that
 framing would be a lie inside a week.
@@ -2107,11 +2110,89 @@ there; only the numbers are missing, and they have to be true.
 
 ## Open questions for Sander
 
-1. **Is "Shop the range" the label he wants** for the second product row, or
-   would he rather it read as a continuation of the featured grid?
+1. ~~**Is "Shop the range" the label he wants** for the second product row?~~
+   **Resolved in BR-12b: the row is gone.** Akke's review answered a question
+   nobody had asked — not the label, the row itself.
 2. **Is the brand-statement copy on-voice?** It is his own About copy verbatim,
    but it is doing a different job on a homepage.
 3. **Shipping and Stripe timeline** — that unblocks the value strip, and it is
    the last thing standing between this storefront and taking money.
 4. **Category art**: five images in the admin and the tiles stop borrowing from
    the catalogue. Zero code.
+
+# BR-12b — the second product row comes back out (2026-08-26)
+
+Date: 2026-08-26 · branch `br-12-home` · **not merged**
+
+Akke reviewed the V2 homepage and cut "Shop the range". It read as a
+near-duplicate of the Featured Collection grid directly above it — two four-up
+product grids back to back, same cards, same rhythm, no distinct reason to buy
+from one rather than the other. Discovery was already covered: the category band
+gives five entry points into the catalogue, which is a different job from a
+second helping of the same four-up.
+
+**This is the flag doing its job.** The row was built in one commit and removed
+in the next, and neither move cost anything beyond the commits themselves,
+because `HOME_V2` meant the whole stack was disposable from the start. The thing
+that made the duplication visible was a screenshot, not a code review — which is
+why `docs/screens/BR-12/second-row-1280.png` is **kept** rather than deleted.
+Removing the evidence would erase the reason.
+
+## What went
+
+`src/components/site/ShopTheRange.tsx`, entirely. The selection logic the brief
+described — the deep `pickSpread` pool minus the featured set minus categories
+with their own section, plus `HAS_OWN_SECTION` and the `ALREADY_SHOWN`/`COUNT`/
+`POOL` constants — all lived inside that one file, so it went with it. Two lines
+in `src/routes/index.tsx` (import and render) and one corrected list in
+`src/lib/site.ts` were the rest of it.
+
+**Nothing was orphaned.** Every shared import it used still has other consumers,
+checked before deleting rather than after:
+
+```
+pickSpread            -> index.tsx:121 (FeaturedCollection)
+useCategoryProducts   -> CategoryTiles.tsx:50
+ProductCardSkeleton   -> index.tsx, CategoryProductsPage.tsx
+SpotlightCard         -> index.tsx
+```
+
+## What stayed, and why
+
+`src/lib/home-data.ts` (`useCategoryProducts`) is down to **one** caller,
+`CategoryTiles`. It stays, and its doc comment was rewritten to stop claiming
+three — the point was never the number of callers. Its query key is deliberately
+identical to the one `FeaturedCollection` inlines, and that is what makes the
+tiles and the featured grid share one React Query cache entry per category. The
+homepage makes five requests instead of ten because of it.
+
+## The escape hatch is untouched
+
+`HomeV1` was not edited, and the four components it renders are still
+blob-identical to base. Both arms build. Asserted rather than assumed:
+
+```
+HOME_V2=true   headings -> Shop by category, Featured Collection,
+                           Born in Belgium, We do not follow, Built different
+               sections -> 6
+HOME_V2=false  headings -> Featured Collection, Born in Belgium, Built different
+               sections -> 4
+```
+
+**No dead space where the row was.** The junction is now Featured Collection
+(`br-section`, top+bottom) → VodkaSpotlight (`br-section-b`, bottom only), which
+is exactly the junction `HomeV1` has always had. Measured in both arms:
+`featuredToVodkaGapPx = 0` either way, i.e. the same spacing the client already
+approved. The page went from 9276px to 8230px at 1280.
+
+## Verification
+
+```
+bun run build / bunx tsc --noEmit          green, flag BOTH ways
+grep -rn "Shop the range|More from the collection|ShopTheRange" src/   0 hits
+grep -ri aceternity src/                                               0 hits
+git diff 9f37a883 -- package.json bun.lock                             empty
+frozen files: empty diff AND blob-hash identical (all ten paths)
+```
+
+`home-v2-1280.png` and `home-v2-390.png` re-shot against the tightened page.

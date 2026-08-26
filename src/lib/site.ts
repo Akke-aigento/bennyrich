@@ -23,8 +23,8 @@ export const SITE_NAME = "BennyRich";
  * The rebuilt homepage is a go/no-go on the client's taste, not a refactor, so
  * it has to come back out in ONE move rather than by unpicking five commits.
  *
- *   true  -> Hero, CategoryTiles, FeaturedCollection, ShopTheRange,
- *            VodkaSpotlight, BrandStatement, BuiltDifferentBanner
+ *   true  -> Hero, CategoryTiles, FeaturedCollection, VodkaSpotlight,
+ *            BrandStatement, BuiltDifferentBanner
  *   false -> the pre-BR-12 page, unchanged: Hero, FeaturedCollection,
  *            VodkaSpotlight, BuiltDifferentBanner
  *

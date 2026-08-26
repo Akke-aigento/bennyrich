@@ -7,7 +7,6 @@ import { Spotlight } from "@/components/kit/Spotlight";
 import { SpotlightCard } from "@/components/kit/SpotlightCard";
 import { VodkaSpotlight } from "@/components/site/VodkaSpotlight";
 import { CategoryTiles } from "@/components/site/CategoryTiles";
-import { ShopTheRange } from "@/components/site/ShopTheRange";
 import { BrandStatement } from "@/components/site/BrandStatement";
 import { TextReveal } from "@/components/kit/TextReveal";
 import { CATEGORIES } from "@/lib/categories";
@@ -242,7 +241,6 @@ function HomeV2() {
       <Hero />
       <CategoryTiles />
       <FeaturedCollection />
-      <ShopTheRange />
       <VodkaSpotlight />
       <BrandStatement />
       <BuiltDifferentBanner />

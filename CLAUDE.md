@@ -427,8 +427,8 @@ overlay flashes black for a frame on every route change. X and Escape skip it.
 `HOME_V2` in `src/lib/site.ts` gates the entire BR-12 homepage:
 
 ```
-true  -> Hero, CategoryTiles, FeaturedCollection, ShopTheRange,
-         VodkaSpotlight, BrandStatement, BuiltDifferentBanner
+true  -> Hero, CategoryTiles, FeaturedCollection, VodkaSpotlight,
+         BrandStatement, BuiltDifferentBanner
 false -> Hero, FeaturedCollection, VodkaSpotlight, BuiltDifferentBanner
 ```
 
@@ -445,10 +445,12 @@ Accepting the new homepage means deleting the flag and the `HomeV1` branch in
 `src/routes/index.tsx`, not leaving both arms to rot.
 
 `src/lib/home-data.ts` (`useCategoryProducts`) holds the per-category product
-fan-out the new sections share. Its query key is **deliberately identical** to
-the one `FeaturedCollection` inlines, so React Query serves all of them from one
-cache entry and the page still makes five requests, not fifteen.
-`FeaturedCollection` does not import it, for the reason above.
+fan-out. `CategoryTiles` is its only caller since BR-12b, and that is fine — the
+point is the **query key**, which is deliberately identical to the one
+`FeaturedCollection` inlines. That is what makes the tiles and the featured grid
+share one React Query cache entry per category, so the homepage makes five
+requests rather than ten. `FeaturedCollection` does not import it, for the
+reason above.
 
 ### Category tiles and category art
 
@@ -576,3 +578,4 @@ omits the field, and the banner would then nag about an email nobody sent.
 | BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                                                                                                                                       |
 | BR-11  | 2026-08-26 | Client revision round: the official neon logo everywhere (BR-2.1's flat logotype overruled by the client, "New York" dropped for WORLDWIDE), the mobile menu portalled out of the header to fix a `backdrop-filter` containing-block bug, a Shop accordion and a clickable desktop dropdown, the splash screen, the "Born in Belgium" vodka section, a regenerated OG image and favicons, and the mock + capture harness finally committed under `tools/`. |
 | BR-12  | 2026-08-26 | Revision round 2. To `main`: TikTok removed sitewide, `info@` confirmed as the only address, and the vodka's 18+ gate proved to already fire (no second modal built). Behind `HOME_V2` on `br-12-home`: category tiles, a second product row that cannot repeat the first, and a claim-free brand statement. The mock was corrected against the real edge-function contract.                                                                               |
+| BR-12b | 2026-08-26 | The "Shop the range" second product row removed at client review — it read as a near-duplicate of the Featured Collection grid above it, and the category band already covers discovery. One component deleted, nothing orphaned, escape hatch untouched. On `br-12-home`, not merged.                                                                                                                                                                     |

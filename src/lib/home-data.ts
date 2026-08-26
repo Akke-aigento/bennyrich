@@ -1,14 +1,14 @@
 /**
  * The homepage's per-category product fan-out, in one place.
  *
- * Three BR-12 sections need the same thing — the category tiles need a cover
- * image per category, and both product rows need `pickSpread` over the same
- * groups. Fetching it three times would be three copies of a query key that
- * have to stay in step forever.
+ * `CategoryTiles` is the only caller today — the second product row that also
+ * used this was removed in BR-12b — but the file still earns its place, because
+ * the point was never the number of callers.
  *
  * The key here is deliberately IDENTICAL to the one `FeaturedCollection`
- * inlines in `src/routes/index.tsx`, so React Query serves all of them from one
- * cache entry per category and the page still makes exactly five requests.
+ * inlines in `src/routes/index.tsx`. That is what makes the tiles and the
+ * featured grid share one React Query cache entry per category, so the homepage
+ * makes five requests rather than ten.
  *
  * `FeaturedCollection` keeps its own inlined copy rather than importing this.
  * That is not an oversight: it is one of the four components the `HOME_V2=false`
