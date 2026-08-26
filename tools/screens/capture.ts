@@ -28,8 +28,7 @@ import { spawn } from "node:child_process";
 import { join } from "node:path";
 
 const CHROME =
-  process.env.CHROME_PATH ??
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+  process.env.CHROME_PATH ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const DEBUG_PORT = Number(process.env.CDP_PORT ?? 9222);
 const DSF = 2;
 
@@ -172,7 +171,10 @@ async function main() {
     }
 
     if (!shot.fullPage) {
-      const { data } = await S("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      const { data } = await S("Page.captureScreenshot", {
+        format: "png",
+        captureBeyondViewport: false,
+      });
       await writeFile(join(out, `${shot.name}.png`), Buffer.from(data, "base64"));
       console.log(`[capture] ${shot.name} (viewport ${shot.width})`);
       continue;
@@ -182,8 +184,11 @@ async function main() {
     const metrics = await S("Page.getLayoutMetrics");
     const pageHeight = Math.ceil(metrics.cssContentSize.height);
     const viewH = shot.width < 500 ? 844 : 900;
-    const tiles: Buffer[] = [];
-    for (let y = 0, tile = 0; y < pageHeight; y += viewH, tile++) {
+    const maxScroll = Math.max(0, pageHeight - viewH);
+    const tiles: Array<{ buf: Buffer; cropTop: number }> = [];
+    let drawnTo = 0;
+
+    for (let tile = 0; drawnTo < pageHeight; tile++) {
       if (tile === 1) {
         // Trap 2: hide by COMPUTED position, not by tag name.
         await S("Runtime.evaluate", {
@@ -195,26 +200,38 @@ async function main() {
           `,
         });
       }
-      await S("Runtime.evaluate", { expression: `window.scrollTo(0, ${y})` });
+
+      const targetY = Math.min(drawnTo, maxScroll);
+      await S("Runtime.evaluate", { expression: `window.scrollTo(0, ${targetY})` });
       await sleep(350);
+
+      // Trap 7: NEVER `captureBeyondViewport: true` with a clip.
+      //
+      // It makes Chrome re-lay-out the page at the full content size, which
+      // changes the layout width — so a clip of `shot.width` then shows only
+      // the left slice of a page that is now wider, and every full-page capture
+      // comes back cropped down the right-hand edge. Found on BR-11 with both
+      // home-1280 and home-390. Capture the plain viewport instead and stitch;
+      // the emulated viewport is already exactly the width we asked for.
       const { data } = await S("Page.captureScreenshot", {
         format: "png",
-        clip: {
-          x: 0,
-          y,
-          width: shot.width,
-          height: Math.min(viewH, pageHeight - y),
-          scale: DSF,
-        },
-        captureBeyondViewport: true,
+        captureBeyondViewport: false,
       });
-      tiles.push(Buffer.from(data, "base64"));
+
+      // The last tile is pinned to the bottom of the page, so it overlaps the
+      // one before it. Crop that overlap rather than stamping it twice.
+      tiles.push({ buf: Buffer.from(data, "base64"), cropTop: (drawnTo - targetY) * DSF });
+      drawnTo = targetY + viewH;
+      if (targetY === maxScroll) break;
     }
 
-    if (tiles.length === 1) {
-      await writeFile(join(out, `${shot.name}.png`), tiles[0]);
+    if (tiles.length === 1 && tiles[0].cropTop === 0 && pageHeight >= viewH) {
+      await writeFile(join(out, `${shot.name}.png`), tiles[0].buf);
     } else {
-      await writeFile(join(out, `${shot.name}.png`), await stitch(tiles, shot.width * DSF));
+      await writeFile(
+        join(out, `${shot.name}.png`),
+        await stitch(tiles, shot.width * DSF, pageHeight * DSF),
+      );
     }
     console.log(`[capture] ${shot.name} (${tiles.length} tile${tiles.length > 1 ? "s" : ""})`);
   }
@@ -223,28 +240,41 @@ async function main() {
   chrome.kill();
 }
 
-/** Vertical stitch through `sips`-free canvas in a throwaway Chrome page. */
-async function stitch(tiles: Buffer[], width: number): Promise<Buffer> {
+/** Vertical stitch in a throwaway Chrome page — no image library needed. */
+async function stitch(
+  tiles: Array<{ buf: Buffer; cropTop: number }>,
+  width: number,
+  height: number,
+): Promise<Buffer> {
   const { send, close } = await cdp();
   const { targetId } = await send("Target.createTarget", { url: "about:blank" });
   const { sessionId } = await send("Target.attachToTarget", { targetId, flatten: true });
   const S = (m: string, p: any = {}) => send(m, p, sessionId);
   await S("Runtime.enable");
-  const dataUrls = tiles.map((t) => `data:image/png;base64,${t.toString("base64")}`);
+  const payload = tiles.map((t) => ({
+    url: `data:image/png;base64,${t.buf.toString("base64")}`,
+    cropTop: t.cropTop,
+  }));
   const { result } = await S("Runtime.evaluate", {
     awaitPromise: true,
     returnByValue: true,
     expression: `(async () => {
-      const urls = ${JSON.stringify(dataUrls)};
-      const imgs = await Promise.all(urls.map((u) => new Promise((res) => {
-        const i = new Image(); i.onload = () => res(i); i.src = u;
+      const tiles = ${JSON.stringify(payload)};
+      const imgs = await Promise.all(tiles.map((t) => new Promise((res) => {
+        const i = new Image(); i.onload = () => res(i); i.src = t.url;
       })));
       const c = document.createElement('canvas');
       c.width = ${width};
-      c.height = imgs.reduce((s, i) => s + i.height, 0);
+      c.height = ${height};
       const ctx = c.getContext('2d');
       let y = 0;
-      for (const i of imgs) { ctx.drawImage(i, 0, y); y += i.height; }
+      imgs.forEach((img, n) => {
+        const top = tiles[n].cropTop;
+        const h = Math.min(img.height - top, ${height} - y);
+        if (h <= 0) return;
+        ctx.drawImage(img, 0, top, img.width, h, 0, y, img.width, h);
+        y += h;
+      });
       return c.toDataURL('image/png').split(',')[1];
     })()`,
   });

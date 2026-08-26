@@ -1543,3 +1543,324 @@ Frozen plumbing, the product/cart/checkout proxy paths, `CheckoutForm`, every
   loading before consent.
 - The mock and the CDP check script still live in a scratchpad, not in git.
   Worth moving into the repo before the next account batch.
+
+# BR-11 — client revision round (2026-08-26)
+
+Date: 2026-08-26 · Branch: `main` · Commits: `8095f49`…`a8aa1c5`
+
+Sander reviewed v1 on the preview and sent ten changes plus the **official
+logo**. Most of this batch is his call being carried out; two items are ours to
+explain, and they are first.
+
+---
+
+## ⛔ Root cause: the mobile menu was not "transparent", it was 72px tall
+
+What he saw on a phone: open the hamburger after scrolling and the menu links
+float over the page with no background behind them.
+
+`backdrop-filter` with **any value other than `none`** makes an element a
+**containing block for its fixed descendants**. The header takes
+`blur(12px)` once the page scrolls past 8px (`Header.tsx`, the `scrolled`
+state), and the "full-screen" menu was a `fixed inset-0` **child of that
+header**. So `inset-0` resolved against the 72px header box, not the viewport.
+
+Measured over CDP at 390×844, scrolled to y=400, before the fix:
+
+```
+scrollY 400   header backdrop-filter "blur(12px)"
+menu   getBoundingClientRect -> 390 x 72     <-- the header's box
+header getBoundingClientRect -> 390 x 73
+```
+
+and after:
+
+```
+menu   getBoundingClientRect -> 390 x 844    <-- the viewport
+header backdrop-filter while menuOpen -> "none"
+```
+
+The black ground covered only the bar; everything below it was the menu's own
+text painted over the page, because nothing clips overflow there.
+
+Repro kept: `docs/screens/BR-11/mobile-menu-scrolled-390-BEFORE.png` (the bug)
+next to `mobile-menu-scrolled-390.png` (fixed).
+
+**Fix:** the menu is rendered through `createPortal(…, document.body)`. Belt and
+braces, the header also drops its `backdrop-filter` while `menuOpen`, so in that
+state it is not a containing block at all.
+
+**Standing rule, now in CLAUDE.md:** never nest a fixed overlay inside the
+header. The desktop search bar and the Shop dropdown are `absolute` and
+deliberately **not** portalled — they *want* the header as their containing
+block. Regression-checked at 1280 scrolled to 600: dropdown `top=65` under the
+nav, search input `top=89` inside the expanded header.
+
+---
+
+## The logo: a client decision that overrules BR-2.1
+
+BR-2.1 deliberately demoted the wordmark to a flat logotype, on the recorded
+grounds that *"a logo has to read as print at 18px"*: no outline, no bloom,
+`logotype-*` instead of `neon-text-*`. Sander's official mark is a fully-glowing
+neon lockup. **He overrules that judgement.** It is a decision, not a
+regression, and it costs three things worth naming:
+
+1. **The glow no longer tracks `--glow-scale`.** It is baked into the raster,
+   exactly like `shh-kid-figure.png` and `rifle-blue.png`. Turning
+   `--glow-scale` now moves everything except the hero art, the banner art and
+   the logo.
+2. **"NEW YORK" is deleted.** The official lockup says **WORLDWIDE**; a city
+   line contradicts it. `showCity` survives as a no-op so call sites compile.
+3. **There is no pink set.** `tone="pink"` therefore still renders the *drawn*
+   SVG monogram, which is the 18+ gate and nothing else. `neon_alpha.py` is
+   committed next to `docs/brand/logo-pink.jpg` — one run produces it.
+
+`Wordmark` and `Monogram` are now thin `<img>` wrappers that keep the old prop
+API, so every call site swapped without a change of its own. `size` still means
+what it meant (cap height of BENNY RICH; ring diameter for the monogram) and is
+scaled off the delivered crops — cap 90/317 of the lockup, ring 101/136 of the
+monogram. Omit `size` and a height class in `className` governs instead, which
+is the only way to get a responsive height like the footer's `h-32 md:h-40`.
+
+One consequence: `Monogram`'s **blue** branch now has zero call sites, because
+the header's two uses became wordmarks and `Wordmark` no longer composes it. It
+is kept because the brief asked for the prop API to survive.
+
+---
+
+## Splash screen
+
+New `src/components/site/SplashScreen.tsx`, mounted once in `SiteLayout` at
+`z-[100]` — above header `z-40`, cart drawer `z-50`, cookie banner `z-[55]` and
+the 18+ gate `z-[60]`.
+
+(Zona Dorata had a `SplashScreen`; BR-2 stripped it. This shares the name and
+nothing else — it is our own component, no runtime dependency.)
+
+- Artwork is **`shh-kid-full.png`**, derived to
+  `public/hero/shh-kid-splash.png`: downscaled to 704×900 and pngquant'd from
+  **1.2 MB to 201 KB**, because a first-paint overlay must not carry 1.2 MB.
+  The original is untouched.
+- Sized as a poster, not a badge — `h-[48vh]`, `md:h-[58vh] max-h-[680px]`,
+  `max-w-[86vw]` — so the wordmark and tagline inside the artwork stay readable.
+- Session key **`br_splash_shown`**, read in an effect inside `try/catch`. In
+  private mode it is treated as already shown rather than reappearing on every
+  navigation.
+- Phases `pending → in → hold → out → done`. The fade in starts on the image's
+  own `load`, **floored at 500ms and capped at 1500ms**, both measured from
+  mount: the floor keeps it a beat rather than a flicker, the cap means a slow
+  connection never stares at empty black and a failed image cannot stall it.
+  Holds 2000ms, fades out over 1000ms, unmounts on `transitionend`.
+
+Measured frame by frame at 1280 — 404 rAF samples from document start:
+
+```
+first rendered      857 ms   (after hydration)
+full opacity       2270 ms   (= mount + 500 floor + 1000 fade)
+unmounted          4355 ms   (= hold 2000 + fade 1000)
+max opacity          1.00
+```
+
+- **`pending` renders nothing and is where every mount starts.** `SiteLayout`
+  remounts on every client navigation, so reading the session key only in an
+  effect without that gate would flash the overlay black for a frame on every
+  route change. Asserted with a rAF sampler plus a `MutationObserver` across a
+  click through to `/collections`: `flashedOnNavigation=false`.
+- X and Escape both skip; the body scroll lock is released either way.
+- Under `prefers-reduced-motion: reduce` it never renders a single frame
+  (`everRendered=false`) and does not even claim the session key. Matched **by
+  name** through `matchMedia`, not left to the global duration crush in
+  `tokens.css`.
+
+**Two design-system consequences, both accepted:** the 1000ms fade is the second
+sanctioned motion exception after the header's frosted ground, and while the
+splash is up it — not the hero figure — is the LCP element. Client decision,
+matching Mancini Milano.
+
+---
+
+## Vodka section
+
+`VodkaSpotlight`, between the featured grid and the "Built different" banner.
+Blue is the one accent: a beverage is not a sale, so nothing here is pink.
+
+**The claims are Sander's and nothing more.** "Belgian by origin" is what he
+said. There is deliberately no distillery, no "craft" and no "triple-distilled",
+because nobody has told us any of that is true.
+
+The bottle sits in a `.br-media-contain` well — the second on the site after the
+large product-detail image, and for the same reason: a bottle cropped at the
+shoulders is not a bottle.
+
+State is driven by `isPurchasable()`, so the excise decision flips this section
+for free. Proved by temporarily emptying `NOT_PURCHASABLE` and reverting:
+
+```
+NOT_PURCHASABLE holds it   comingSoon=true   price=absent  cta="Discover the bottle"
+slug removed (temporary)   comingSoon=false  price=shown   cta="Shop the bottle"
+```
+
+**No price while it cannot be bought** — the excise decision may move it and a
+number here would be a promise we cannot keep.
+
+Proved again with the mock stopped entirely: `rendered=true`, full copy, CTA
+intact. Every word is static; the only thing the API contributes is the price.
+The image resolves to `/products/vodka-blue.jpg` — the API's `featured_image` is
+a bucket URL that 404s and `ProductImage` walks past it.
+
+---
+
+## OG image
+
+`public/hero/og-image.jpg` still paired the shh-kid with the **old text**
+wordmark, so every link shared from the site previewed a logo the brand no
+longer uses. Rebuilt at 1200×630 with the same composition and
+`logo-lockup-blue.png` in place of the type — 73 KB, and it now says WORLDWIDE
+like everything else.
+
+Rendered from a scratch HTML over `file://` with both images inlined as data
+URIs: **no dev server, no mock, no SellQo call**, so a fixture change in
+`tools/mock` can never break the share image. Captured at **DPR 1**, because an
+OG image is 1200×630 actual pixels and a 2× capture would be the wrong size.
+
+Same path, so `src/lib/site.ts` and every route are untouched. Verified in the
+SSR head of `/`: exactly one `og:image`, absolute, plus matching
+`twitter:image` and `og:image:width/height` 1200/630.
+
+---
+
+## Favicons — source resolution, and what it costs
+
+The seven files are drop-in replacements under the same filenames, so
+`__root.tsx` needed no change and got none. Every link in the head resolves
+(all 200), declared sizes match the files, and the `.ico` still carries all
+three directory entries (16/32/48) exactly as the old one did.
+
+Two honest downgrades, both following from the source being a **WhatsApp JPEG**:
+
+- `favicon.svg` is no longer a real vector. It is a ~60 KB SVG **wrapper around
+  a 192px raster**, where the old one was an 814-byte drawn path. Sharper at the
+  sizes that matter, heavier, and it will not scale past 192.
+- `android-chrome-512.png` is a **5× upscale of a ~100px source** and is soft.
+
+Both are fixed by one thing: the original vector. See open questions.
+
+---
+
+## Screenshot capture — a seventh trap
+
+BR-4 recorded four, BR-5 a fifth, BR-6 a sixth. Add:
+
+**Never pass `captureBeyondViewport: true` together with a `clip`.** It makes
+Chrome re-lay-out the page at the full content size, which changes the layout
+width — so a clip of the emulated viewport width then shows only the **left
+slice** of a page that is now wider, and every full-page capture comes back
+cropped down the right-hand edge. Both `home-1280` and `home-390` were captured
+wrong before this was spotted. `tools/screens/capture.ts` now scrolls and
+captures the plain viewport per tile, pins the last tile to the bottom of the
+page and crops the overlap when stitching.
+
+## The mock and the capture script are in git now
+
+BR-10's own open items said both "still live in a scratchpad, not in git", and
+they had indeed been lost. Rebuilt and committed as `tools/mock/` and
+`tools/screens/` — dev-only, outside `src/`, no runtime dependency.
+
+The fixtures reproduce the two live traps **on purpose**, or they would prove
+nothing: `featured_image` points at a bucket URL that 404s, so `ProductImage`
+actually walks on to `/products/<slug>-<colour>.jpg`; and variants carry
+`attribute_values` only, so `normalizeCart` still cannot label a cart line and
+`cart-labels.ts` is still doing real work.
+
+## Verification
+
+`bun run build` and `bunx tsc --noEmit` green before every push.
+
+```
+grep -rn 'hello@|instagram.com/bennyrich"|Five worlds|New York' src/   -> 0 hits
+grep -ri aceternity src/                                              -> 0 hits
+git diff e0ed189 -- <the five frozen paths> src/integrations/          -> empty
+```
+
+`src/lib/sellqo.functions.ts` was not touched at all this batch — there is no
+proxy work in BR-11.
+
+Behaviour asserted headlessly rather than eyeballed:
+
+```
+DESKTOP  hasToggle=true openedOnClick=true closedOnEscape=true
+         reopened=true closedOnOutside=true
+         rows=[All products, Apparel, Accessories, Home, Lighting, Beverages]
+MOBILE   collapsedByDefault=true expanded=true collapsesAgain=true
+         rows=[All products, Apparel, Accessories, Home, Lighting, Beverages]
+SPLASH   flashedOnNavigation=false  closedByX=true  closedByEscape=true
+         reduced-motion everRendered=false
+VODKA    api-down rendered=true; NOT_PURCHASABLE toggle flips both branches
+CONTACT  mailto -> info@bennyrich.com; IG -> instagram.com/bennyrichstore
+         Organization sameAs -> profile URLs only, never the mailto
+```
+
+Screenshots in `docs/screens/BR-11/` (nine, plus the before-repro).
+
+## Deviations from the brief
+
+1. **`mancini-milano/src/components/SplashScreen.tsx` is not on this machine** —
+   only `bennyrich` and `sellqo` are under `~/Projects`. The splash was built to
+   the timings and behaviour the brief specifies rather than ported line by
+   line.
+2. **The desktop "click/tap toggle" is on the chevron, not the label.** Making
+   the "Shop" link itself toggle would have removed the direct route to `/shop`
+   from the nav. The chevron is a real button beside it, and "All products" is
+   the same destination one row inside the open menu — which is what that row is
+   for.
+3. **The vodka section takes `productCover(product)`, not
+   `product.featured_image`.** `featured_image` is a `SellqoImage`, not a
+   string; `ProductImage` takes a string. Same value, correct type.
+4. **No hand-written `<link rel="preload">` for the splash art.** The brief
+   allowed either that or `fetchPriority="high"`; a preload in `__root` would
+   cost every visitor 200 KB on every page, including the sessions where the
+   splash never shows. `fetchPriority="high"` plus the `onLoad` gate does the
+   job, and BR-4 already recorded that a hand-written preload fights React 19's
+   own.
+
+## Not touched
+
+Frozen plumbing, `sellqo.functions.ts`, the product/cart/checkout paths,
+`CheckoutForm`, every account screen, `routeTree.gen.ts`.
+
+## Open questions for Sander
+
+1. **The TikTok handle.** `https://tiktok.com/@bennyrich` is in the footer and
+   in the Organization `sameAs`, unverified, and he did not mention it. It is
+   deliberately left exactly as it was and **not** promoted to a constant in
+   `src/lib/site.ts` — confirm it, correct it, or drop it.
+2. **The original logo file.** The set was extracted from a WhatsApp JPEG. An
+   AI/SVG/EPS would make `favicon.svg` a real vector again and stop the 512
+   icon being a 5× upscale. Nothing else changes.
+3. **The "shhh shield" is a guess.** None of `shh-kid-full.png`,
+   `shh-kid-figure.png` or `shh-kid-ticket.png` is shield- or crest-shaped.
+   `shh-kid-full` was chosen as the closest thing to a crest — figure, BR ring,
+   wordmark and tagline in one stack. If he meant something else, it is one
+   constant in `SplashScreen.tsx`.
+4. **Responsible-drinking wording on the vodka section.** It currently carries
+   "18+ · Enjoy responsibly." Belgian rules on alcohol advertising may want more
+   than that, and it is his risk to price.
+5. **The e-mail "variants".** Mail infrastructure, not this repo: `info@` is
+   wired up here, but whether `info@`, `orders@` and `press@` exist and where
+   they land is a DNS/mailbox question.
+6. **A pink logo set** whenever he wants the 18+ gate to stop being the last
+   drawn SVG on the site. One run of `docs/brand/tools/neon_alpha.py` over
+   `docs/brand/logo-pink.jpg`.
+
+## Carried forward, still open
+
+- **Ad safety:** the rifle is still on the "Built different" banner at his
+  documented request. Unchanged by this batch; the exposure written up in BR-2.1
+  stands.
+- **Vodka accijns** blocks purchase. `NOT_PURCHASABLE` holds it; deleting the
+  slug now flips the product page *and* the new homepage section.
+- **Akke:** the DB image-URL reconcile to the Supabase bucket; `SITE_URL` still
+  points at the Lovable preview; live end-to-end account pass against real core.
+- `br-sunglasses` still has no image. BR-7's reshoot list stands. Sitemap still
+  has no product URLs. Google Fonts still load before consent.

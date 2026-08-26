@@ -11,6 +11,11 @@ storefront; all of that brand's assets, routes and copy were stripped in BR-2.
   live in `src/styles/tokens.css`.
 - **shadcn/ui** primitives in `src/components/ui/` (radius forced to 2px)
 - **bun** for install/dev/build. `bun run build` must be green before pushing.
+- **`tools/`** is the dev harness, outside `src/` and shipped to nobody:
+  `tools/mock/` is a local SellQo storefront-api on `:8788` (see _Local
+  development_ below) and `tools/screens/` is the CDP screenshot capture. Both
+  were rebuilt and committed in BR-11 after living in a scratchpad and being
+  lost twice.
 - Deployed through **Lovable** (project `2abe3881`). Commits pushed to `main`
   sync back into the Lovable editor, so keep `main` in a working state and
   never rewrite pushed history.
@@ -52,6 +57,15 @@ Also:
   importing the frozen one and rendering `89,99 €` on the money-facing steps;
   if you add a page that shows a price, check the import.)
 - Work on `main`, commit per step.
+
+> **Never nest a fixed overlay inside the header.** `backdrop-filter` with any
+> value but `none` makes an element a containing block for its fixed
+> descendants, and the header takes `blur(12px)` once the page scrolls past 8px.
+> The mobile menu was a `fixed inset-0` child of it and measured 390×72 instead
+> of 390×844 — that was BR-11's "transparent menu" bug. It is portalled to
+> `document.body` now. The desktop search bar and Shop dropdown are `absolute`
+> and deliberately **not** portalled: they want the header as their containing
+> block.
 
 ## Customer accounts (the second edge function)
 
@@ -121,15 +135,27 @@ Convenience hooks wrapping the common reads live in `src/lib/use-sellqo.ts`
 (`useProducts`, `useCategories`, `pickFeatured`).
 
 **Local development:** the API key is a Cloud secret, so a plain `bun run dev`
-cannot reach SellQo. To exercise the storefront locally, point the proxy at a
-local mock:
+cannot reach SellQo. The mock is in the repo since BR-11 — run it, then point
+the proxy at it:
 
 ```
-SELLQO_API_KEY=mock SELLQO_TENANT_ID=<tenant> \
+bun tools/mock/server.ts                       # storefront-api on :8788
+
+SELLQO_API_KEY=mock SELLQO_TENANT_ID=mock \
 SELLQO_API_URL=http://localhost:8788/functions/v1/storefront-api bun run dev
 ```
 
 (The proxy only accepts a URL containing `/functions/v1/storefront-api`.)
+
+The fixtures in `tools/mock/fixtures.ts` reproduce two live traps **on purpose**
+— take them out and the mock stops proving anything: `featured_image` points at
+a bucket URL that 404s, which is what makes `<ProductImage>` walk on to
+`/products/<slug>-<colour>.jpg`; and variants carry `attribute_values` only, so
+`normalizeCart` still returns `variant_label: null` and `cart-labels.ts` is
+still doing real work.
+
+Screenshots come from `bun tools/screens/capture.ts` against that pair. It
+carries seven hard-won capture traps in comments; read them before changing it.
 
 ## Design system
 
@@ -231,9 +257,18 @@ never uses a filled button.
 
 Only opacity/glow transitions, 200ms. Hover lift never exceeds 2px. Radius maxes
 out at 2px (shadcn's `rounded-lg` defaults are overridden in `styles.css`).
-**Nothing pulses** — the neon is steady and no glow is ever animated. The header
-is the one exception to "no movement": it picks up a `blur(12px)` frosted ground
-once the page scrolls past 8px. `prefers-reduced-motion` switches transitions off.
+**Nothing pulses** — the neon is steady and no glow is ever animated.
+
+Two sanctioned exceptions to "no movement", and only two:
+
+1. the header picks up a `blur(12px)` frosted ground once the page scrolls past
+   8px; and
+2. the **splash screen**'s 1000ms fade (BR-11, client decision). While it is up
+   it — not the hero figure — is the LCP element.
+
+`prefers-reduced-motion` switches transitions off, and anything with a named
+animation must also switch itself off by name rather than rely on the global
+duration crush in `tokens.css`.
 
 ## Product images: the local fallback convention
 
@@ -277,13 +312,61 @@ The raw seed bundle (`seed/`) is gitignored; only `public/products/` and
 
 ## Brand artwork
 
-`public/hero/` holds the real artwork, transparent PNGs that carry their own
-glow — so they take **no** `neon-glow-*` filter on top. Two are wired up:
+### The logo (`public/brand/`) — official, and a raster
 
-- `shh-kid-figure.png` (787×872) — the homepage hero. It is the LCP element, so
-  it carries `fetchPriority="high"`; React 19 hoists its own
-  `<link rel="preload" as="image">` from that, and adding one by hand only
-  duplicates it at a lower priority.
+Since BR-11 the wordmark and monogram are the client's **official neon render**,
+not type set in Bodoni Moda. Four transparent PNGs, each carrying its own glow:
+
+| File                               | Pixels  | Used for                                         |
+| ---------------------------------- | ------- | ------------------------------------------------ |
+| `logo-lockup-blue.png`             | 775×317 | `Wordmark layout="stacked"` — footer, 404, OG    |
+| `logo-wordmark-blue.png`           | 775×117 | `Wordmark layout="inline"` — header, mobile menu |
+| `logo-wordmark-worldwide-blue.png` | 775×181 | reserve, not wired up                            |
+| `logo-monogram-blue.png`           | 157×136 | `Monogram` (ring ≈101px inside the crop)         |
+
+`Wordmark.tsx` and `Monogram.tsx` are thin `<img>` wrappers that keep the old
+prop API, so call sites did not change. Rules that come with them:
+
+- **No `logotype-*` or `neon-glow-*` class on the image.** The glow is in the
+  raster; a filter on top double-lights it.
+- **The logo no longer tracks `--glow-scale`** — same accepted cost as the hero
+  and banner art below.
+- `size` means the **cap height of BENNY RICH** (ring diameter for the
+  monogram), scaled off the crops. Omit `size` and a height class in `className`
+  governs instead — the only way to get a responsive height like the footer's
+  `h-32 md:h-40`.
+- **There is no "New York".** The official lockup says **WORLDWIDE**. `showCity`
+  survives as a no-op so old call sites compile; do not resurrect a city line.
+- **There is no pink set yet**, so `tone="pink"` still renders the _drawn_ SVG
+  monogram — the 18+ gate is its only caller. Producing one is a single run of
+  `docs/brand/tools/neon_alpha.py` over `docs/brand/logo-pink.jpg`, after which
+  that branch can go.
+
+BR-2.1 deliberately demoted the wordmark to a flat logotype ("a logo has to read
+as print at 18px"). **The client overrules that with his official mark.** It is
+a recorded decision, not a regression — see `docs/role-audit.md`, BR-11.
+
+### Favicons
+
+Derived from the official monogram on `#050505`, same seven filenames as before,
+so `__root.tsx` needs no change. Two things to know: `favicon.svg` is **not a
+vector** — it is a ~60KB SVG wrapper around a 192px raster — and
+`android-chrome-512.png` is a 5× upscale of a ~100px source, so it is soft. Both
+follow from the source being a WhatsApp JPEG; the original vector is an open
+question for Sander.
+
+### The hero and banner art
+
+`public/hero/` holds the photographic-scale artwork, transparent PNGs that
+likewise carry their own glow and take **no** `neon-glow-*` filter:
+
+- `shh-kid-figure.png` (787×872) — the homepage hero. It is the LCP element
+  once the splash is gone, so it carries `fetchPriority="high"`; React 19 hoists
+  its own `<link rel="preload" as="image">` from that, and adding one by hand
+  only duplicates it at a lower priority.
+- `shh-kid-splash.png` (704×900, 201KB) — the splash artwork, **derived** from
+  `shh-kid-full.png` by downscaling and pngquant. The 1.2MB original is
+  committed and untouched; do not point the splash at it.
 - `rifle-blue.png` (1400×798) — the "Built different" banner. It replaced
   `panther-blue.png` at Sander's request. **No radial mask**: unlike every
   earlier banner image this one is genuinely transparent (51% fully clear, all
@@ -294,10 +377,9 @@ glow — so they take **no** `neon-glow-*` filter on top. Two are wired up:
   before pointing paid social at `/`.**
 - `panther-blue.png` (706×624) — the previous banner artwork, still committed
   and unused.
+- `shh-kid-full.png` (source for the splash) and `shh-kid-ticket.png` (unused).
 
-`shh-kid-full.png` and `shh-kid-ticket.png` are committed but unused.
-
-Because the glow is baked into the raster, **these two elements no longer track
+Because the glow is baked into the raster, **none of these track
 `--glow-scale`.** That is the accepted cost of real art over line art.
 
 ### The line art, parked
@@ -315,6 +397,20 @@ real and is written up in `docs/role-audit.md`; it was accepted, not overlooked.
 
 To bring any of the three back on a product page, import it the way the panther
 used to be imported in `src/routes/index.tsx`.
+
+## Splash screen
+
+`SplashScreen.tsx` shows the shh-kid crest once per browser session
+(`sessionStorage`, key `br_splash_shown`), mounted in `SiteLayout` at `z-[100]`
+— above the header (`z-40`), cart drawer (`z-50`), cookie banner (`z-[55]`) and
+the 18+ gate (`z-[60]`).
+
+Phases `pending → in → hold → out → done`. The fade in starts on the image's own
+`load`, floored at 500ms and capped at 1500ms from mount; it holds 2000ms and
+fades out over 1000ms. **`pending` renders nothing and every mount starts there**
+— `SiteLayout` remounts on every client navigation, so without that gate the
+overlay flashes black for a frame on every route change. X and Escape skip it.
+`prefers-reduced-motion` skips it entirely, matched by name via `matchMedia`.
 
 ## Age gate
 
@@ -418,16 +514,17 @@ omits the field, and the banner would then nag about an email nobody sent.
 
 ## Batch log
 
-| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                               |
-| ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                          |
-| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                                 |
-| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                                   |
-| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                                    |
-| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter.      |
-| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                        |
-| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                           |
-| BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep. |
-| BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                |
-| BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                  |
-| BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                |
+| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                                                                                                                                                  |
+| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                                                                                                                                                         |
+| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                                                                                                                                                           |
+| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                                                                                                                                                            |
+| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter.                                                                                                                              |
+| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                                                                                                                                                |
+| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                                                                                                                                                   |
+| BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep.                                                                                                                         |
+| BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                                                                                                                                        |
+| BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                                                                                                                                          |
+| BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                                                                                                                                       |
+| BR-11  | 2026-08-26 | Client revision round: the official neon logo everywhere (BR-2.1's flat logotype overruled by the client, "New York" dropped for WORLDWIDE), the mobile menu portalled out of the header to fix a `backdrop-filter` containing-block bug, a Shop accordion and a clickable desktop dropdown, the splash screen, the "Born in Belgium" vodka section, a regenerated OG image and favicons, and the mock + capture harness finally committed under `tools/`. |
