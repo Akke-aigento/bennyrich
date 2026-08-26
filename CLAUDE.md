@@ -50,6 +50,16 @@ Also:
   `sellqoProxy`.
 - **Never recompute prices client-side.** Render exactly what the API returns —
   the cart response is the single source of truth.
+- **Categories are categories.** Never dress them up as anything grander — the
+  client was explicit about this in BR-12 after the word appeared on
+  `/collections`. `grep -rni "worlds\|werelden" src/` stays at 0.
+- **No unverifiable claims, anywhere.** No shipping, delivery or returns
+  promises; no "secure checkout" or payment badges; no ratings, reviews or
+  testimonials; no "new arrivals". Each of those is currently false: the tenant
+  has zero active shipping methods, `stripe_charges_enabled = false`, there are
+  no reviews, and every product was bulk-imported on the same two days. When
+  shipping and Stripe go live, a value strip with **true** numbers becomes a
+  short follow-up — see `docs/role-audit.md`, BR-12.
 - **English only. EUR. nl-BE formatting** — comma decimals, symbol tight:
   `€69,99`. Use `formatEUR` from `src/lib/format.ts`.
   (`src/lib/sellqo.ts` also exports a `formatEUR`, but it is frozen and formats
@@ -412,6 +422,43 @@ fades out over 1000ms. **`pending` renders nothing and every mount starts there*
 overlay flashes black for a frame on every route change. X and Escape skip it.
 `prefers-reduced-motion` skips it entirely, matched by name via `matchMedia`.
 
+## The homepage flag (`HOME_V2`)
+
+`HOME_V2` in `src/lib/site.ts` gates the entire BR-12 homepage:
+
+```
+true  -> Hero, CategoryTiles, FeaturedCollection, ShopTheRange,
+         VodkaSpotlight, BrandStatement, BuiltDifferentBanner
+false -> Hero, FeaturedCollection, VodkaSpotlight, BuiltDifferentBanner
+```
+
+It exists because the rebuilt homepage is a **go/no-go on the client's taste**,
+not a refactor: rejecting it has to be one line, not five reverts.
+
+> **The `false` arm renders the ORIGINAL components and BR-12 edited none of
+> them.** `Hero`, `FeaturedCollection`, `VodkaSpotlight` and
+> `BuiltDifferentBanner` must stay untouched — the moment one is "tidied up",
+> flipping the flag no longer restores what the client last approved and the
+> escape hatch is worth nothing. If you need to change one, copy it.
+
+Accepting the new homepage means deleting the flag and the `HomeV1` branch in
+`src/routes/index.tsx`, not leaving both arms to rot.
+
+`src/lib/home-data.ts` (`useCategoryProducts`) holds the per-category product
+fan-out the new sections share. Its query key is **deliberately identical** to
+the one `FeaturedCollection` inlines, so React Query serves all of them from one
+cache entry and the page still makes five requests, not fifteen.
+`FeaturedCollection` does not import it, for the reason above.
+
+### Category tiles and category art
+
+`CategoryTiles` resolves a tile cover as `category.image_url` first, then the
+first product in that category with artwork. Every BennyRich category currently
+has `image_url = NULL`, so today every tile is product-derived — **uploading
+category images in the admin is a zero-code upgrade.** A category with no
+artwork at all renders its name on a plain ink ground and still links; an empty
+image well is worse than no image.
+
 ## Age gate
 
 Products in the `beverages` category show an 18+ interstitial before the
@@ -528,3 +575,4 @@ omits the field, and the banner would then nag about an email nobody sent.
 | BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                                                                                                                                          |
 | BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                                                                                                                                       |
 | BR-11  | 2026-08-26 | Client revision round: the official neon logo everywhere (BR-2.1's flat logotype overruled by the client, "New York" dropped for WORLDWIDE), the mobile menu portalled out of the header to fix a `backdrop-filter` containing-block bug, a Shop accordion and a clickable desktop dropdown, the splash screen, the "Born in Belgium" vodka section, a regenerated OG image and favicons, and the mock + capture harness finally committed under `tools/`. |
+| BR-12  | 2026-08-26 | Revision round 2. To `main`: TikTok removed sitewide, `info@` confirmed as the only address, and the vodka's 18+ gate proved to already fire (no second modal built). Behind `HOME_V2` on `br-12-home`: category tiles, a second product row that cannot repeat the first, and a claim-free brand statement. The mock was corrected against the real edge-function contract.                                                                               |

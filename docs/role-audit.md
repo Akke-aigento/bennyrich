@@ -1864,3 +1864,254 @@ Frozen plumbing, `sellqo.functions.ts`, the product/cart/checkout paths,
   points at the Lovable preview; live end-to-end account pass against real core.
 - `br-sunglasses` still has no image. BR-7's reshoot list stands. Sitemap still
   has no product URLs. Google Fonts still load before consent.
+
+# BR-12 — homepage fill + revision round 2 (2026-08-26)
+
+Date: 2026-08-26 · `main`: `869fb6c`…`662f819` · branch `br-12-home`:
+`3bd43bd`…`50c0bd3` (**not merged**)
+
+Two kinds of work, deliberately kept apart. Three corrections Sander has already
+approved went straight to `main`. The homepage rebuild is a bet on his taste, so
+it sits on a branch, behind one flag, and comes back out in one move.
+
+---
+
+## The reversal mechanism, and why it exists
+
+The new homepage is a **go/no-go**, not a refactor. He may love it or reject it
+wholesale, and "reject it" must not mean unpicking five commits.
+
+`HOME_V2` in `src/lib/site.ts`:
+
+```
+true  -> Hero, CategoryTiles, FeaturedCollection, ShopTheRange,
+         VodkaSpotlight, BrandStatement, BuiltDifferentBanner
+false -> Hero, FeaturedCollection, VodkaSpotlight, BuiltDifferentBanner
+```
+
+**The `false` arm renders the ORIGINAL components, and BR-12 does not edit any
+of them.** That is the whole point, and it is written into both `site.ts` and
+`index.tsx`: the moment one of them gets "tidied up", flipping the flag stops
+restoring what the client last approved. Proved rather than asserted:
+
+```
+VodkaSpotlight.tsx                     blob IDENTICAL to 9f37a883
+Hero / FeaturedCollection / BuiltDifferentBanner   function bodies unchanged
+HOME_V2=false  section order -> Featured Collection, Born in Belgium,
+                                Built different       (nothing else)
+home-v1-1280.png   2560x6544  — the same pixel dimensions as BR-11's home-1280
+```
+
+The flag was committed **first**, before anything was built on it, so the diff
+for every later step is legible: everything that appears in `HomeV2` from that
+commit on is new.
+
+---
+
+## The real API contract — read from source, and it moved twice
+
+`~/Projects/sellqo/supabase/functions/storefront-api/index.ts` is on this
+machine. Reading it instead of guessing corrected **three** assumptions, two of
+which were in my own BR-11 mock:
+
+| | What live actually does |
+| --- | --- |
+| `get_categories` (index.ts:281) | returns a **bare array**, ordered by `sort_order`; `image_url` **is** in the contract; `sort_order` itself is not in the payload |
+| `get_products` items (index.ts:658) | `images: TEXT[]` — plain URL **strings** — and **no `featured_image` field at all** |
+| `get_product` / list items (index.ts:485, 673) | carry `category: {id,name,slug}` singular |
+
+Consequences that changed the work:
+
+1. **The brief said the tiles should use the first product's `featured_image`.
+   That field does not exist on live.** They use `productCover()`, which falls
+   through `featured_image ?? images[0]`. Nothing had to change in the frozen
+   helpers — they were written defensively in BR-5/BR-7 and that is why nothing
+   was broken by this all along.
+2. **The 18+ gate was already wired.** See below.
+3. `CATEGORIES` in `src/lib/categories.ts` has no `sort_order` field — it is a
+   hand-fixed array and its order already is the order the brief asked for.
+
+`tools/mock/` now mirrors all three. It also keeps two traps **on purpose**:
+image URLs still 404 (so `ProductImage` really walks to `/products/…`), and
+variants still carry `attribute_values` only (so `cart-labels.ts` is still doing
+real work). Added: a product with `images: []` so the `hasArtwork()` skip is
+exercised, and one category with `image_url` set to a 404ing URL so the tile's
+precedence branch is live code rather than aspiration.
+
+**Per-category counts now match the live catalogue** — apparel 9, accessories 1,
+home 6, lighting 4, beverages 1 = 21 — so the tiles were reviewed against a
+realistic catalogue. **Membership inside a category is a reconstruction** from
+the committed seed images; I can match the composition but not the ordering,
+because which product the API returns first depends on `created_at` and I cannot
+query it. Each tile shows a real product from the right category and beverages
+shows the vodka, but the exact "first" is not guaranteed identical to
+production. One line per category from Akke fixes that and the shots are a
+two-minute re-run.
+
+---
+
+## Straight to `main`
+
+**TikTok is gone** — the `SOCIALS` entry, the hand-drawn glyph component (lucide
+has none, so it was ours), its comment, and the `/contact` link. No constant, no
+placeholder. `__root.tsx` derives `sameAs` from `SOCIALS`, so the structured
+data dropped it on its own: `sameAs -> ['https://www.instagram.com/bennyrichstore']`.
+
+**Email was already correct.** BR-11 routed every occurrence through
+`CONTACT_EMAIL`; the sweep found no email-shaped literal anywhere in `src/` and
+all six surfaces that show an address render exactly `info@bennyrich.com`. A
+verification commit, no code change.
+
+**The 18+ prompt already fired**, and building a second modal would have been
+the wrong answer. Traced first: `get_product` returns `category.slug`,
+`categorySlugsOf` already probes the `category` key, `beverages` is in
+`AGE_RESTRICTED_CATEGORIES`, and `product.$slug.tsx:127-133` mounts the gate off
+exactly that. Proved end to end from a cleared session at 390:
+
+```
+A  ctaHref=/product/br-vodka-700ml  gateCount=1  z=60  heading="18+"  bodyLocked
+B  "I am 18 or older" -> gone, br_age_verified="1", scroll released
+C  navigate away and back, same session -> reGated=false
+```
+
+`gateCount=1` is the assertion that matters. There is one 18+ gate on this site.
+
+---
+
+## Category tiles
+
+Five tiles under the hero, `grid-cols-2 md:grid-cols-5`. They are **categories**
+and nothing grander — the client was explicit, and the word he objected to
+appears nowhere in `src/`.
+
+Cover art resolves `category.image_url` first, then the first product with
+artwork. **All five BennyRich categories have `image_url = NULL` today**, so in
+practice every tile is product-derived. The first branch is not dead code:
+uploading category art in the admin is a **zero-code upgrade** whenever Sander
+wants it, and until then the tiles borrow from the catalogue.
+
+Apparel is the proof the chain works: the mock gives that one category an
+`image_url`, the tile requests it, it 404s like every bucket URL does today, and
+`ProductImage` walks on to `/products/shh-tee-blue.jpg`.
+
+Both degradations proved by breaking the mock on purpose:
+
+```
+every product image removed  -> beverages renders name + link, no <img>, emptyWells=0
+mock stopped entirely        -> all five render names and links, emptyWells=0
+```
+
+An empty image well is worse than no image.
+
+## "Shop the range"
+
+Deliberately **not** framed as newly-arrived stock: every product was
+bulk-imported on 18–19 August, so nothing is newer than anything else and that
+framing would be a lie inside a week.
+
+Selection reuses `pickSpread` and then **subtracts** rather than slicing blind —
+drop what the featured grid shows, drop categories with their own section, take
+four. Subtracting an explicitly-computed set keeps the rows disjoint if the
+catalogue changes shape.
+
+`pickSpread` prefix-stability was asserted rather than read off the source, since
+the naive version of this depended on it:
+
+```
+live-shaped            prefixStable=true disjoint=true
+thin (1 per category)  prefixStable=true disjoint=true  n4=4 n8=5
+one category only      prefixStable=true disjoint=true
+is_featured flag set   prefixStable=true disjoint=true
+fewer than 8 total     prefixStable=true disjoint=true  n8=6
+fewer than 4 total     prefixStable=true disjoint=true  n4=3
+```
+
+**Beverages is excluded because it has a section of its own.** The first cut put
+the vodka in the grid and then again, full-width, two hundred pixels lower —
+caught in the screenshot, not in review. It is also the one product that cannot
+be bought, so a "Coming soon" card under a heading reading "Shop the range" was
+the wrong promise twice over.
+
+`src/lib/home-data.ts` (`useCategoryProducts`) holds the per-category fan-out for
+the three new sections, keyed **identically** to the copy `FeaturedCollection`
+inlines. A full homepage load with three sections reading per-category products
+makes exactly **five** `get_products` calls, one per category, not fifteen.
+`FeaturedCollection` keeps its own copy on purpose — it is one of the four
+components the escape hatch restores and must not be edited by the batch it
+exists to escape. If the keys ever drift the symptom is a doubled request count,
+not a wrong render.
+
+## Brand statement — the honesty calls
+
+The obvious thing in that slot is a benefits strip: free shipping, easy returns,
+secure checkout. **Every one of those would have been inventing a service.**
+
+| Claim not made | The fact that made it a lie |
+| --- | --- |
+| shipping / delivery promises | the tenant has **zero active shipping methods** |
+| "secure checkout", payment badges | `stripe_charges_enabled = false` — Stripe is not live |
+| ratings, reviews, testimonials | there are none |
+| "new arrivals" | every product dated 18–19 Aug (bulk import) |
+
+So the section is a typographic statement with no numbers, no window, no service
+level. The copy is lifted **verbatim** from the existing `/about` body, so it is
+voice the brand already has. No eyebrow — an eyebrow labels a shelf, and this is
+the one beat on the page not selling one.
+
+The rendered page was swept for fifteen claim patterns: **zero hits in `<main>`**.
+
+Two code comments were reworded during the batch because naming a banned phrase
+in a comment trips the very grep that proves it is absent. The reasoning stays
+in the code; the literals live here instead.
+
+## Found, not fixed
+
+`collections.tsx:31` keys its query `{categorySlug, per_page: 1}` but requests
+`per_page: 4`. The key lies about the params, and it is a **different** key from
+`index.tsx:103`'s `per_page: 20`, so `/collections` and `/` refetch the same data
+instead of sharing it. Out of scope for BR-12; worth a line in the next batch.
+
+## Verification
+
+`bun run build` + `bunx tsc --noEmit` green on both branches **and with the flag
+both ways**.
+
+```
+grep -rn "tiktok|TikTok|hello@|worlds|werelden|New arrivals" src/   -> 0 hits
+grep -ri aceternity src/                                            -> 0 hits
+git diff 9f37a883 -- package.json bun.lock                          -> empty
+```
+
+Frozen files, empty diff **and** blob-hash identity (an empty diff alone can also
+mean a mistyped path):
+
+```
+sellqo.ts 5842c2b1cae1 == 5842c2b1cae1     IDENTICAL
+cart-context.tsx / checkout.ts / use-sellqo.ts / sellqo.functions.ts  IDENTICAL
+src/integrations/** — all five files       IDENTICAL
+```
+
+`sellqo.functions.ts` was not touched at all — no proxy work in BR-12.
+
+Screenshots in `docs/screens/BR-12/`: `home-v2-1280`, `home-v2-390`,
+`category-tiles-1280`, `category-tiles-390`, `second-row-1280`,
+`brand-statement-1280`, `vodka-gate-390`, and `home-v1-1280` — the escape hatch
+proved, not asserted.
+
+## Open item
+
+**A real value strip is a short follow-up the day shipping methods are
+configured and Stripe goes live** — and not before. Everything it would need
+(the layout slot, the `quiet-frame` treatment, the section rhythm) is already
+there; only the numbers are missing, and they have to be true.
+
+## Open questions for Sander
+
+1. **Is "Shop the range" the label he wants** for the second product row, or
+   would he rather it read as a continuation of the featured grid?
+2. **Is the brand-statement copy on-voice?** It is his own About copy verbatim,
+   but it is doing a different job on a homepage.
+3. **Shipping and Stripe timeline** — that unblocks the value strip, and it is
+   the last thing standing between this storefront and taking money.
+4. **Category art**: five images in the admin and the tiles stop borrowing from
+   the catalogue. Zero code.
