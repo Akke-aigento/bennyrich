@@ -33,7 +33,7 @@ const CHROME =
 const DEBUG_PORT = Number(process.env.CDP_PORT ?? 9222);
 const DSF = 2;
 
-type Shot = { name: string; url: string; width: number; fullPage: boolean };
+type Shot = { name: string; url: string; width: number; fullPage: boolean; evals: string[] };
 
 function parseArgs(argv: string[]) {
   let out = "docs/screens/tmp";
@@ -42,7 +42,12 @@ function parseArgs(argv: string[]) {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--out") out = argv[++i];
     else if (argv[i] === "--reduced-motion") reducedMotion = true;
-    else if (argv[i] === "--shot") {
+    else if (argv[i] === "--eval") {
+      // Applies to the shot declared immediately before it: JS run after load
+      // and before capture, for states only reachable by interacting (scroll,
+      // open the menu, expand the accordion).
+      shots[shots.length - 1]?.evals.push(argv[++i]);
+    } else if (argv[i] === "--shot") {
       const raw = argv[++i];
       const eq = raw.indexOf("=");
       const name = raw.slice(0, eq);
@@ -60,10 +65,25 @@ function parseArgs(argv: string[]) {
           url = url.slice(0, at);
         }
       }
-      shots.push({ name, url, width, fullPage });
+      shots.push({ name, url, width, fullPage, evals: [] });
     }
   }
   return { out, shots, reducedMotion };
+}
+
+/** Chrome can take several seconds to bind the debugging port; poll, never sleep. */
+async function waitForChrome(timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    try {
+      const r = await fetch(`http://127.0.0.1:${DEBUG_PORT}/json/version`);
+      if (r.ok) return;
+    } catch {
+      /* not up yet */
+    }
+    if (Date.now() > deadline) throw new Error(`Chrome never opened CDP on :${DEBUG_PORT}`);
+    await sleep(250);
+  }
 }
 
 async function cdp() {
@@ -111,7 +131,7 @@ async function main() {
     ],
     { stdio: "ignore" },
   );
-  await sleep(1500);
+  await waitForChrome();
 
   const { send, close } = await cdp();
   const { targetId } = await send("Target.createTarget", { url: "about:blank" });
@@ -133,6 +153,11 @@ async function main() {
     });
     await S("Page.navigate", { url: shot.url });
     await sleep(3500); // fonts, images, the splash's own timeline
+
+    for (const expression of shot.evals) {
+      await S("Runtime.evaluate", { expression, awaitPromise: true });
+      await sleep(600);
+    }
 
     if (!shot.fullPage) {
       const { data } = await S("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });

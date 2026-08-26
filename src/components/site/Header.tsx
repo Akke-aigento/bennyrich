@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import { Monogram } from "@/assets/brand/Monogram";
@@ -64,6 +65,110 @@ export function Header() {
     navigate({ to: "/shop", search: q ? { q } : {} });
   }
 
+  /**
+   * The mobile menu is portalled to <body>, and it has to be.
+   *
+   * It used to be a `fixed inset-0` child of this <header>. Once the page
+   * scrolls past 8px the header takes `backdrop-filter: blur(12px)`, and any
+   * backdrop-filter other than `none` makes an element a CONTAINING BLOCK for
+   * its fixed descendants. `inset-0` then resolved against the 72px header box
+   * instead of the viewport: the menu measured 390x72, its black ground covered
+   * only the bar, and the links spilled down over the page with nothing behind
+   * them. Measured before the fix — getBoundingClientRect() returned exactly the
+   * header's rect. That is the "transparent menu" reported on v1.
+   *
+   * Client-only is safe: this only renders after a tap, so `document` exists.
+   * Never nest a fixed overlay inside the header again.
+   */
+  const mobileMenu =
+    menuOpen && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            className="fixed inset-0 z-50 flex flex-col md:hidden"
+            style={{ background: "var(--br-black)" }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+          >
+            <div
+              className="br-shell flex h-[72px] shrink-0 items-center justify-between border-b"
+              style={{ borderColor: "var(--br-line)" }}
+            >
+              <Monogram tone="blue" intensity="logotype" size={32} />
+              <button
+                type="button"
+                onClick={() => setMenuOpen(false)}
+                aria-label="Close menu"
+                className="-mr-2 inline-flex h-11 w-11 items-center justify-center"
+                style={{ color: "var(--br-white)" }}
+              >
+                <X size={22} strokeWidth={1.5} />
+              </button>
+            </div>
+            <nav className="br-shell flex flex-1 flex-col gap-1 py-10">
+              {NAV.map((item) => (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className="br-nav py-4 text-[15px]"
+                  style={{ color: "var(--br-white)" }}
+                  activeProps={{ className: "br-nav neon-text-blue py-4 text-[15px]" }}
+                  activeOptions={{ exact: item.to === "/" }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--br-line)" }}>
+                {CATEGORIES.map((c) => (
+                  <Link
+                    key={c.slug}
+                    to="/shop"
+                    search={{ category: c.slug }}
+                    className="br-label block py-3"
+                    style={{ color: "var(--br-mute)" }}
+                  >
+                    {c.name}
+                  </Link>
+                ))}
+              </div>
+
+              {/* The account icon is `hidden sm:block`, so without this there is
+                  no way into an account from a phone. */}
+              <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--br-line)" }}>
+                {status === "authed" ? (
+                  <>
+                    <Link
+                      to="/account"
+                      className="br-nav block py-3 text-[15px]"
+                      style={{ color: "var(--br-blue-text)" }}
+                    >
+                      Your account
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => void logout()}
+                      className="br-label block py-3"
+                      style={{ color: "var(--br-mute)" }}
+                    >
+                      Sign out
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    to="/account/login"
+                    className="br-nav block py-3 text-[15px]"
+                    style={{ color: "var(--br-blue-text)" }}
+                  >
+                    Sign in
+                  </Link>
+                )}
+              </div>
+            </nav>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
     <header
       className="sticky top-0 z-40 border-b transition-colors duration-200"
@@ -71,8 +176,12 @@ export function Header() {
         background: scrolled
           ? "color-mix(in srgb, var(--br-black) 82%, transparent)"
           : "var(--br-black)",
-        backdropFilter: scrolled ? "blur(12px)" : undefined,
-        WebkitBackdropFilter: scrolled ? "blur(12px)" : undefined,
+        // Must never be set while the mobile menu is open: `backdrop-filter`
+        // (any value but `none`) makes an element a containing block for its
+        // fixed descendants — see the comment on `mobileMenu` below. The portal
+        // is the real fix; this is the second lock on the same door.
+        backdropFilter: scrolled && !menuOpen ? "blur(12px)" : undefined,
+        WebkitBackdropFilter: scrolled && !menuOpen ? "blur(12px)" : undefined,
         borderColor: "var(--br-line)",
       }}
     >
@@ -285,91 +394,7 @@ export function Header() {
         </div>
       )}
 
-      {/* Mobile full-screen menu */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col md:hidden"
-          style={{ background: "var(--br-black)" }}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Menu"
-        >
-          <div
-            className="br-shell flex h-[72px] shrink-0 items-center justify-between border-b"
-            style={{ borderColor: "var(--br-line)" }}
-          >
-            <Monogram tone="blue" intensity="logotype" size={32} />
-            <button
-              type="button"
-              onClick={() => setMenuOpen(false)}
-              aria-label="Close menu"
-              className="-mr-2 inline-flex h-11 w-11 items-center justify-center"
-              style={{ color: "var(--br-white)" }}
-            >
-              <X size={22} strokeWidth={1.5} />
-            </button>
-          </div>
-          <nav className="br-shell flex flex-1 flex-col gap-1 py-10">
-            {NAV.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className="br-nav py-4 text-[15px]"
-                style={{ color: "var(--br-white)" }}
-                activeProps={{ className: "br-nav neon-text-blue py-4 text-[15px]" }}
-                activeOptions={{ exact: item.to === "/" }}
-              >
-                {item.label}
-              </Link>
-            ))}
-            <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--br-line)" }}>
-              {CATEGORIES.map((c) => (
-                <Link
-                  key={c.slug}
-                  to="/shop"
-                  search={{ category: c.slug }}
-                  className="br-label block py-3"
-                  style={{ color: "var(--br-mute)" }}
-                >
-                  {c.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* The account icon is `hidden sm:block`, so without this there is
-                no way into an account from a phone. */}
-            <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--br-line)" }}>
-              {status === "authed" ? (
-                <>
-                  <Link
-                    to="/account"
-                    className="br-nav block py-3 text-[15px]"
-                    style={{ color: "var(--br-blue-text)" }}
-                  >
-                    Your account
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => void logout()}
-                    className="br-label block py-3"
-                    style={{ color: "var(--br-mute)" }}
-                  >
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/account/login"
-                  className="br-nav block py-3 text-[15px]"
-                  style={{ color: "var(--br-blue-text)" }}
-                >
-                  Sign in
-                </Link>
-              )}
-            </div>
-          </nav>
-        </div>
-      )}
+      {mobileMenu}
     </header>
   );
 }
