@@ -17,7 +17,7 @@
  * Rebuilt in BR-11: BR-9b/BR-10 kept this in a scratchpad and it was lost. It
  * lives in the repo now so the next batch does not pay for it again.
  */
-import { CATEGORIES, PRODUCTS, type MockProduct } from "./fixtures";
+import { CATEGORIES, PRODUCTS, categoryOf, type MockProduct } from "./fixtures";
 
 const PORT = Number(process.env.MOCK_PORT ?? 8788);
 
@@ -45,17 +45,24 @@ function bySlug(slug: string): MockProduct | undefined {
   return PRODUCTS.find((p) => p.slug === slug);
 }
 
-/** The storefront never sees `category_slug`; it is a fixture-only join key. */
+/**
+ * Shape a fixture the way live shapes a product row: `category_slug` is a
+ * fixture-only join key and never leaves the mock; in its place goes the
+ * `category: {id,name,slug}` object the real API attaches. There is
+ * deliberately NO `featured_image` — live has no such field, only `images`.
+ */
 function strip(p: MockProduct) {
-  const { category_slug: _c, ...rest } = p;
-  return rest;
+  const { category_slug, ...rest } = p;
+  return { ...rest, category: categoryOf(category_slug) };
 }
 
 function listProducts(params: Record<string, any>) {
   let out = PRODUCTS;
   const slug = params.category_slug ?? params.category;
   if (slug) out = out.filter((p) => p.category_slug === slug);
-  const search = String(params.query ?? params.search ?? params.q ?? "").trim().toLowerCase();
+  const search = String(params.query ?? params.search ?? params.q ?? "")
+    .trim()
+    .toLowerCase();
   if (search) out = out.filter((p) => p.name.toLowerCase().includes(search));
   const perPage = Number(params.per_page ?? 100);
   const page = Number(params.page ?? 1);
@@ -89,7 +96,6 @@ function cartPayload(cartId: string) {
       // `normalizeCart` produces variant_label: null and cart-labels.ts has to
       // resolve it in presentation.
       variant: variant ? { id: variant.id, attribute_values: variant.attribute_values } : undefined,
-      featured_image: product?.featured_image,
       product: product ? { id: product.id, slug: product.slug, images: product.images } : undefined,
       price,
       quantity: it.quantity,
@@ -137,8 +143,9 @@ function handle(action: string, params: Record<string, any>): Response {
       });
     }
 
+    // Live returns a BARE ARRAY here, not { categories: [...] }.
     case "get_categories":
-      return ok({ categories: CATEGORIES });
+      return ok(CATEGORIES);
 
     case "cart_create":
       return ok(cartPayload(ensureCart().id));
