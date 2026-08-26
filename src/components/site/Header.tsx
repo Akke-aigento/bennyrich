@@ -22,15 +22,18 @@ export function Header() {
   const [shopOpen, setShopOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const [term, setTerm] = useState("");
   const [scrolled, setScrolled] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const shopRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     setMenuOpen(false);
     setShopOpen(false);
+    setMobileShopOpen(false);
     setAccountOpen(false);
     setSearchOpen(false);
   }, [pathname]);
@@ -46,6 +49,30 @@ export function Header() {
   useEffect(() => {
     if (searchOpen) searchRef.current?.focus();
   }, [searchOpen]);
+
+  // Collapsed by default, and re-collapsed each time the menu is opened.
+  useEffect(() => {
+    if (!menuOpen) setMobileShopOpen(false);
+  }, [menuOpen]);
+
+  // The desktop dropdown opens on hover AND on click, so it needs the two ways
+  // out a click-opened menu is expected to have: Escape and a click elsewhere.
+  // `pointerdown` rather than `click` so it closes before the page reacts.
+  useEffect(() => {
+    if (!shopOpen || typeof document === "undefined") return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setShopOpen(false);
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      if (!shopRef.current?.contains(e.target as Node)) setShopOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, [shopOpen]);
 
   // The header is flat black at rest; it only picks up a frosted ground once
   // content is passing underneath it.
@@ -117,18 +144,50 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
+              {/* "Shop" in the list above goes straight to /shop; this is the
+                  way into a single collection without leaving the menu first.
+                  Opacity only, no height animation — nothing on this site
+                  animates a box open. */}
               <div className="mt-6 border-t pt-6" style={{ borderColor: "var(--br-line)" }}>
-                {CATEGORIES.map((c) => (
-                  <Link
-                    key={c.slug}
-                    to="/shop"
-                    search={{ category: c.slug }}
-                    className="br-label block py-3"
-                    style={{ color: "var(--br-mute)" }}
-                  >
-                    {c.name}
-                  </Link>
-                ))}
+                <button
+                  type="button"
+                  onClick={() => setMobileShopOpen((v) => !v)}
+                  aria-expanded={mobileShopOpen}
+                  aria-controls="mobile-shop-list"
+                  className="br-nav flex w-full items-center justify-between py-3 text-[15px]"
+                  style={{ color: "var(--br-white)" }}
+                >
+                  Shop
+                  <ChevronDown
+                    size={16}
+                    strokeWidth={1.5}
+                    aria-hidden
+                    className="transition-transform duration-200"
+                    style={{ transform: mobileShopOpen ? "rotate(180deg)" : undefined }}
+                  />
+                </button>
+                {mobileShopOpen && (
+                  <div id="mobile-shop-list" className="pb-2 pl-1">
+                    <Link
+                      to="/shop"
+                      className="br-label block py-3"
+                      style={{ color: "var(--br-white)" }}
+                    >
+                      All products
+                    </Link>
+                    {CATEGORIES.map((c) => (
+                      <Link
+                        key={c.slug}
+                        to="/shop"
+                        search={{ category: c.slug }}
+                        className="br-label block py-3"
+                        style={{ color: "var(--br-mute)" }}
+                      >
+                        {c.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* The account icon is `hidden sm:block`, so without this there is
@@ -217,24 +276,43 @@ export function Header() {
             "children" in item && item.children ? (
               <div
                 key={item.to}
+                ref={shopRef}
                 className="relative"
                 onMouseEnter={() => setShopOpen(true)}
                 onMouseLeave={() => setShopOpen(false)}
               >
-                <Link
-                  to={item.to}
-                  className="br-nav inline-flex items-center gap-1 transition-colors duration-200"
-                  style={{ color: "var(--br-white)" }}
-                  activeProps={{
-                    className: "br-nav neon-text-blue-sm inline-flex items-center gap-1",
-                  }}
-                  aria-haspopup="true"
-                  aria-expanded={shopOpen}
-                  onFocus={() => setShopOpen(true)}
-                >
-                  {item.label}
-                  <ChevronDown size={13} strokeWidth={1.5} aria-hidden />
-                </Link>
+                {/* The label keeps navigating to /shop; the chevron is a real
+                    toggle, so the dropdown is reachable by click and by keyboard
+                    and not only by hovering. "All products" below is the same
+                    destination as the label, one row into the open menu. */}
+                <span className="inline-flex items-center gap-1">
+                  <Link
+                    to={item.to}
+                    className="br-nav transition-colors duration-200"
+                    style={{ color: "var(--br-white)" }}
+                    activeProps={{ className: "br-nav neon-text-blue-sm" }}
+                    onFocus={() => setShopOpen(true)}
+                  >
+                    {item.label}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setShopOpen((v) => !v)}
+                    aria-haspopup="true"
+                    aria-expanded={shopOpen}
+                    aria-label={shopOpen ? "Close shop menu" : "Open shop menu"}
+                    className="-m-1 inline-flex items-center p-1 transition-colors duration-200"
+                    style={{ color: "var(--br-white)" }}
+                  >
+                    <ChevronDown
+                      size={13}
+                      strokeWidth={1.5}
+                      aria-hidden
+                      className="transition-transform duration-200"
+                      style={{ transform: shopOpen ? "rotate(180deg)" : undefined }}
+                    />
+                  </button>
+                </span>
                 {shopOpen && (
                   <div
                     className="absolute left-1/2 top-full min-w-[210px] -translate-x-1/2 border pt-4"
@@ -247,6 +325,15 @@ export function Header() {
                         borderColor: "var(--br-line)",
                       }}
                     >
+                      <li>
+                        <Link
+                          to="/shop"
+                          className="br-nav block px-5 py-3 transition-colors duration-200 hover:text-[var(--br-blue-text)]"
+                          style={{ color: "var(--br-white)" }}
+                        >
+                          All products
+                        </Link>
+                      </li>
                       {item.children.map((c) => (
                         <li key={c.slug}>
                           <Link
