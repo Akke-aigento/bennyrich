@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { canonical } from "@/lib/site";
+import { canonical, CONTACT_EMAIL, INSTAGRAM_URL } from "@/lib/site";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -130,11 +130,11 @@ function ContactPage() {
                 <p className="text-[13px]" style={{ color: "var(--br-pink)" }}>
                   {err} You can also email{" "}
                   <a
-                    href="mailto:hello@bennyrich.com"
+                    href={`mailto:${CONTACT_EMAIL}`}
                     className="underline underline-offset-4"
                     style={{ color: "var(--br-pink)" }}
                   >
-                    hello@bennyrich.com
+                    {CONTACT_EMAIL}
                   </a>
                   .
                 </p>
@@ -155,11 +155,11 @@ function ContactPage() {
             Direct
           </h2>
           <a
-            href="mailto:hello@bennyrich.com"
+            href={`mailto:${CONTACT_EMAIL}`}
             className="mt-3 block text-[14px] transition-colors duration-200 hover:text-[var(--br-blue)]"
             style={{ color: "var(--br-mute)" }}
           >
-            hello@bennyrich.com
+            {CONTACT_EMAIL}
           </a>
 
           <h2 className="br-label mt-8" style={{ color: "var(--br-white)" }}>
@@ -168,7 +168,7 @@ function ContactPage() {
           <ul className="mt-3 space-y-2 text-[14px]" style={{ color: "var(--br-mute)" }}>
             <li>
               <a
-                href="https://instagram.com/bennyrich"
+                href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noreferrer noopener"
                 className="transition-colors duration-200 hover:text-[var(--br-blue)]"

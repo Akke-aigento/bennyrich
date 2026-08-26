@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Mail } from "lucide-react";
 import { Wordmark } from "@/assets/brand/Wordmark";
+import { CONTACT_EMAIL, INSTAGRAM_URL } from "@/lib/site";
 
 const LINKS = [
   { to: "/shipping-returns", label: "Shipping & Returns" },
@@ -30,9 +31,11 @@ function TikTok({ size = 19 }: { size?: number }) {
 /** Also the `sameAs` source for the Organization JSON-LD in __root.tsx —
  *  one list, so the schema can never drift from what the footer links to. */
 export const SOCIALS = [
-  { href: "https://instagram.com/bennyrich", label: "Instagram", Icon: Instagram },
+  { href: INSTAGRAM_URL, label: "Instagram", Icon: Instagram },
+  // Unverified handle, and not something the client asked for — left exactly as
+  // it was rather than blessed into src/lib/site.ts. See docs/role-audit.md.
   { href: "https://tiktok.com/@bennyrich", label: "TikTok", Icon: TikTok },
-  { href: "mailto:hello@bennyrich.com", label: "Email us", Icon: Mail },
+  { href: `mailto:${CONTACT_EMAIL}`, label: "Email us", Icon: Mail },
 ];
 
 export function Footer() {

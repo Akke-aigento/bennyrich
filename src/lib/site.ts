@@ -17,6 +17,20 @@ export const SITE_URL = "https://akke-aigento-bennyrich.lovable.app";
 
 export const SITE_NAME = "BennyRich";
 
+/**
+ * Where a shopper reaches BennyRich. One place, so the next change is one line.
+ *
+ * The Instagram handle came in as a share link with an `?igsi=` tracking
+ * parameter attached; that is a referral token, not part of the profile URL,
+ * and it is stripped.
+ *
+ * The TikTok link in the footer is deliberately NOT here: nobody has confirmed
+ * that handle exists and Sander did not mention it. Open question in
+ * docs/role-audit.md — do not promote it to a constant until it is verified.
+ */
+export const CONTACT_EMAIL = "info@bennyrich.com";
+export const INSTAGRAM_URL = "https://www.instagram.com/bennyrichstore";
+
 /** The site-wide share image, used when a page has nothing more specific. */
 export const DEFAULT_OG_IMAGE = "/hero/og-image.jpg";
 export const OG_IMAGE_WIDTH = 1200;
