@@ -304,9 +304,9 @@ function HomeV2() {
   return (
     <>
       <Hero cta={HERO_CATEGORY_NAV ? <HeroCategoryNav /> : undefined} />
-      <CategoryTiles />
       <FeaturedCollection />
       <VodkaSpotlight />
+      <CategoryTiles />
       <BrandStatement />
       <BuiltDifferentBanner />
     </>

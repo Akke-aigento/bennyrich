@@ -36,11 +36,13 @@ function coverFor(categoryImage: string | undefined, products: SellqoProduct[]):
 }
 
 /**
- * The five categories, straight under the hero.
+ * The five categories, below the vodka since BR-14.
  *
- * This is the buy motor: the hero says who BennyRich is, this says what you can
- * actually get. They are CATEGORIES and nothing grander — the client was
- * explicit about that; see the copy rules in CLAUDE.md.
+ * This is the buy motor. It opened the page until BR-14, when Sander asked for
+ * it below VodkaSpotlight so the homepage leads on product rather than on
+ * navigation — the hero now carries category links of its own. They are
+ * CATEGORIES and nothing grander — the client was explicit about that; see the
+ * copy rules in CLAUDE.md.
  *
  * Blue is the one accent and it lives on the border alone; the name does not
  * glow too. Nothing pulses.
@@ -56,7 +58,13 @@ export function CategoryTiles() {
   const productsBySlug = new Map(groups.map((g) => [g.slug, g.products]));
 
   return (
-    <section className="br-shell br-section-t">
+    // No br-section-t. The -t/-b split is POSITIONAL: since BR-14 this band
+    // sits under VodkaSpotlight, which already pads its own bottom, so opening
+    // a second gap here would double it. VodkaSpotlight is one of the frozen
+    // HOME_V2=false components, so the fix has to land on this side — and it is
+    // not a special case, it is exactly how VodkaSpotlight itself inherits its
+    // top gap from FeaturedCollection's -b.
+    <section className="br-shell">
       <h2 className="br-section-label neon-text-blue-sm">Shop by category</h2>
 
       <div className="mt-9 grid grid-cols-2 gap-3 md:grid-cols-5 md:gap-4">
