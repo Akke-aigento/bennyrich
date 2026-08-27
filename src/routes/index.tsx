@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { canonical, HERO_CATEGORY_NAV, HOME_V2 } from "@/lib/site";
+import { canonical, HERO_CATEGORY_NAV, HOME_V2, SHOW_RIFLE_BANNER } from "@/lib/site";
 import { useQueries } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
@@ -307,8 +307,11 @@ function HomeV2() {
       <FeaturedCollection />
       <VodkaSpotlight />
       <CategoryTiles />
-      <BrandStatement />
-      <BuiltDifferentBanner />
+      <BrandStatement last={!SHOW_RIFLE_BANNER} />
+      {/* V2 ONLY. HomeV1 below renders the banner unconditionally, so the
+          HOME_V2 escape hatch still restores what the client approved. Never
+          move this test inside BuiltDifferentBanner. */}
+      {SHOW_RIFLE_BANNER && <BuiltDifferentBanner />}
     </>
   );
 }

@@ -21,9 +21,18 @@ import { Link } from "@tanstack/react-router";
  * WHEN SHIPPING METHODS AND STRIPE GO LIVE, a real value strip with true
  * numbers becomes a short follow-up. Do not add one before then.
  */
-export function BrandStatement() {
+/**
+ * `last` = this is the final section on the page, so it has to close its own
+ * bottom rhythm; otherwise the panel sits 80px above the footer's hairline
+ * instead of the full section gap. It is a plain presentation prop and it stays
+ * that way: the SHOW_RIFLE_BANNER test lives at the call site in index.tsx. A
+ * component that reached for a sibling's feature flag is the coupling that rots
+ * first, and unconditional br-section here would change what flipping that flag
+ * back on restores.
+ */
+export function BrandStatement({ last = false }: { last?: boolean }) {
   return (
-    <section className="br-shell br-section-t">
+    <section className={`br-shell br-section-t${last ? " br-section-b" : ""}`}>
       <div
         className="quiet-frame grid items-center gap-10 border px-8 py-16 md:grid-cols-[minmax(0,46%)_1fr] md:gap-16 md:px-20 md:py-20"
         style={{ borderRadius: "var(--radius)" }}

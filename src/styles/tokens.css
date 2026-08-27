@@ -287,7 +287,7 @@
   letter-spacing: var(--br-tracking-nav);
 }
 
-/* Section eyebrow — "FEATURED COLLECTION", "FIVE WORLDS", … */
+/* Section eyebrow — "FEATURED COLLECTION", "SHOP BY CATEGORY", … */
 @utility br-section-label {
   font-family: var(--br-font-body);
   font-size: 11px;
