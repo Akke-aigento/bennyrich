@@ -1514,10 +1514,10 @@ probe before changing anything.
 ## Deviations from the brief
 
 1. **"Use the existing `customerProxy` from 9a"** — no such export. BR-9a added
-   an additive branch *inside* `sellqoProxy`; `docs/role-audit.md` already said
+   an additive branch _inside_ `sellqoProxy`; `docs/role-audit.md` already said
    so. Extended that branch instead.
 2. **"Re-enable order history (removed in 9b)"** — it was never built. `git log
-   --all --diff-filter=D` finds no deleted `account.orders*` file. Built from
+--all --diff-filter=D` finds no deleted `account.orders*` file. Built from
    scratch; only the proxy mapping pre-existed, with no caller.
 3. **`/account/profile` likewise did not exist** — a new page, not a gap.
 4. **The 403 blocker** was not in the brief and had to be fixed before step 3
@@ -1592,7 +1592,7 @@ state it is not a containing block at all.
 
 **Standing rule, now in CLAUDE.md:** never nest a fixed overlay inside the
 header. The desktop search bar and the Shop dropdown are `absolute` and
-deliberately **not** portalled — they *want* the header as their containing
+deliberately **not** portalled — they _want_ the header as their containing
 block. Regression-checked at 1280 scrolled to 600: dropdown `top=65` under the
 nav, search input `top=89` inside the expanded header.
 
@@ -1601,7 +1601,7 @@ nav, search input `top=89` inside the expanded header.
 ## The logo: a client decision that overrules BR-2.1
 
 BR-2.1 deliberately demoted the wordmark to a flat logotype, on the recorded
-grounds that *"a logo has to read as print at 18px"*: no outline, no bloom,
+grounds that _"a logo has to read as print at 18px"_: no outline, no bloom,
 `logotype-*` instead of `neon-text-*`. Sander's official mark is a fully-glowing
 neon lockup. **He overrules that judgement.** It is a decision, not a
 regression, and it costs three things worth naming:
@@ -1612,7 +1612,7 @@ regression, and it costs three things worth naming:
    the logo.
 2. **"NEW YORK" is deleted.** The official lockup says **WORLDWIDE**; a city
    line contradicts it. `showCity` survives as a no-op so call sites compile.
-3. **There is no pink set.** `tone="pink"` therefore still renders the *drawn*
+3. **There is no pink set.** `tone="pink"` therefore still renders the _drawn_
    SVG monogram, which is the 18+ gate and nothing else. `neon_alpha.py` is
    committed next to `docs/brand/logo-pink.jpg` — one run produces it.
 
@@ -1859,7 +1859,7 @@ Frozen plumbing, `sellqo.functions.ts`, the product/cart/checkout paths,
   documented request. Unchanged by this batch; the exposure written up in BR-2.1
   stands.
 - **Vodka accijns** blocks purchase. `NOT_PURCHASABLE` holds it; deleting the
-  slug now flips the product page *and* the new homepage section.
+  slug now flips the product page _and_ the new homepage section.
 - **Akke:** the DB image-URL reconcile to the Supabase bucket; `SITE_URL` still
   points at the Lovable preview; live end-to-end account pass against real core.
 - `br-sunglasses` still has no image. BR-7's reshoot list stands. Sitemap still
@@ -1914,11 +1914,11 @@ commit on is new.
 machine. Reading it instead of guessing corrected **three** assumptions, two of
 which were in my own BR-11 mock:
 
-| | What live actually does |
-| --- | --- |
-| `get_categories` (index.ts:281) | returns a **bare array**, ordered by `sort_order`; `image_url` **is** in the contract; `sort_order` itself is not in the payload |
-| `get_products` items (index.ts:658) | `images: TEXT[]` — plain URL **strings** — and **no `featured_image` field at all** |
-| `get_product` / list items (index.ts:485, 673) | carry `category: {id,name,slug}` singular |
+|                                                | What live actually does                                                                                                          |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `get_categories` (index.ts:281)                | returns a **bare array**, ordered by `sort_order`; `image_url` **is** in the contract; `sort_order` itself is not in the payload |
+| `get_products` items (index.ts:658)            | `images: TEXT[]` — plain URL **strings** — and **no `featured_image` field at all**                                              |
+| `get_product` / list items (index.ts:485, 673) | carry `category: {id,name,slug}` singular                                                                                        |
 
 Consequences that changed the work:
 
@@ -2049,12 +2049,12 @@ not a wrong render.
 The obvious thing in that slot is a benefits strip: free shipping, easy returns,
 secure checkout. **Every one of those would have been inventing a service.**
 
-| Claim not made | The fact that made it a lie |
-| --- | --- |
-| shipping / delivery promises | the tenant has **zero active shipping methods** |
+| Claim not made                    | The fact that made it a lie                           |
+| --------------------------------- | ----------------------------------------------------- |
+| shipping / delivery promises      | the tenant has **zero active shipping methods**       |
 | "secure checkout", payment badges | `stripe_charges_enabled = false` — Stripe is not live |
-| ratings, reviews, testimonials | there are none |
-| "new arrivals" | every product dated 18–19 Aug (bulk import) |
+| ratings, reviews, testimonials    | there are none                                        |
+| "new arrivals"                    | every product dated 18–19 Aug (bulk import)           |
 
 So the section is a typographic statement with no numbers, no window, no service
 level. The copy is lifted **verbatim** from the existing `/about` body, so it is
@@ -2196,3 +2196,154 @@ frozen files: empty diff AND blob-hash identical (all ten paths)
 ```
 
 `home-v2-1280.png` and `home-v2-390.png` re-shot against the tightened page.
+
+# BR-14 — hero category nav, the band below the vodka, the rifle off (2026-08-27)
+
+Date: 2026-08-27 · `main`: `6f71a9e`…`b754902` · base `6eaa043`
+
+Three client-requested corrections from Sander's review of the live V2
+homepage. Two are placement, one is a taste bet — and the taste bet is the only
+one behind a flag.
+
+## What changed
+
+1. **The hero's "Shop now" button becomes category navigation.** Six pills:
+   All, then the five categories. Behind `HERO_CATEGORY_NAV`.
+2. **The category tile band moves below the vodka**, so the page leads on
+   product rather than on navigation. No flag: placement, not a gamble.
+3. **The rifle banner comes off the homepage**, hidden behind
+   `SHOW_RIFLE_BANNER = false`. Not deleted.
+
+## The hero decision, and why it is not a fork
+
+`Hero` is **one component shared by both `HOME_V2` arms**. CLAUDE.md's rule for
+the four false-arm components is "if you need to change one, copy it", so the
+obvious move was a `HeroV2` fork. It was rejected, deliberately, and the
+reasoning is worth keeping:
+
+- A fork duplicates ~50 lines including `Spotlight`, `TextReveal` and the LCP
+  `<img fetchPriority="high">` with the hard-won comment above it. Two heroes
+  then drift the first time someone edits the copy in one of them.
+- A fork also needs its own `HERO_CATEGORY_NAV === false` branch, which is a
+  **third** copy of the "Shop now" button.
+
+Instead `Hero` takes one optional `cta` prop whose default **is** the original
+button. `HomeV1` still calls `<Hero />`, so the false arm renders what it always
+did, and `HERO_CATEGORY_NAV = false` is not a copy of the button — it is the
+button, so the two states cannot disagree.
+
+**The cost, stated plainly:** the guarantee is now "nobody moves that default"
+rather than "the file cannot change". That is a weaker guarantee than the rule
+intends, which is why it is recorded on the flag, in `CLAUDE.md`, and here. It
+was verified rather than asserted — see below.
+
+## The reorder was not free
+
+`br-section-t`/`-b` is **positional**: sections pad one side so adjacent gaps do
+not double. Moving the band exposed two defects, one of them pre-existing.
+
+Measured at 1280×900 (so `clamp(80px, 12vh, 160px)` resolves to 108px):
+
+| Junction                 | Before BR-14            | After        |
+| ------------------------ | ----------------------- | ------------ |
+| Hero -> next             | 108                     | 108          |
+| Featured -> Vodka        | 108                     | 108          |
+| Vodka -> next            | **216 (doubled)**       | 108          |
+| band -> BrandStatement   | —                       | 108          |
+| BrandStatement -> Banner | **0 (panels touching)** | 0, preserved |
+| last -> footer           | 188                     | 188          |
+
+- The **doubled** Vodka junction has shipped since BR-12 and is visible in
+  `docs/screens/BR-12/home-v2-1280.png` as an oversized black band above "We do
+  not follow". A naive reorder would have moved it, not fixed it.
+  `VodkaSpotlight` is frozen, so the correction lands on `CategoryTiles`, which
+  now inherits its top gap from the neighbour above — exactly how
+  `VodkaSpotlight` itself inherits its own from `FeaturedCollection`.
+- **BrandStatement becomes the last section** when the banner is off, and had no
+  bottom padding, so the page would have ended 80px above the footer hairline
+  instead of 188px. It takes a `last` prop. The flag is read at the **call
+  site**: a component whose padding reaches for a sibling's feature flag is the
+  coupling that rots first. Giving it `br-section` unconditionally was simpler
+  and was rejected — it would have changed what `SHOW_RIFLE_BANNER = true`
+  restores, and one-line reversibility is the point of the batch.
+
+The touching-panels junction is left at 0 on purpose. It is what the client
+reviewed, and turning the banner back on has to restore it exactly.
+
+## The ad-safety flag is closed, for now
+
+Firearm imagery on the landing page has been an open exposure since **BR-2.1**:
+Meta and TikTok both review the landing page, not only the creative, so anything
+pointing paid social at `/` inherited it. BR-2.1 removed a rifle for that reason;
+2026-08-24 put one back at Sander's documented request; every batch since has
+carried it forward under "still open".
+
+**While `SHOW_RIFLE_BANNER = false`, `/` is ad-safe.** The exposure is not
+resolved, it is dormant — the component and `public/hero/rifle-blue.png` are
+both still in the repo, and turning the flag back on reopens it. That is written
+on the flag itself so it is a decision rather than an accident.
+
+## Found, not fixed by request
+
+`src/styles/tokens.css` carried `"FIVE WORLDS"` in a section-eyebrow comment,
+left there by BR-2.1. "Worlds" is banned wording since BR-12, and CLAUDE.md
+publishes `grep -rni "worlds\|werelden" src/` as a standing check — which was
+therefore returning **1, not 0**, and had been since the rule was written. The
+comment now names an eyebrow that actually exists. The check returns 0.
+
+(Earlier batches recorded this check as passing. It passes case-sensitively;
+the documented form is case-insensitive, and `WORLDS` was uppercase.)
+
+## Verification
+
+```
+bun run build / bunx tsc --noEmit    green at every commit, all three flags both ways
+frozen files                          empty diff AND blob-hash identical (all ten paths)
+git diff 6eaa043 -- package.json bun.lock   empty
+grep -rni "worlds|werelden" src/      0  (was 1 — see above)
+grep -ri aceternity src/              0
+```
+
+The escape hatch is proved at source level, not asserted: `HomeV1`,
+`FeaturedCollection` and `BuiltDifferentBanner` are **byte-identical** to
+`6eaa043`, `VodkaSpotlight.tsx` is **blob-identical**, and `Hero` is identical
+once the two intended edits — the signature and the `cta ??` wrapper — are
+reversed. Nothing else in it moved.
+
+Rendered, over CDP against the mock:
+
+```
+HERO_CATEGORY_NAV=true    6 pills, hrefs /shop + /shop?category=<slug> x5,
+                          2 rows at 1280, nav width 552px, no button in the hero
+HERO_CATEGORY_NAV=false   button back in the hero, 0 pills
+SHOW_RIFLE_BANNER=true    "Built different" returns; BrandStatement->Banner = 0,
+                          last->footer = 188 (both unchanged from BR-12)
+SHOW_RIFLE_BANNER=false    page ends at BrandStatement, last->footer = 188
+HOME_V2=false             headings -> Timeless, Featured Collection,
+                          Born in Belgium, Built different; rhythm 108/108/108/188
+```
+
+Page height at 1280 went from 8230px to 7078px.
+
+Screenshots in `docs/screens/BR-14/`: `hero-pills-1280`, `hero-pills-390`,
+`home-1280`, `home-390`, `category-band-below-vodka-1280`, and `home-v1-1280` —
+the escape hatch shot, same 2560x6544 as BR-12's.
+
+## Open questions for Sander
+
+1. **Is the pill row too quiet?** The pills are the /shop filter chip: hairline
+   `--br-line` border, `--br-mute` label, blue only on hover. That is correct
+   per the design system and consistent with the chips on the next page, but it
+   means the hero no longer has a lit call to action where a blue "SHOP NOW"
+   button used to be. Making the row blue at rest, or lighting only the "All"
+   pill, is a one-line change if he wants the hero to pull harder.
+2. **Category nav now exists in two forms** — pills in the hero, tiles below the
+   vodka. They were kept deliberately, because text links and image tiles do
+   different jobs, but confirm it does not read as redundant to him. BR-12b
+   removed a section for exactly this reason.
+3. **Does the banner slot get reused?** It is hidden, not deleted. If nothing is
+   going in it, deleting the component and the artwork is the honest follow-up.
+4. Carried forward, unchanged by this batch: shipping and Stripe (which unblock
+   the value strip), the DB image-URL reconcile, `SITE_URL` still on the Lovable
+   preview host, `br-sunglasses` still has no image, the reshoot list from BR-7,
+   no product URLs in the sitemap, Google Fonts still load before consent.

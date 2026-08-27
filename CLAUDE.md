@@ -422,27 +422,59 @@ fades out over 1000ms. **`pending` renders nothing and every mount starts there*
 overlay flashes black for a frame on every route change. X and Escape skip it.
 `prefers-reduced-motion` skips it entirely, matched by name via `matchMedia`.
 
-## The homepage flag (`HOME_V2`)
+## The homepage flags
 
-`HOME_V2` in `src/lib/site.ts` gates the entire BR-12 homepage:
+Three flags in `src/lib/site.ts` gate the homepage. All three are **V2-only** —
+`HomeV1` reads none of them.
 
 ```
-true  -> Hero, CategoryTiles, FeaturedCollection, VodkaSpotlight,
-         BrandStatement, BuiltDifferentBanner
-false -> Hero, FeaturedCollection, VodkaSpotlight, BuiltDifferentBanner
+HOME_V2            true  -> Hero, FeaturedCollection, VodkaSpotlight,
+                            CategoryTiles, BrandStatement, BuiltDifferentBanner
+                   false -> Hero, FeaturedCollection, VodkaSpotlight,
+                            BuiltDifferentBanner   (the pre-BR-12 page)
+
+HERO_CATEGORY_NAV  true  -> the hero shows six category pills (All + the five)
+                   false -> the hero shows the original "Shop now" button
+
+SHOW_RIFLE_BANNER  true  -> the "Built different" rifle banner renders
+                   false -> it does not (the shipped state since BR-14)
 ```
 
-It exists because the rebuilt homepage is a **go/no-go on the client's taste**,
-not a refactor: rejecting it has to be one line, not five reverts.
+`HOME_V2` exists because the rebuilt homepage is a **go/no-go on the client's
+taste**, not a refactor: rejecting it has to be one line, not five reverts.
+`HERO_CATEGORY_NAV` is the same bet on a smaller surface.
 
-> **The `false` arm renders the ORIGINAL components and BR-12 edited none of
-> them.** `Hero`, `FeaturedCollection`, `VodkaSpotlight` and
-> `BuiltDifferentBanner` must stay untouched — the moment one is "tidied up",
-> flipping the flag no longer restores what the client last approved and the
-> escape hatch is worth nothing. If you need to change one, copy it.
+> **The `false` arm renders the ORIGINAL components.** `FeaturedCollection`,
+> `VodkaSpotlight` and `BuiltDifferentBanner` must stay untouched — the moment
+> one is "tidied up", flipping the flag no longer restores what the client last
+> approved and the escape hatch is worth nothing. If you need to change one,
+> copy it.
+
+> **`Hero` is the one sanctioned exception, and it is deliberate.** BR-14 gave
+> it a single optional `cta` prop **whose default is the original "Shop now"
+> button**. `HomeV1` calls `<Hero />`, so the false arm renders what it always
+> did. A `HeroV2` fork would have duplicated ~50 lines including the LCP
+> `<img>`, plus a third copy of the button for `HERO_CATEGORY_NAV === false`.
+> **That default is load-bearing: never move it, and never refactor the JSX
+> around it.** The reasoning is in `docs/role-audit.md`, BR-14.
+
+> **`SHOW_RIFLE_BANNER` is tested at the `HomeV2` call site, never inside
+> `BuiltDifferentBanner`.** The component is rendered by both arms, so an early
+> `return null` in it would strip the banner from `HomeV1` too. It is hidden,
+> not deleted — the component and `public/hero/rifle-blue.png` both stay. While
+> it is `false`, `/` is ad-safe; turning it on reopens the firearm-imagery
+> ad-policy exposure carried since BR-2.1. Read `docs/role-audit.md` first.
 
 Accepting the new homepage means deleting the flag and the `HomeV1` branch in
 `src/routes/index.tsx`, not leaving both arms to rot.
+
+**Section rhythm is positional, so reordering is never just a reorder.**
+`br-section-t` / `-b` pad one side each so adjacent gaps do not double. When
+BR-14 moved `CategoryTiles` below `VodkaSpotlight` it had to drop its
+`br-section-t` (the neighbour above already pads its bottom), and
+`BrandStatement` gained a `last` prop so it closes its own bottom when the
+banner is off. `last` is a plain presentation prop — the flag is read at the
+call site, never inside the component.
 
 `src/lib/home-data.ts` (`useCategoryProducts`) holds the per-category product
 fan-out. `CategoryTiles` is its only caller since BR-12b, and that is fine — the
@@ -563,19 +595,20 @@ omits the field, and the banner would then nag about an email nobody sent.
 
 ## Batch log
 
-| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                                                                                                                                                  |
-| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                                                                                                                                                         |
-| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                                                                                                                                                           |
-| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                                                                                                                                                            |
-| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter.                                                                                                                              |
-| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                                                                                                                                                |
-| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                                                                                                                                                   |
-| BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep.                                                                                                                         |
-| BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                                                                                                                                        |
-| BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                                                                                                                                          |
-| BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                                                                                                                                       |
-| BR-11  | 2026-08-26 | Client revision round: the official neon logo everywhere (BR-2.1's flat logotype overruled by the client, "New York" dropped for WORLDWIDE), the mobile menu portalled out of the header to fix a `backdrop-filter` containing-block bug, a Shop accordion and a clickable desktop dropdown, the splash screen, the "Born in Belgium" vodka section, a regenerated OG image and favicons, and the mock + capture harness finally committed under `tools/`. |
-| BR-12  | 2026-08-26 | Revision round 2. To `main`: TikTok removed sitewide, `info@` confirmed as the only address, and the vodka's 18+ gate proved to already fire (no second modal built). Behind `HOME_V2` on `br-12-home`: category tiles, a second product row that cannot repeat the first, and a claim-free brand statement. The mock was corrected against the real edge-function contract.                                                                               |
-| BR-12b | 2026-08-26 | The "Shop the range" second product row removed at client review — it read as a near-duplicate of the Featured Collection grid above it, and the category band already covers discovery. One component deleted, nothing orphaned, escape hatch untouched. On `br-12-home`, not merged.                                                                                                                                                                     |
+| Batch  | Date       | What                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BR-2   | 2026-08-18 | Foundation: stripped Zona Dorata, design system + tokens, hand-drawn brand SVGs, header/footer/cart, homepage, `/shop`, `/collections`, `/product/:slug`, `/about`, `/contact`, age gate.                                                                                                                                                                                                                                                                                                                |
+| BR-2.1 | 2026-08-19 | Maison-grade tone pass, no new features: glow halved behind a single `--glow-scale`, wordmark demoted to a logotype, pink restrained to accent-only, rifle replaced by a panther on the banner, `.br-media` cover normalisation, and a much wider vertical rhythm.                                                                                                                                                                                                                                       |
+| BR-3   | 2026-08-21 | Design-kit recon, no site change: four Aceternity components vendored into `src/components/kit/`, recoloured to BR tokens with motion cut ~40%, shown on the throwaway `/kit` route. Findings in `docs/design-kit.md`. Rollout deferred to BR-4.                                                                                                                                                                                                                                                         |
+| BR-4   | 2026-08-21 | Homepage rollout: the three approved effects rewritten as our own dependency-free components (`motion` removed), real brand artwork replacing the line art on the hero and banner, marquee cut, `/kit` retired.                                                                                                                                                                                                                                                                                          |
+| BR-5   | 2026-08-21 | The shop that sells: `br-media-frame` on all product media, featured grid spread across categories, two-line product names, variant options derived from the variants (apparel was unbuyable without it), out-of-stock combinations disabled, vodka held behind `NOT_PURCHASABLE`, checkout switched off the it-IT formatter.                                                                                                                                                                            |
+| BR-6   | 2026-08-24 | Checkout polish: variant labels resolved in presentation (the frozen normaliser cannot read `attribute_values`), one image treatment everywhere (`.br-media` contain on both thumbnails, no cropping), `/perfumes` and the white-slab checkout button removed, `CheckoutForm.tsx` unfrozen.                                                                                                                                                                                                              |
+| BR-7   | 2026-08-24 | Image fit: product media moved from `object-fit: contain` to centre `cover` so a row reads as a uniform grid instead of products floating in black. The large product-detail image keeps `contain` via `.br-media-contain`. 10 of 26 seed images crop badly and are flagged for reshoot.                                                                                                                                                                                                                 |
+| BR-8   | 2026-08-24 | Launch essentials: full favicon set + webmanifest, per-page metadata with per-product OG (route loader, SSR-verified), robots + sitemap, Organization/Product JSON-LD, consent gate with no analytics loaded, shipping total now updates on selection, `--br-blue-text` for AA, on-brand 404 and both error pages, prettier sweep.                                                                                                                                                                       |
+| BR-9a  | 2026-08-24 | Accounts foundation: proxy extended additively to the `storefront-customer-api`, auth context with an httpOnly session cookie the browser cannot read, sign-in / register / forgot / reset pages, guarded `/account` dashboard, header and mobile menu. Orders, addresses, wishlist and checkout prefill are BR-9b.                                                                                                                                                                                      |
+| BR-9b  | 2026-08-24 | Account area: addresses CRUD, wishlist with the heart on cards and the product page, checkout prefill for signed-in shoppers. Order history and profile editing deliberately not built — `get_profile` does not expose `email_verified`, so order history cannot be gated safely.                                                                                                                                                                                                                        |
+| BR-10  | 2026-08-24 | Accounts complete: `url_base` injected server-side so verification and reset mails link to BennyRich, `/account/verify`, order history and order detail gated on `email_verified`, a non-blocking verification banner, and `/account/profile` (details + password). The proxy no longer signs you out on core's 403.                                                                                                                                                                                     |
+| BR-11  | 2026-08-26 | Client revision round: the official neon logo everywhere (BR-2.1's flat logotype overruled by the client, "New York" dropped for WORLDWIDE), the mobile menu portalled out of the header to fix a `backdrop-filter` containing-block bug, a Shop accordion and a clickable desktop dropdown, the splash screen, the "Born in Belgium" vodka section, a regenerated OG image and favicons, and the mock + capture harness finally committed under `tools/`.                                               |
+| BR-12  | 2026-08-26 | Revision round 2. To `main`: TikTok removed sitewide, `info@` confirmed as the only address, and the vodka's 18+ gate proved to already fire (no second modal built). Behind `HOME_V2` on `br-12-home`: category tiles, a second product row that cannot repeat the first, and a claim-free brand statement. The mock was corrected against the real edge-function contract. Merged to `main`.                                                                                                           |
+| BR-12b | 2026-08-26 | The "Shop the range" second product row removed at client review — it read as a near-duplicate of the Featured Collection grid above it, and the category band already covers discovery. One component deleted, nothing orphaned, escape hatch untouched. Merged to `main`.                                                                                                                                                                                                                              |
+| BR-14  | 2026-08-27 | Revision round 3, all client-requested. The hero's "Shop now" button becomes six category pills behind `HERO_CATEGORY_NAV` (`Hero` takes a `cta` prop defaulting to the button, so the V1 arm is unchanged); the category band moves below the vodka; the rifle banner is hidden behind `SHOW_RIFLE_BANNER`, closing the ad-safety exposure open since BR-2.1. Fixed a doubled section gap that had shipped since BR-12, and a `"FIVE WORLDS"` comment that made CLAUDE.md's own standing grep return 1. |
