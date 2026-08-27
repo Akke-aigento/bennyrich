@@ -23,22 +23,70 @@ export const SITE_NAME = "BennyRich";
  * The rebuilt homepage is a go/no-go on the client's taste, not a refactor, so
  * it has to come back out in ONE move rather than by unpicking five commits.
  *
- *   true  -> Hero, CategoryTiles, FeaturedCollection, VodkaSpotlight,
+ *   true  -> Hero, FeaturedCollection, VodkaSpotlight, CategoryTiles,
  *            BrandStatement, BuiltDifferentBanner
  *   false -> the pre-BR-12 page, unchanged: Hero, FeaturedCollection,
  *            VodkaSpotlight, BuiltDifferentBanner
  *
- * The `false` arm renders the ORIGINAL components untouched — Hero,
- * FeaturedCollection, VodkaSpotlight and BuiltDifferentBanner were not edited
- * by BR-12 at all. That is what makes this an escape hatch rather than a
- * reconstruction, and it is why they must stay untouched: the moment one of
+ * BR-14 moved CategoryTiles below VodkaSpotlight and put the banner behind
+ * SHOW_RIFLE_BANNER; the true arm above is the order that actually ships.
+ *
+ * The `false` arm renders the ORIGINAL components untouched —
+ * FeaturedCollection, VodkaSpotlight and BuiltDifferentBanner were edited by
+ * neither BR-12 nor BR-14. That is what makes this an escape hatch rather than
+ * a reconstruction, and it is why they must stay untouched: the moment one of
  * them is "tidied up", flipping this to false no longer restores what the
  * client last approved.
+ *
+ * THE ONE SANCTIONED EXCEPTION: BR-14 gave `Hero` a single optional `cta` prop
+ * whose default IS the original "Shop now" button. HomeV1 calls `<Hero />`, so
+ * the false arm renders exactly what it always did. That default is
+ * load-bearing — never move it, and never refactor the shared JSX around it.
+ * The reasoning is written up in docs/role-audit.md, BR-14.
  *
  * Rejecting the new homepage = set this to false. Accepting it = delete the
  * flag and the false branch in src/routes/index.tsx.
  */
 export const HOME_V2 = true;
+
+/**
+ * The hero's call to action, behind one line. BR-14, at Sander's request: the
+ * single "Shop now" button becomes a row of category links.
+ *
+ *   true  -> a row of pills: All, then the five CATEGORIES
+ *   false -> the original single "Shop now" button, unchanged
+ *
+ * A bet on the client's taste, so it reverts in one line like HOME_V2. The
+ * false arm is not a COPY of the button — it is the button, via the default on
+ * `Hero`'s `cta` prop, so the two states cannot drift apart.
+ *
+ * V2-ONLY: HomeV1 calls `<Hero />` with no cta and is unaffected either way.
+ *
+ * Accepting it = delete this flag, pass the nav unconditionally, and drop the
+ * default from `Hero`.
+ */
+export const HERO_CATEGORY_NAV = true;
+
+/**
+ * The "Built different" rifle banner. BR-14: Sander asked for it OFF the
+ * homepage.
+ *
+ * HIDDEN, NOT DELETED — the slot is meant to be reused, so BuiltDifferentBanner
+ * and public/hero/rifle-blue.png both stay in the repo, intact.
+ *
+ * V2-ONLY, and that matters: HomeV1 renders the banner unconditionally, so the
+ * HOME_V2 escape hatch still restores exactly what the client approved. Never
+ * move this test inside BuiltDifferentBanner — an early `return null` there
+ * would strip the banner from the false arm too.
+ *
+ * IT ALSO CLOSES A STANDING FLAG. Firearm imagery on the landing page has been
+ * an open ad-policy exposure since BR-2.1: Meta and TikTok both review the
+ * landing page, not just the creative, so anything pointing paid social at `/`
+ * inherits it. It was reinstated at Sander's documented request and carried
+ * forward as "still open" ever since. While this is false, `/` is ad-safe —
+ * turning it back on reopens that exposure. Read docs/role-audit.md first.
+ */
+export const SHOW_RIFLE_BANNER = false;
 
 /**
  * Where a shopper reaches BennyRich. One place, so the next change is one line.
