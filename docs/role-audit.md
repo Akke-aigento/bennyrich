@@ -2347,3 +2347,82 @@ the escape hatch shot, same 2560x6544 as BR-12's.
    the value strip), the DB image-URL reconcile, `SITE_URL` still on the Lovable
    preview host, `br-sunglasses` still has no image, the reshoot list from BR-7,
    no product URLs in the sitemap, Google Fonts still load before consent.
+
+# BR-14b — the hero pills get a lit rest state (2026-08-27)
+
+Date: 2026-08-27 · `main` · base `d19ea3a`
+
+BR-14 shipped the hero pills in the `/shop` filter chip's resting look: a
+`--br-line` hairline, a `--br-mute` label, blue only on hover. That was correct
+per the design system and consistent with the chips a shopper meets on the next
+page — and it was flagged in BR-14's own open questions as reading too quiet,
+because the pills are now the hero's **only** call to action and they replaced a
+lit blue button.
+
+Sander confirmed it. The pills are lit at rest.
+
+## What the rest state is now
+
+`neon-btn`'s, exactly: a `--br-blue` border with the house 5px/40% halo and a
+`--br-blue-text` label on a transparent ground. That is not an approximation of
+the old "Shop now" button — it _is_ what that button was, which is what makes it
+the right answer to "read as lit, like the old button did".
+
+The chip parity BR-14 argued for is therefore given up on purpose. The hero and
+the `/shop` chips no longer match at rest. That trade was the client's call: a
+hero CTA that pulls is worth more than a resemblance to a filter control one
+page away.
+
+## Hover had to move
+
+Lighting the rest state costs the old hover — the pill was already blue, so
+`hover:neon-line-blue` became a no-op and hover would have been invisible. Hover
+now takes `neon-btn`'s 8% blue ground wash and brightens the label to
+`--br-white`. Border and halo deliberately stay put: two layers maximum, and no
+glow is animated.
+
+Verified as computed style rather than by eye, at 1280 over CDP:
+
+```
+REST   color #4A7DFF (--br-blue-text)   border #1E5BFF (--br-blue)
+       box-shadow 0 0 5px blue/40%      background transparent   radius 2px
+HOVER  color #F4F4F6 (--br-white)       border #1E5BFF (unchanged)
+       box-shadow unchanged             background blue/8%
+changed on hover: color, background
+```
+
+## The contrast rule held
+
+The label is `--br-blue-text` (5.50:1), never `--br-blue` (3.88:1 at 11px, fails
+AA). That is the same deviation from the `/shop` chip that BR-14 recorded — the
+chip's _active_ state uses `--br-blue` at 11px and is the thing not to copy. It
+matters more now, not less, because the label is blue at rest rather than only
+on hover.
+
+## Scope
+
+One constant in `src/routes/index.tsx`, `HERO_PILL`, plus its doc comment.
+Asserted rather than assumed: `HomeV1`, `HomeV2`, `Hero` (including the
+`HERO_CATEGORY_NAV = false` button branch), `FeaturedCollection`,
+`BuiltDifferentBanner` and `HeroCategoryNav` are all **byte-identical** to
+`d19ea3a`. Frozen files remain blob-identical to `6eaa043`; no dependency change.
+
+The arbitrary `hover:bg-[color-mix(...)]` class is the first of its kind in the
+JSX — every other `color-mix` in the project lives in `tokens.css`. It was
+confirmed to actually emit a rule in the built stylesheet rather than being
+silently dropped by the scanner, which is the failure mode worth checking for an
+arbitrary value with commas and parentheses in it:
+
+```
+hover\:bg-\[color-mix\(in_srgb\,var\(--br-blue\)_8\%\,transparent\)\]:hover
+  { background-color: color-mix(in srgb,var(--br-blue) 8%,transparent) }
+```
+
+If a third pill state is ever needed, that is the point to stop and put a
+`neon-pill` utility in `tokens.css` beside `neon-btn` instead.
+
+## Screenshots
+
+`docs/screens/BR-14/hero-pills-1280.png` and `hero-pills-390.png` re-shot
+against the lit state, plus `hero-pills-hover-1280.png` — a real hover, driven
+with `Input.dispatchMouseEvent`, since `tools/screens/capture.ts` has no mouse.

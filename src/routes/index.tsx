@@ -99,21 +99,31 @@ function Hero({ cta }: { cta?: ReactNode }) {
 }
 
 /**
- * The pill shape, shared by all six links. It is the /shop filter chip
- * (CategoryProductsPage), so the row a shopper meets in the hero and the chips
- * they meet on the next page are recognisably the same object.
+ * The pill shape, shared by all six links.
  *
- * Two deliberate deviations from that chip, both of which are bugs if copied:
+ * BR-14 gave these the /shop filter chip's resting look — `--br-line` hairline,
+ * `--br-mute` label, blue only on hover. BR-14b lit them at rest at Sander's
+ * request: as the hero's only call to action the quiet chip read too weak where
+ * a blue "Shop now" button used to be.
  *
- *   1. the resting border colour is a CLASS, never an inline style — an inline
- *      colour beats `hover:neon-line-blue` and the pill silently stops lighting;
- *   2. the lit label is --br-blue-text, not the chip's --br-blue, which is
- *      3.88:1 at 11px and fails AA. This is what neon-btn itself uses.
+ * So the REST state is now neon-btn's: a `--br-blue` border with the house halo
+ * and a `--br-blue-text` label. That is deliberate — the brief was "read as lit,
+ * like the old button", and the old button was exactly this.
+ *
+ * Three things that must not drift:
+ *
+ *   1. the border is set by CLASS (`neon-line-blue`), never an inline style — an
+ *      inline colour outranks the hover rules and the pill stops reacting;
+ *   2. the label is --br-blue-text (5.50:1), never --br-blue, which is 3.88:1 at
+ *      11px and fails AA. This is the same call neon-btn makes;
+ *   3. rest is lit, so HOVER has to move somewhere else or there is no feedback
+ *      at all. It takes neon-btn's 8% ground wash and brightens the label to
+ *      --br-white. Colour and background only, 200ms, nothing pulses.
  */
 const HERO_PILL =
-  "br-label border border-br-line px-4 py-2.5 text-[var(--br-mute)] " +
-  "transition-[color,border-color,box-shadow] duration-200 " +
-  "hover:neon-line-blue hover:text-[var(--br-blue-text)]";
+  "br-label neon-line-blue border px-4 py-2.5 text-[var(--br-blue-text)] " +
+  "transition-[color,background-color,border-color,box-shadow] duration-200 " +
+  "hover:bg-[color-mix(in_srgb,var(--br-blue)_8%,transparent)] hover:text-[var(--br-white)]";
 
 /**
  * Category navigation where the single "Shop now" button used to be. BR-14, at
