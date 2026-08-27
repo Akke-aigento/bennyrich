@@ -1,5 +1,6 @@
+import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { canonical, HOME_V2 } from "@/lib/site";
+import { canonical, HERO_CATEGORY_NAV, HOME_V2 } from "@/lib/site";
 import { useQueries } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ProductCard, ProductCardSkeleton } from "@/components/site/ProductCard";
@@ -37,7 +38,13 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-function Hero() {
+/**
+ * `cta` defaults to the original "Shop now" button, and that default is
+ * LOAD-BEARING: HomeV1 calls `<Hero />`, so the HOME_V2 escape hatch still
+ * renders exactly what the client approved. Never move it, and never refactor
+ * the JSX around it. See src/lib/site.ts and docs/role-audit.md, BR-14.
+ */
+function Hero({ cta }: { cta?: ReactNode }) {
   return (
     // Full-bleed ground so the ambient light spans the viewport, with the
     // content held inside the shell on top of it.
@@ -67,9 +74,11 @@ function Hero() {
             BennyRich is more than fashion. It's a lifestyle built on ambition, confidence and
             legacy.
           </p>
-          <Link to="/shop" className="neon-btn mt-11">
-            Shop now <span aria-hidden>→</span>
-          </Link>
+          {cta ?? (
+            <Link to="/shop" className="neon-btn mt-11">
+              Shop now <span aria-hidden>→</span>
+            </Link>
+          )}
         </div>
 
         <div className="order-first md:order-none">
@@ -86,6 +95,62 @@ function Hero() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * The pill shape, shared by all six links. It is the /shop filter chip
+ * (CategoryProductsPage), so the row a shopper meets in the hero and the chips
+ * they meet on the next page are recognisably the same object.
+ *
+ * Two deliberate deviations from that chip, both of which are bugs if copied:
+ *
+ *   1. the resting border colour is a CLASS, never an inline style — an inline
+ *      colour beats `hover:neon-line-blue` and the pill silently stops lighting;
+ *   2. the lit label is --br-blue-text, not the chip's --br-blue, which is
+ *      3.88:1 at 11px and fails AA. This is what neon-btn itself uses.
+ */
+const HERO_PILL =
+  "br-label border border-br-line px-4 py-2.5 text-[var(--br-mute)] " +
+  "transition-[color,border-color,box-shadow] duration-200 " +
+  "hover:neon-line-blue hover:text-[var(--br-blue-text)]";
+
+/**
+ * Category navigation where the single "Shop now" button used to be. BR-14, at
+ * Sander's request, behind HERO_CATEGORY_NAV.
+ *
+ * "All" leads, because removing the button removed the hero's only route to the
+ * unfiltered shop; the header dropdown and the /shop chips both lead the same
+ * way. Six pills overflow the ~552px hero column at 1280 and wrap 5+1 — that is
+ * the accepted cost of keeping "All", NOT a reason to tighten the metrics away
+ * from the chip they are copied from.
+ *
+ * Static CATEGORIES names, like Header's nav. The tiles and the /shop chips take
+ * live renames from GET /categories; a nav does not need to, and keeping the
+ * query out of the hero keeps post-hydration text changes out of the LCP region.
+ *
+ * Links, not buttons — these navigate, so they stay right- and middle-clickable.
+ * No aria-current: none of them is ever the current page. Blue is the one accent
+ * and it lives on the border; nothing pulses.
+ */
+function HeroCategoryNav() {
+  return (
+    <nav aria-label="Shop by category" className="mt-11 flex flex-wrap gap-2.5">
+      <Link to="/shop" className={HERO_PILL} style={{ borderRadius: "var(--radius)" }}>
+        All
+      </Link>
+      {CATEGORIES.map((category) => (
+        <Link
+          key={category.slug}
+          to="/shop"
+          search={{ category: category.slug }}
+          className={HERO_PILL}
+          style={{ borderRadius: "var(--radius)" }}
+        >
+          {category.name}
+        </Link>
+      ))}
+    </nav>
   );
 }
 
@@ -238,7 +303,7 @@ function HomeV1() {
 function HomeV2() {
   return (
     <>
-      <Hero />
+      <Hero cta={HERO_CATEGORY_NAV ? <HeroCategoryNav /> : undefined} />
       <CategoryTiles />
       <FeaturedCollection />
       <VodkaSpotlight />
