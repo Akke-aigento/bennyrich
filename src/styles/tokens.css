@@ -374,10 +374,21 @@
 
    ORDER IS LOAD-BEARING. The gallery element carries BOTH classes and the two
    selectors have equal specificity (0,1,1), so this must stay AFTER the rule
-   above or it silently stops winning. */
+   above or it silently stops winning.
+
+   NO PADDING — BR-16. There used to be `padding: 8%` here and it was the whole
+   reason the product page "looked dark". Percentage padding resolves against
+   the containing block's WIDTH on all four sides, so the content box was
+   84%x84% before `contain` even ran; a portrait photo then landed on ~56% of a
+   square well and the other ~44% was solid --br-black. On black-on-black
+   product photography that reads as a near-black tile next to the `cover` grid
+   card, which fills 100%. Nothing was ever tinted or dimmed. Removing it is a
+   flat x1.417 area gain for every image at every aspect ratio.
+
+   Two surfaces use this: the product gallery and VodkaSpotlight. Re-adding a
+   padding here shrinks BOTH at once. */
 .br-media-contain > img {
   object-fit: contain;
-  padding: 8%;
 }
 
 /* Under `contain` this dissolved the residual dark edge of a black-ground photo
