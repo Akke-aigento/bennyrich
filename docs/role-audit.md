@@ -2426,3 +2426,178 @@ If a third pill state is ever needed, that is the point to stop and put a
 `docs/screens/BR-14/hero-pills-1280.png` and `hero-pills-390.png` re-shot
 against the lit state, plus `hero-pills-hover-1280.png` — a real hover, driven
 with `Input.dispatchMouseEvent`, since `tools/screens/capture.ts` has no mouse.
+
+# BR-16 — the gallery was never dark, and the shop header follows the category (2026-08-28)
+
+Date: 2026-08-28 · `main`: `4e14dca`…`5020149` · base `a1628cc`
+
+## Fix 1 — the product gallery
+
+Sander reported product-page images rendering near-black while the same photos
+are bright on `/shop`. **Nothing was dimming them.** The brief proposed three
+candidates and all three are false; they were eliminated by reading the code
+before anything was touched:
+
+| Candidate                                        | Why it is false                                                                                                                                             |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ProductImage` tints/blends when `colour` is set | It is a plain `<img>` with a `className` passthrough. No tint, filter, blend, opacity or overlay in the file.                                               |
+| `colourFromLabel` / `colour` drives a treatment  | `colour` feeds `imageSources()` only. It reorders **which file is requested**, never how it renders.                                                        |
+| `.br-media-contain` adds a dark ground or blend  | It sets `object-fit` and (formerly) `padding`, nothing else. The 6% `.br-media::after` vignette is on **both** surfaces, so it cannot explain a difference. |
+
+A repo-wide sweep found exactly one pixel-darkening mechanism, `opacity-40`,
+and it sits **identically** on both surfaces (`ProductCard.tsx:54`,
+`product.$slug.tsx:275`) behind the same `isSoldOut`. It dims the grid card too,
+so it cannot darken one surface and not the other. Ruled out at runtime as well,
+not just by argument: computed `opacity` is `1` and `className` is empty on the
+gallery image.
+
+### The cause
+
+```css
+.br-media-contain > img {
+  object-fit: contain;
+  padding: 8%;
+}
+```
+
+in a well fixed at `aspectRatio: 1 / 1`. **Geometry, not pixels.** Percentage
+padding resolves against the containing block's **width on all four sides**, so
+the content box was 84%×84% before `contain` even ran. A portrait photo then
+painted onto ~56% of a square well, and the other ~44% was solid `--br-black`.
+Next to the `cover` grid card — which fills 100% and crops to the bright neon
+centre — that reads as a near-black tile. Same file, same pixels, fewer of them.
+
+### The fix, measured
+
+`padding: 8%` removed. Painted image area as a share of its well, measured over
+CDP rather than eyeballed:
+
+| Surface                                       | Before | After     |
+| --------------------------------------------- | ------ | --------- |
+| gallery — panther-tee, 1122×1402, square well | 56.0%  | **79.4%** |
+| vodka — 1060×1484, `4 / 5` well               | 67.5%  | **88.7%** |
+
+The gain is a flat **×1.417 at every aspect ratio** (`0.84² = 0.7056`), so the
+catalogue moves together. Across the 17 new photos the range is 66.7%–100%; the
+weakest is the countach hoodie, purely because it is a 1.50 landscape front+back
+shot in a square well, and it is already on BR-7's reshoot list.
+
+`contain` and the `1 / 1` well are **kept**. BR-7 chose them so back-print
+artwork is never cropped, and that reasoning stands — only the padding was wrong.
+
+### VodkaSpotlight changes too, on purpose
+
+`.br-media-contain` has two call sites. Removing the padding enlarges the
+homepage bottle by +31%. That is intended: one bug in one shared utility, and
+two surfaces using the same utility should render the same way. Scoping the fix
+to the gallery would have left one surface disagreeing with the utility it uses.
+Confirmed as an improvement against a before/after capture before shipping.
+
+**What this does to the escape-hatch guarantee, stated plainly.**
+`VodkaSpotlight.tsx` stays **blob-identical** — only the shared CSS moved, and
+`tokens.css` was never frozen — so the frozen-file check is still clean. But its
+_rendering_ changes on both `HOME_V2` arms. So the guarantee is now:
+`HOME_V2=false` restores the same **components and layout** the client approved,
+**not a pixel-identical media fill**. This is a deliberate global media-quality
+fix, not silent drift. Nobody should read the tighter fill as the escape hatch
+having rotted.
+
+## Found, NOT fixed — the fallback walk is dead on the product page
+
+Reproducible, and worth more attention than this batch could give it. The
+`<ProductImage>` candidate walk documented in `CLAUDE.md` **does not run on
+`/product/:slug` when the page is loaded directly**:
+
+```
+/shop grid              walk advances -> /products/panther-tee-blue.jpg   ok
+/ home                  walk advances                                     ok
+/product/panther-tee    NEVER advances -> stuck on the failed bucket URL, naturalWidth 0
+```
+
+The differentiator is the **route loader**. `/product/:slug` has one, so the
+`<img>` exists in the first client render and the image error fires before React
+attaches `onError`; `/shop` and `/` get their data from a client `useQuery`
+_after_ hydration, so the handler is always attached first. Proof: reaching the
+same product by **client-side navigation** (clicking a card on `/shop`) makes
+the walk succeed every time.
+
+**Consequence:** any product whose bucket URL fails renders an empty black well
+on the product page — which is indistinguishable from "the image is very dark",
+and is a plausible second explanation for what Sander saw. It is dormant only as
+long as every bucket URL resolves.
+
+Not fixed here because it is a different defect in a different file, and the
+brief scoped this batch to the darkness. It wants its own change (an `onLoad`/
+`complete` check after mount, or keying the `<img>` so the walk re-arms).
+
+## Fix 2 — the shop header follows the category
+
+`/shop` hardcoded one header for every view, so filtering to Lighting still said
+"Shop". `CATEGORY_HEADERS` in `src/routes/shop.tsx`, keyed by the slugs in
+`src/lib/categories.ts`, now supplies eyebrow, title and lede.
+
+The eyebrow stays "Shop" and the title carries the category name. The brief
+suggested both be the category word; the default pairs a set descriptor with a
+page name ("All pieces" / "Shop"), so category views keep that shape rather than
+printing "Apparel" twice.
+
+`BrCategory.blurb` was deliberately **not** reused — it is written for the
+`/collections` tiles, a different slot with a different voice. `categories.ts`
+stays the single source of **slugs**; the copy lives with the route. The ledes
+promise no service (no shipping, returns, ratings or "new arrivals"), and they
+are categories and nothing grander.
+
+A search keeps the default header: `CategoryProductsPage` already prints
+`Results for "…"` under the chips, and a query is not a category. An
+unrecognised slug falls back to the default rather than rendering an empty one.
+
+### Why per-category `head()` meta was declined
+
+`head()` _can_ read search in this version (via `match.search`), so this was a
+choice, not a limitation. `/shop` emits an unconditional `canonical("/shop")`,
+which is correct and protective — every `?category=` and `?q=` permutation
+collapses to one indexable URL. Giving `?category=apparel` its own title while
+it still canonicalises to `/shop` tells a crawler the page _is_ `/shop`; the
+per-category meta is then discarded, so the work buys nothing and leaves the
+page contradicting itself.
+
+**Follow-up if category views should be indexable:** self-referential canonicals
+per filter, `q` excluded (search results should not be indexed, and
+`public/robots.txt` disallows only `/checkout` and `/account`), plus adding the
+category URLs to `src/lib/sitemap.ts`, which lists five paths today. Not done.
+
+## Verification
+
+```
+bun run build / bunx tsc --noEmit                    green
+frozen files                                          empty diff AND blob-hash identical (all ten)
+VodkaSpotlight.tsx                                    blob-identical to base
+git diff a1628cc -- package.json bun.lock             empty
+grep -rni "worlds|werelden" src/                      0
+git status -- public/products/                        17 entries, unstaged, before AND after
+```
+
+Headers asserted rendered, all six states plus a live chip click:
+
+```
+/shop                    All pieces / Shop / Built for people who stand out…
+/shop?category=apparel   Shop / Apparel / Heavyweight tees and hoodies…
+/shop?category=lighting  Shop / Lighting / Neon-lit 3D lamps…
+/shop?category=beverages Shop / Beverages / The bottle of the house. 18+.
+/shop?q=panther          default (unchanged)
+/shop?category=nonsense  default (fallback)
+click "Lighting" chip    header updates live
+```
+
+Screenshots in `docs/screens/BR-16/`.
+
+## The stray photo copies
+
+`public/products/` carries 9 modified and 8 new files — Sander's better photos,
+already serving from the Supabase bucket. The storefront loads from the bucket,
+so these local copies are strays and **were not committed**. Everything in this
+batch was staged by explicit path; `git add -A` was not used. `git status` shows
+the same 17 entries before and after both commits.
+
+They were used for **measurement only**, which is why the aspect-ratio table
+above is trustworthy for what actually ships.
