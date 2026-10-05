@@ -10,13 +10,13 @@ const glowByIntensity: Record<MarkIntensity, Record<NeonTone, string>> = {
 
 export const glowClass: Record<NeonTone, string> = glowByIntensity.sign;
 
-/** Official monogram crop: 157x136, with the ring 101px across inside it. */
+/** Official monogram crop: 217x194, ring 163px. */
 const ASSET = {
   src: "/brand/logo-monogram-blue.png",
-  width: 157,
-  height: 136,
+  width: 217,
+  height: 194,
   /** Ring diameter as a fraction of the crop's height. */
-  ringOfHeight: 101 / 136,
+  ringOfHeight: 163 / 194,
 };
 
 /**
@@ -28,7 +28,7 @@ const ASSET = {
  * the same accepted cost as the hero and banner art.
  *
  * `size` still means what it always did: the RING's diameter. The old SVG ring
- * was r=45 in a 100 box; this crop's ring is 101/136 of its height, so the
+ * was r=45 in a 100 box; this crop's ring is 163/194 of its height, so the
  * image is scaled to match rather than being dropped in at `size` square.
  *
  * TODO(pink): there is no pink asset yet, so `tone="pink"` keeps the drawn SVG

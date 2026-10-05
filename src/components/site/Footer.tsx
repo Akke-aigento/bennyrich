@@ -24,7 +24,7 @@ export function Footer() {
     >
       <div className="br-shell flex flex-col items-center px-6 pb-10 pt-20">
         <Link to="/" aria-label="BennyRich — home">
-          {/* The official lockup already carries WORLDWIDE — no city line. */}
+          {/* The official lockup already carries VODKA — no city line. */}
           <Wordmark tone="blue" className="h-32 w-auto md:h-40" />
         </Link>
 

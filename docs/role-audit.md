@@ -2601,3 +2601,52 @@ the same 17 entries before and after both commits.
 
 They were used for **measurement only**, which is why the aspect-ratio table
 above is trustworthy for what actually ships.
+
+# BR-LOGO-VODKA — the official lockup says VODKA (2026-10-05)
+
+Client-supplied replacement of the official neon logo. The new lockup reads
+**BENNY RICH · VODKA** where it read **WORLDWIDE**. Akke generated the assets
+with `docs/brand/tools/neon_alpha.py` + pngquant and placed them in
+`public/brand/`; they were **not** regenerated in this batch.
+
+| File                               | Before  | After                           |
+| ---------------------------------- | ------- | ------------------------------- |
+| `logo-lockup-blue.png`             | 775×317 | 829×395                         |
+| `logo-wordmark-blue.png`           | 775×117 | 829×125                         |
+| `logo-monogram-blue.png`           | 157×136 | 217×194                         |
+| `logo-wordmark-vodka-blue.png`     | —       | 829×201 (reserve, not wired up) |
+| `logo-wordmark-worldwide-blue.png` | 775×181 | deleted (was never wired up)    |
+
+`docs/brand/logo-blue.jpg` (the source render) was overwritten with the new
+one; it does not belong in `public/`.
+
+Code: `Wordmark.tsx` cap height 94px in both crops
+(`94/395`, `94/125`); `Monogram.tsx` ring 163px (`163/194`).
+
+## Visual check after publish — required
+
+- **The monogram is relatively larger in its crop**: the ring was 74% of the
+  crop height (101/136) and is now 84% (163/194). Because `size` means the
+  ring diameter, every `<Monogram size>` call site now gets a _smaller_ box
+  around the same ring — check spacing wherever it is used.
+- The lockup is taller in proportion (829×395 vs 775×317), so the footer's
+  `h-32 md:h-40` lockup renders narrower at the same height. Check footer
+  and 404.
+- Header and mobile menu (inline wordmark, cap height preserved by the
+  `size` maths).
+- The 18+ gate is unchanged — it still renders the drawn pink SVG; there is
+  still no pink asset set.
+
+## Open, not done here
+
+- **`/hero/og-image.jpg` and the favicon set** still derive from the old
+  WORLDWIDE lockup / old monogram crop. Regenerate in a follow-up.
+- **`neon_alpha.py` still writes `logo-wordmark-worldwide-<tone>.png`** (name
+  and docstring). Re-running it brings the deleted file back under the old
+  name; rename that output to `-vodka-` before the next run.
+- A full brand reading "VODKA" on an apparel/lighting storefront is the
+  client's call, recorded here as a decision.
+- `public/products/` again carries modified and new photo files
+  (including `fuck-you-tee-*` and `*-model-*` names that do not fit the
+  `<slug>-<colour>.jpg` fallback). **Not committed** — staged by explicit
+  path only.

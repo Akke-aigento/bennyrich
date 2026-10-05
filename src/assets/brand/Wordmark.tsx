@@ -7,17 +7,17 @@ const textClass: Record<NeonTone, string> = {
 };
 
 /** The client's official artwork. Pixel sizes are the delivered crops. */
-const LOCKUP = { src: "/brand/logo-lockup-blue.png", width: 775, height: 317 };
-const INLINE = { src: "/brand/logo-wordmark-blue.png", width: 775, height: 117 };
+const LOCKUP = { src: "/brand/logo-lockup-blue.png", width: 829, height: 395 };
+const INLINE = { src: "/brand/logo-wordmark-blue.png", width: 829, height: 125 };
 
 /** Cap height of "BENNY RICH" as a fraction of each crop's height. */
-const CAP_OF_HEIGHT = { lockup: 90 / 317, inline: 90 / 117 };
+const CAP_OF_HEIGHT = { lockup: 94 / 395, inline: 94 / 125 };
 
 /**
  * BennyRich lockup.
  *
  * `layout="stacked"` is the full official lockup — BR monogram over BENNY RICH
- * over WORLDWIDE. `layout="inline"` is the written-out wordmark on its own,
+ * over VODKA. `layout="inline"` is the written-out wordmark on its own,
  * which is what a header needs.
  *
  * Since BR-11 both are the client's official neon render (`public/brand/`)
@@ -31,7 +31,7 @@ const CAP_OF_HEIGHT = { lockup: 90 / 317, inline: 90 / 117 };
  *    a fully-glowing neon lockup. That is his call, recorded as a decision
  *    rather than a regression — see docs/role-audit.md, BR-11.
  *  - `showCity` is now a no-op and "NEW YORK" is gone: the official lockup says
- *    WORLDWIDE, and a city line contradicts it. The prop is kept so existing
+ *    VODKA, and a city line contradicts it. The prop is kept so existing
  *    call sites keep compiling.
  *  - `tone` is likewise kept but only "blue" exists as artwork; there is no
  *    pink set yet (see the TODO in Monogram.tsx).
@@ -56,7 +56,7 @@ export function Wordmark({
   layout?: "stacked" | "inline";
   /** Cap height of the "BENNY RICH" letters, in px. Omit to size by className. */
   size?: number;
-  /** No-op since BR-11 — the official lockup says WORLDWIDE, not a city. */
+  /** No-op since BR-11 — the official lockup says VODKA, not a city. */
   showCity?: boolean;
   showTagline?: boolean;
   className?: string;
