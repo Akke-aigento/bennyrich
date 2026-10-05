@@ -103,7 +103,7 @@ export const CONTACT_EMAIL = "info@bennyrich.com";
 export const INSTAGRAM_URL = "https://www.instagram.com/bennyrichstore";
 
 /** The site-wide share image, used when a page has nothing more specific. */
-export const DEFAULT_OG_IMAGE = "/hero/og-image.jpg";
+export const DEFAULT_OG_IMAGE = "/hero/og-image-vodka.jpg";
 export const OG_IMAGE_WIDTH = 1200;
 export const OG_IMAGE_HEIGHT = 630;
 

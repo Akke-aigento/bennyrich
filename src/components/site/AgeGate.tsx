@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { Monogram } from "@/assets/brand/Monogram";
+import { Wordmark } from "@/assets/brand/Wordmark";
 import { AGE_RESTRICTED_CATEGORIES } from "@/lib/categories";
 import type { SellqoProduct } from "@/lib/sellqo";
 import { useProducts } from "@/lib/use-sellqo";
@@ -93,15 +93,15 @@ export function AgeGate({ active, onVerified }: { active: boolean; onVerified: (
       style={{ background: "rgba(0,0,0,0.94)" }}
     >
       <div
-        className="neon-line-pink w-full max-w-[420px] border px-8 py-10 text-center"
+        className="neon-line-blue w-full max-w-[420px] border px-8 py-10 text-center"
         style={{ background: "var(--br-black)", borderRadius: "var(--radius)" }}
       >
         <div className="flex justify-center">
-          <Monogram tone="pink" size={48} />
+          <Wordmark tone="blue" layout="stacked" className="h-24 w-auto object-contain sm:h-28" />
         </div>
         <h2
           id="age-gate-title"
-          className="br-display neon-text-pink mt-7 text-[34px]"
+          className="br-display neon-text-blue mt-7 text-[34px]"
           style={{ letterSpacing: "0.1em" }}
         >
           18+
@@ -110,7 +110,7 @@ export function AgeGate({ active, onVerified }: { active: boolean; onVerified: (
           This page contains an alcoholic product. Please confirm your age to continue.
         </p>
         <div className="mt-8 flex flex-col gap-3">
-          <button type="button" onClick={accept} className="neon-btn neon-btn-pink justify-center">
+          <button type="button" onClick={accept} className="neon-btn justify-center">
             I am 18 or older
           </button>
           <button

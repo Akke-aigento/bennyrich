@@ -1,4 +1,4 @@
-import type { NeonTone } from "./Monogram";
+import { BRAND_V, type NeonTone } from "./Monogram";
 
 const textClass: Record<NeonTone, string> = {
   blue: "neon-text-blue",
@@ -7,18 +7,20 @@ const textClass: Record<NeonTone, string> = {
 };
 
 /** The client's official artwork. Pixel sizes are the delivered crops. */
-const LOCKUP = { src: "/brand/logo-lockup-blue.png", width: 829, height: 395 };
-const INLINE = { src: "/brand/logo-wordmark-blue.png", width: 829, height: 125 };
+const LOCKUP = { src: `/brand/logo-lockup-blue.png?v=${BRAND_V}`, width: 829, height: 395 };
+const INLINE = { src: `/brand/logo-wordmark-blue.png?v=${BRAND_V}`, width: 829, height: 125 };
+const VODKA = { src: `/brand/logo-wordmark-vodka-blue.png?v=${BRAND_V}`, width: 829, height: 201 };
 
 /** Cap height of "BENNY RICH" as a fraction of each crop's height. */
-const CAP_OF_HEIGHT = { lockup: 94 / 395, inline: 94 / 125 };
+const CAP_OF_HEIGHT = { lockup: 94 / 395, inline: 94 / 125, vodka: 94 / 201 };
 
 /**
  * BennyRich lockup.
  *
  * `layout="stacked"` is the full official lockup — BR monogram over BENNY RICH
- * over VODKA. `layout="inline"` is the written-out wordmark on its own,
- * which is what a header needs.
+ * over VODKA. `layout="vodka"` is BENNY RICH over VODKA without the ring —
+ * the header and mobile menu since BR-LOGO-VODKA-2. `layout="inline"` is the
+ * written-out wordmark alone, kept in reserve.
  *
  * Since BR-11 both are the client's official neon render (`public/brand/`)
  * rather than type set in Bodoni Moda. Consequences worth knowing:
@@ -53,7 +55,7 @@ export function Wordmark({
 }: {
   /** Only "blue" has an asset; pink/mono fall back to it. */
   tone?: NeonTone;
-  layout?: "stacked" | "inline";
+  layout?: "stacked" | "inline" | "vodka";
   /** Cap height of the "BENNY RICH" letters, in px. Omit to size by className. */
   size?: number;
   /** No-op since BR-11 — the official lockup says VODKA, not a city. */
@@ -61,9 +63,8 @@ export function Wordmark({
   showTagline?: boolean;
   className?: string;
 }) {
-  const inline = layout === "inline";
-  const asset = inline ? INLINE : LOCKUP;
-  const capOfHeight = inline ? CAP_OF_HEIGHT.inline : CAP_OF_HEIGHT.lockup;
+  const asset = layout === "inline" ? INLINE : layout === "vodka" ? VODKA : LOCKUP;
+  const capOfHeight = CAP_OF_HEIGHT[layout === "stacked" ? "lockup" : layout];
   const height = size === undefined ? undefined : size / capOfHeight;
 
   const image = (
@@ -78,7 +79,7 @@ export function Wordmark({
     />
   );
 
-  if (inline) return image;
+  if (layout !== "stacked") return image;
 
   // Tagline sits under the lockup, so the stacked layout needs a column.
   if (!showTagline) return image;

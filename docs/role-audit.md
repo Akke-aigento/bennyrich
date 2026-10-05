@@ -2650,3 +2650,85 @@ Code: `Wordmark.tsx` cap height 94px in both crops
   (including `fuck-you-tee-*` and `*-model-*` names that do not fit the
   `<slug>-<colour>.jpg` fallback). **Not committed** — staged by explicit
   path only.
+
+# BR-LOGO-VODKA-2 — the VODKA wordmark in the header, the lockup in the gate (2026-10-05)
+
+Client request: the new VODKA logo visible everywhere. Four changes.
+
+## 1. Header and mobile menu: `layout="vodka"`
+
+`Wordmark` gained a third layout, `vodka`, over
+`logo-wordmark-vodka-blue.png` (829×201). The cap height of BENNY RICH is
+`94/201`, measured the same way as the other two crops. The opaque letter band
+runs from y 14 to y 105 in both the inline and the vodka PNG.
+
+All three header call sites (desktop, mobile bar, mobile menu) move from
+`inline h-7` to `vodka h-11`:
+
+|                       | inline `h-7` (before) | vodka `h-11` (now) |
+| --------------------- | --------------------- | ------------------ |
+| BENNY RICH cap        | 21.1px                | 20.6px             |
+| width                 | 186px                 | 181px              |
+| VODKA (letters+rules) | —                     | ≈7–8px             |
+
+The header is a fixed `h-[72px]`, so it does **not** grow and nothing shifts
+(measured: 73px including the border, before and after).
+
+The two mobile sites also gained `object-contain`. Below a ~348px viewport,
+`max-w-[52vw]` caps the width while the height class holds, which squashed the
+image horizontally. This was already true of the inline crop below ~357px.
+
+**VODKA legibility, measured in the browser pane:**
+
+- 320px, DPR 2: the mobile bar renders 176×44 (`contain`, letterboxed), and
+  VODKA reads clearly.
+- 390px and 1280px: 181×44. The mobile menu at 320px is also 181×44.
+
+On a DPR-1 screen it will be soft; phones are all DPR ≥ 2.
+
+## 2. The 18+ gate: lockup and all blue
+
+`<Monogram tone="pink" size={48} />` became the stacked lockup with
+`h-24 w-auto object-contain sm:h-28`. It measures 201×96 at 320px, where the
+content box is 208px, so the image is not squashed. At 1024px it is 235×112.
+
+At Akke's call there is **no accent exception**: the whole gate went blue
+(`neon-line-blue` frame, `neon-text-blue` 18+, plain `neon-btn`). There is no
+`neon-btn-blue` utility: blue is the base `neon-btn`, and `neon-btn-pink` is
+the opt-in. "One accent per component" holds, and the 18+ interstitial is gone
+from CLAUDE.md's list of pink surfaces.
+
+`grep 'tone="pink"'` on Monogram usage: the only hit was `AgeGate.tsx:100`.
+After this batch it is 0, and **`<Monogram>` has no callers at all**, blue or
+pink. `Monogram.tsx` and its `DrawnMonogram` branch stay, unused, as decided.
+
+## 3. Cache-busting
+
+The logo PNGs were overwritten under their old filenames in BR-LOGO-VODKA, so
+browsers and the CDN could keep the WORLDWIDE mark. `BRAND_V = "2"` is
+exported from `Monogram.tsx` and appended as `?v=` to all four logo srcs
+(lockup, inline, vodka, monogram). **Bump it on every future logo overwrite.**
+The favicons are not covered; they are referenced from `__root.tsx` and were
+not replaced.
+
+## 4. OG image
+
+The new OG image (1200×630, VODKA lockup + shh-kid) arrived as an untracked
+`public/brand/og-image.jpg`, not as a replacement of `public/hero/og-image.jpg`
+as the brief said. It is moved to **`public/hero/og-image-vodka.jpg`** and the
+old file was removed in the same rename. `DEFAULT_OG_IMAGE` points at it; the
+1200×630 constants still hold.
+
+Scrapers key on the URL, so the new name forces a refetch. Facebook and
+LinkedIn may still show a cached preview of an already-shared page until it is
+re-scraped (Sharing Debugger / Post Inspector).
+
+## Not done / open
+
+- The favicon set still derives from the old monogram crop.
+- `tools/screens/capture.ts` failed in this session:
+  `Page.captureScreenshot` returned null after Chrome came up. So there are no
+  `docs/screens/BR-LOGO-VODKA-2/` captures; verification ran in the browser
+  pane with DOM measurements. The harness needs a look before the next batch
+  that relies on it.
+- `public/products/` strays are still unstaged.

@@ -10,9 +10,16 @@ const glowByIntensity: Record<MarkIntensity, Record<NeonTone, string>> = {
 
 export const glowClass: Record<NeonTone, string> = glowByIntensity.sign;
 
+/**
+ * Cache-buster for every `public/brand/` logo PNG. The artwork is overwritten
+ * under the same filenames when the client revises it, so browsers and CDNs
+ * keep serving the old mark. Bump this whenever a logo file is replaced.
+ */
+export const BRAND_V = "2";
+
 /** Official monogram crop: 217x194, ring 163px. */
 const ASSET = {
-  src: "/brand/logo-monogram-blue.png",
+  src: `/brand/logo-monogram-blue.png?v=${BRAND_V}`,
   width: 217,
   height: 194,
   /** Ring diameter as a fraction of the crop's height. */
@@ -82,7 +89,7 @@ export function Monogram({
 }
 
 /**
- * The hand-drawn mark, kept only for `tone="pink"` (the 18+ gate) until a pink
+ * The hand-drawn mark, kept only for `tone="pink"` (no caller since BR-LOGO-VODKA-2) until a pink
  * asset exists. A hairline circle enclosing an overlapping serif "B" and "R",
  * stroked in `currentColor` so the neon utilities light it up.
  */
