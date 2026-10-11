@@ -551,8 +551,9 @@ back in.
 `metaDescription`. Canonical links and `og:image` must be absolute — a relative
 path silently produces a broken share preview.
 
-> **`SITE_URL` is the single line to change when the real domain lands.** It
-> currently points at the Lovable preview host.
+> **`SITE_URL` is the single line to change when the domain changes.** Since
+> 2026-10-11 it is `https://bennyrich.com` (it pointed at the Lovable host
+> before, which sent every canonical away from the real domain).
 
 Canonicals live **only on routes, never in `__root`**: root and route `links`
 are concatenated, not merged, so a canonical at the root emits a second one on
@@ -631,3 +632,4 @@ omits the field, and the banner would then nag about an email nobody sent.
 | BR-16           | 2026-08-28 | Two client fixes. The product gallery "rendering dark" was `padding: 8%` on `.br-media-contain > img` shrinking the photo to ~56% of a square well — geometry, not a tint; removing it is a flat ×1.417 for every image and lifts the vodka spotlight too. `/shop` gained per-category header copy (`CATEGORY_HEADERS`), UX-only — per-category `head()` meta was declined because `/shop` canonicalises to itself. Found not fixed: the `<ProductImage>` fallback walk never advances on a directly-loaded `/product/:slug` (loader ⇒ the image error precedes React's `onError`). |
 | BR-LOGO-VODKA   | 2026-10-05 | Official logo swapped: the client's new lockup reads BENNY RICH · VODKA instead of WORLDWIDE. Lockup 829×395, inline 829×125 (cap 94px), monogram 217×194 (ring 163px — relatively larger, so the same `size` gives a smaller box). `logo-wordmark-vodka-blue.png` added as reserve, the worldwide crop deleted, the source JPEG moved to `docs/brand/`. OG image and favicons still derive from the old mark.                                                                                                                                                                      |
 | BR-LOGO-VODKA-2 | 2026-10-05 | The VODKA wordmark goes up everywhere: header and mobile menu switch to `layout="vodka"` at `h-11` (BENNY RICH cap ≈21px, same as before; `object-contain` on mobile so the 52vw cap cannot squash it). The 18+ gate shows the stacked lockup and turns blue throughout, so it keeps one accent. `?v=BRAND_V` cache-bust on every logo src. OG image replaced and renamed to `/hero/og-image-vodka.jpg` so scrapers refetch it.                                                                                                                                                     |
+| BR-SEO-DOMAIN   | 2026-10-11 | `SITE_URL` → `https://bennyrich.com`: canonicals, `og:url`, sitemap URLs and the robots `Sitemap:` line pointed at `akke-aigento-bennyrich.lovable.app` (Akke Insights scan, kritiek). `url_base` follows; the tenant has no verified domain in SellQo yet, so mail-link behaviour is unchanged. |
