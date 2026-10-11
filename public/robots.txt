@@ -8,4 +8,4 @@ Disallow: /checkout/
 Disallow: /account
 Disallow: /account/
 
-Sitemap: https://akke-aigento-bennyrich.lovable.app/sitemap.xml
+Sitemap: https://bennyrich.com/sitemap.xml

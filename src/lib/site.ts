@@ -7,13 +7,12 @@
  *
  * >>> SITE_URL IS THE ONE LINE TO CHANGE WHEN THE REAL DOMAIN LANDS. <<<
  *
- * It currently points at the Lovable preview host, inferred from the
- * Cloudflare worker name (`akke-aigento-bennyrich`) because nothing in the repo
- * records the deployed origin. If that is wrong, canonicals and share previews
- * point at the wrong host until this string is corrected — nothing else needs
- * touching.
+ * Since 11-10-2026 the live domain: bennyrich.com serves this storefront (verified
+ * via the raw HTML). Before that it pointed at the Lovable host
+ * `akke-aigento-bennyrich.lovable.app`, which made every canonical send Google
+ * away from the real domain.
  */
-export const SITE_URL = "https://akke-aigento-bennyrich.lovable.app";
+export const SITE_URL = "https://bennyrich.com";
 
 export const SITE_NAME = "BennyRich";
 
