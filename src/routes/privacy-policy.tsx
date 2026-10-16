@@ -73,6 +73,10 @@ function PrivacyPolicyPage() {
           Our website uses cookies to improve your browsing experience, analyze website traffic, and
           personalize content. You can manage or disable cookies through your browser settings.
         </P>
+        <P>
+          With your consent we measure visits anonymously with Akke Insights: no cookies, and no IP
+          addresses or personal data are stored. This only tells us which pages are used.
+        </P>
       </Section>
 
       <Section heading="Sharing Your Information">

@@ -101,6 +101,20 @@ export function ConsentProvider({ children }: { children: ReactNode }) {
     [choice, ready, set],
   );
 
+  // Akke Insights (cookieless visitor counter) — analytics, loaded only after
+  // the shopper has granted consent, and only once.
+  const analyticsAllowed = value.hasConsent("analytics");
+  useEffect(() => {
+    if (!analyticsAllowed) return;
+    if (document.querySelector('script[data-site="i0arb44y7c9t"]')) return;
+    const s = document.createElement("script");
+    s.defer = true;
+    s.src = "https://insights.studioakke.com/t.js";
+    s.setAttribute("data-site", "i0arb44y7c9t");
+    s.setAttribute("data-exclude", "/account*,/login*,/auth*");
+    document.head.appendChild(s);
+  }, [analyticsAllowed]);
+
   return <ConsentContext.Provider value={value}>{children}</ConsentContext.Provider>;
 }
 
