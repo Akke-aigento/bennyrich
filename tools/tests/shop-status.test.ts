@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { readShopOpen, resolveShopOpen, shopClosedMessage } from "./shop-status";
+import { readShopOpen, resolveShopOpen, shopClosedMessage } from "../../src/lib/shop-status";
 
 describe("shop status (BILLING-LOCK-2)", () => {
   test("closes only on an explicit open === false", async () => {
