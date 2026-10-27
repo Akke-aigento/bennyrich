@@ -60,7 +60,9 @@ function PaymentStep() {
       await refetch();
     } catch (err: unknown) {
       if (ticket !== shipSeq.current) return;
-      setServerErr(err instanceof Error ? err.message : "Could not update shipping");
+      setServerErr(
+        shopClosedMessage(err) ?? (err instanceof Error ? err.message : "Could not update shipping"),
+      );
     } finally {
       if (ticket === shipSeq.current) setShipPending(false);
     }
@@ -104,7 +106,7 @@ function PaymentStep() {
         navigate({ to: "/" });
       }
     } catch (err: any) {
-      setServerErr(err?.message ?? "Payment failed");
+      setServerErr(shopClosedMessage(err) ?? err?.message ?? "Payment failed");
       refetch();
     } finally {
       setBusy(false);
@@ -135,7 +137,7 @@ function PaymentStep() {
         </p>
       ) : error ? (
         <p className="mt-4 text-[0.9rem]" style={{ color: "var(--destructive)" }}>
-          {(error as Error).message}
+          {shopClosedMessage(error) ?? (error as Error).message}
         </p>
       ) : shipMethods.length === 0 ? (
         <p className="mt-4 text-[0.9rem]" style={{ color: "var(--muted-tone)" }}>

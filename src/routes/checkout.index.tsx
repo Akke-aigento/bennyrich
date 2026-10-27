@@ -161,7 +161,7 @@ function DetailsStep() {
       });
       navigate({ to: "/checkout/payment" });
     } catch (err: any) {
-      setServerErr(err?.message ?? "Something went wrong");
+      setServerErr(shopClosedMessage(err) ?? err?.message ?? "Something went wrong");
     } finally {
       setBusy(false);
     }
