@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 import { sellqoFetch } from "@/lib/sellqo";
 import { unwrapAddresses, isDefaultAddress } from "@/lib/account";
 import { checkoutSetAddress, checkoutSetCustomer, checkoutStart } from "@/lib/checkout";
+import { shopClosedMessage } from "@/lib/shop-status";
 import {
   EmptyCartRedirect,
   FieldError,
@@ -161,7 +162,7 @@ function DetailsStep() {
       });
       navigate({ to: "/checkout/payment" });
     } catch (err: any) {
-      setServerErr(err?.message ?? "Something went wrong");
+      setServerErr(shopClosedMessage(err) ?? err?.message ?? "Something went wrong");
     } finally {
       setBusy(false);
     }

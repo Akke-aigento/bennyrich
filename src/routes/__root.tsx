@@ -26,6 +26,8 @@ import { ConsentProvider } from "../lib/consent";
 import { AuthProvider } from "../lib/auth";
 import { SOCIALS } from "../components/site/Footer";
 import { Toaster } from "sonner";
+import { shopStatusQueryOptions } from "../lib/shop-status-query";
+import { ShopClosed } from "../components/site/ShopClosed";
 
 function NotFoundComponent() {
   return (
@@ -125,8 +127,11 @@ const ORGANIZATION_LD = {
 };
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  head: () => ({
+  // BILLING-LOCK-2: shop status from SellQo, fail-open, cached at most 30s.
+  loader: ({ context }) => context.queryClient.fetchQuery(shopStatusQueryOptions),
+  head: ({ loaderData }) => ({
     meta: [
+      ...(loaderData?.open === false ? [{ name: "robots", content: "noindex" }] : []),
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "BennyRich — Timeless. Bold. Luxurious." },
@@ -211,6 +216,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const shopStatus = Route.useLoaderData();
+
+  // BILLING-LOCK-2: closed only on an explicit `open === false` from SellQo.
+  if (shopStatus?.open === false) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <ConsentProvider>
+          <ShopClosed />
+        </ConsentProvider>
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>

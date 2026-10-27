@@ -10,3 +10,5 @@
 > the editor, so keep the branch in a working state.
 
 <!-- LOVABLE:END -->
+
+- Shop open/closed status comes from SellQo `get_shop_status` in the root loader (`src/lib/shop-status*.ts`) and is fail-open: only an explicit `open === false` closes the shop, so SellQo being unreachable never takes the site down.
