@@ -11,6 +11,7 @@ import {
   type ShippingMethod,
 } from "@/lib/checkout";
 import { formatEUR } from "@/lib/format";
+import { shopClosedMessage } from "@/lib/shop-status";
 import { EmptyCartRedirect, PrimaryButton } from "@/components/site/CheckoutForm";
 
 export const Route = createFileRoute("/checkout/payment")({
